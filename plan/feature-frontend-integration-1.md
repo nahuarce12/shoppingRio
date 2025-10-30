@@ -28,21 +28,75 @@ Integrate the static mockup contained in `frontEndEG/` into the Laravel applicat
 
 -   GOAL-001: Establish migration blueprint and asset inventory for the mockup.
 
-| Task     | Description                                                                                                                                                                    | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-001 | Inventory HTML templates under `frontEndEG/index.html` and `frontEndEG/pages/*.html`, mapping each to target Blade paths in `resources/views/` with planned route names.       |           |      |
-| TASK-002 | Catalog CSS/JS assets (`frontEndEG/css`, `frontEndEG/js`) and images (`frontEndEG/img`) specifying destination directories (`resources/css`, `resources/js`, `public/images`). |           |      |
-| TASK-003 | Identify shared partials (header/footer/nav) within HTML to design Blade includes/components (`resources/views/components/`).                                                  |           |      |
+| Task     | Description                                                                                                                                                                    | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-001 | Inventory HTML templates under `frontEndEG/index.html` and `frontEndEG/pages/*.html`, mapping each to target Blade paths in `resources/views/` with planned route names.       | ✅        | 2025-10-30 |
+| TASK-002 | Catalog CSS/JS assets (`frontEndEG/css`, `frontEndEG/js`) and images (`frontEndEG/img`) specifying destination directories (`resources/css`, `resources/js`, `public/images`). | ✅        | 2025-10-30 |
+| TASK-003 | Identify shared partials (header/footer/nav) within HTML to design Blade includes/components (`resources/views/components/`).                                                  | ✅        | 2025-10-30 |
+
+#### Phase 1 Findings (2025-10-30)
+
+**HTML to Blade Mapping**
+
+-   `frontEndEG/index.html` → `resources/views/home/index.blade.php` (route name `home.index`).
+-   `frontEndEG/pages/locales.html` → `resources/views/pages/locales/index.blade.php` (route `pages.locales`).
+-   `frontEndEG/pages/local-detalle.html` → `resources/views/pages/locales/show.blade.php` (route `pages.locales.show`).
+-   `frontEndEG/pages/promociones.html` → `resources/views/pages/promociones/index.blade.php` (route `pages.promociones`).
+-   `frontEndEG/pages/promocion-detalle.html` → `resources/views/pages/promociones/show.blade.php` (route `pages.promociones.show`).
+-   `frontEndEG/pages/novedades.html` → `resources/views/pages/novedades/index.blade.php` (route `pages.novedades`).
+-   `frontEndEG/pages/quienes-somos.html` → `resources/views/pages/static/about.blade.php` (route `pages.about`).
+-   `frontEndEG/pages/contacto.html` → `resources/views/pages/static/contact.blade.php` (route `pages.contact`).
+-   `frontEndEG/pages/login.html` → `resources/views/auth/login.blade.php` (route `auth.login`).
+-   `frontEndEG/pages/register.html` → `resources/views/auth/register.blade.php` (route `auth.register`).
+-   `frontEndEG/pages/perfil-admin.html` → `resources/views/dashboard/admin/index.blade.php` (route `admin.dashboard`).
+-   `frontEndEG/pages/perfil-dueno.html` → `resources/views/dashboard/store/index.blade.php` (route `store.dashboard`).
+-   `frontEndEG/pages/perfil-cliente.html` → `resources/views/dashboard/client/index.blade.php` (route `client.dashboard`).
+
+**Asset Inventory & Destinations**
+
+-   Stylesheet `frontEndEG/css/style.css` → merge into `resources/css/app.css`; extracted custom variables to `resources/css/partials/_frontoffice.scss` if splitting becomes necessary (pending Phase 3 refinement).
+-   JavaScript files:
+    -   `frontEndEG/js/main.js` → `resources/js/frontoffice/main.js` (registrado como entrada de Vite).
+    -   `frontEndEG/js/perfil-admin.js` → `resources/js/frontoffice/perfil-admin.js`.
+    -   `frontEndEG/js/perfil-dueno.js` → `resources/js/frontoffice/perfil-dueno.js`.
+    -   `frontEndEG/js/perfil-cliente.js` → `resources/js/frontoffice/perfil-cliente.js`.
+    -   `frontEndEG/js/register.js` → `resources/js/frontoffice/register.js`.
+-   Images in `frontEndEG/img/`:
+    -   Logos (`logoBYG.png`, `logoShoppingCOmpleto.png`, `logoFavIconBYG.png`) → `public/images/branding/`.
+    -   Hero/background photos (`imagenShopping.jpg`, `photo-*.jpg`, generated placeholders) → `public/images/hero/`.
+    -   AI generated assets (`Gemini_Generated_*.png`, `image.png`) → `public/images/placeholders/`.
+-   `frontEndEG/sitemap.xml` slated for `public/sitemap.xml` after dynamic sitemap implementation.
+
+**Shared Partials & Components**
+
+-   `resources/views/components/nav/main.blade.php`: primary navigation bar; injects dynamic route highlighting and authentication-aware links.
+-   `resources/views/components/footer/main.blade.php`: footer with social links and contact info; content to be parameterized for admin-managed settings.
+-   `resources/views/components/layout/breadcrumbs.blade.php`: breadcrumb trail rendered on secondary pages.
+-   `resources/views/components/promotions/card.blade.php` and `resources/views/components/stores/card.blade.php`: reusable cards for promotions and store listings.
+-   `resources/views/layouts/app.blade.php`: base layout including `<head>` metadata, Bootstrap CDN fallbacks (migrated to Vite in Phase 3), and `@vite` directives.
+-   `resources/views/layouts/dashboard.blade.php`: specialized layout for role dashboards reusing sidebar/topbar patterns from profile pages.
 
 ### Implementation Phase 2
 
 -   GOAL-002: Migrate layout structure into Blade with reusable components.
 
-| Task     | Description                                                                                                                                                                                   | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-004 | Create/extend `resources/views/layouts/app.blade.php` with Bootstrap skeleton and dynamic sections; move navbar/footer markup into `resources/views/components/`.                             |           |      |
-| TASK-005 | Convert `frontEndEG/index.html` into `resources/views/welcome.blade.php` (or `resources/views/home/index.blade.php`) using Blade sections and imported components.                            |           |      |
-| TASK-006 | Convert each `frontEndEG/pages/*.html` into appropriately named Blade views (e.g., `resources/views/pages/locales.blade.php`), replacing static asset references with Vite helpers (`@vite`). |           |      |
+| Task     | Description                                                                                                                                                                                   | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-004 | Create/extend `resources/views/layouts/app.blade.php` with Bootstrap skeleton and dynamic sections; move navbar/footer markup into `resources/views/components/`.                             | ✅        | 2025-10-30 |
+| TASK-005 | Convert `frontEndEG/index.html` into `resources/views/welcome.blade.php` (or `resources/views/home/index.blade.php`) using Blade sections and imported components.                            | ✅        | 2025-10-30 |
+| TASK-006 | Convert each `frontEndEG/pages/*.html` into appropriately named Blade views (e.g., `resources/views/pages/locales.blade.php`), replacing static asset references with Vite helpers (`@vite`). | ✅        | 2025-10-30 |
+
+#### Phase 2 Findings (2025-10-30)
+
+-   `resources/views/layouts/app.blade.php` now wraps all public pages with Bootstrap 5 CDN, Vite assets, flash messaging, and slots for page-specific metadata.
+-   Navigation (`resources/views/components/nav/main.blade.php`) and footer (`resources/views/components/footer/main.blade.php`) components encapsulate shared header/footer markup with route-aware links and auth states.
+-   Breadcrumb component (`resources/views/components/layout/breadcrumbs.blade.php`) renders hierarchical trails with sensible defaults for public routes.
+-   Home view migrated to `resources/views/home/index.blade.php`, reusing carousel hero, featured promotions/locales, and CTA sections while sourcing assets via `asset()`.
+-   Local listing and detail pages (`resources/views/pages/locales/index.blade.php`, `resources/views/pages/locales/show.blade.php`) provide mock data arrays, filter UI, and promotion cards wired to Laravel routes.
+-   Promotions listing and detail pages (`resources/views/pages/promociones/index.blade.php`, `resources/views/pages/promociones/show.blade.php`) mirror the mockup structure, expose filter controls, and reuse shared assets/components.
+-   Login and registration (`resources/views/auth/login.blade.php`, `resources/views/auth/register.blade.php`) migrated with form helpers and step toggles ready for future backend wiring.
+-   Admin, store-owner, and client dashboards (`resources/views/dashboard/*/index.blade.php`) leverage `layouts/dashboard.blade.php`, mock data, and section navigation scripts.
+-   Frontoffice JavaScript entry points (`resources/js/frontoffice/*.js`) are enqueued via `@vite` to preserve navbar, form, and dashboard interactivity.
 
 ### Implementation Phase 3
 
