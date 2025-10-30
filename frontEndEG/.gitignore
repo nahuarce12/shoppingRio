@@ -1,0 +1,41 @@
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores de código
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.log
+*.bak
+
+# Node modules (si se usa en el futuro)
+node_modules/
+package-lock.json
+
+# Composer (si se usa en el futuro con PHP)
+vendor/
+composer.lock
+
+# Archivos de entorno (para futuras implementaciones)
+.env
+.env.local
+.env.production
+
+# Archivos de cache
+.cache/
+*.cache
+
+# Archivos de compilación (para futuras implementaciones)
+dist/
+build/
+
+# Imágenes temporales o de prueba
+img/temp/
+img/test/

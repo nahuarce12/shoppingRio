@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Información detallada de la promoción">
+    <title>Detalle de Promoción - Shopping Rosario</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <img src="../img/logoShoppingCompleto.png" alt="Shopping Rosario" height="40" class="me-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="locales.html">Locales</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="promociones.html">Promociones</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="novedades.html">Novedades</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="quienes-somos.html">Quiénes Somos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contacto.html">Contacto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary btn-sm" href="login.html">
+                            <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm" href="register.html">
+                            <i class="bi bi-person-plus"></i> Registrarse
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../index.html">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="promociones.html">Promociones</a></li>
+                <li class="breadcrumb-item active" aria-current="page">50% de descuento en segunda unidad</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Detalle de la Promoción -->
+    <section class="py-4">
+        <div class="container">
+            <div class="row">
+                <!-- Imagen principal -->
+                <div class="col-lg-6 mb-4">
+                    <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" 
+                         class="detail-image" 
+                         alt="Promoción">
+                    <div class="mt-3">
+                    </div>
+                </div>
+
+                <!-- Información de la Promoción -->
+                <div class="col-lg-6 mb-4">
+                    <div class="detail-info">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h2>50% de descuento en segunda unidad</h2>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="badge badge-inicial badge-category">Categoría Inicial</span>
+                        </div>
+
+                        <p class="lead mb-4">
+                            Llevá dos prendas de la colección actual y la segunda te sale mitad de precio. 
+                            Esta promoción es válida en toda la tienda, excepto en artículos en liquidación.
+                        </p>
+
+                        <div class="info-item">
+                            <i class="bi bi-shop-window"></i>
+                            <strong>Local:</strong>
+                            <span><a href="local-detalle.html?id=1">Fashion Store</a></span>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <strong>Ubicación:</strong>
+                            <span>Local 101 - Planta Baja</span>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="bi bi-calendar-range"></i>
+                            <strong>Vigencia:</strong>
+                            <span>Desde 01/10/2025 hasta 31/12/2025</span>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="bi bi-clock-history"></i>
+                            <strong>Días válidos:</strong>
+                            <div class="promo-days ms-2">
+                                <span class="active">Lun</span>
+                                <span class="active">Mar</span>
+                                <span class="active">Mié</span>
+                                <span class="active">Jue</span>
+                                <span class="active">Vie</span>
+                                <span>Sáb</span>
+                                <span>Dom</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="bi bi-person-badge"></i>
+                            <strong>Categoría:</strong>
+                            <span>Disponible para clientes Inicial, Medium y Premium</span>
+                        </div>
+
+                        <div class="alert alert-info mt-4" role="alert">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <strong>Nota:</strong> Para acceder a esta promoción debes estar registrado en nuestro sistema. 
+                            Una vez en el local, ingresá el código del local y solicitá esta promoción.
+                        </div>
+
+                        <div class="mt-4 d-grid gap-2">
+                            <a href="register.html" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Registrarme para Acceder
+                            </a>
+                            <a href="local-detalle.html?id=1" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-shop"></i> Ver Local
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Términos y Condiciones -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">
+                                <i class="bi bi-file-text"></i> Términos y Condiciones
+                            </h4>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Válido únicamente en Fashion Store, Local 101 - Planta Baja</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> El descuento se aplica sobre la prenda de menor valor</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> No acumulable con otras promociones</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Válido de lunes a viernes en el horario de atención del local</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Cada cliente puede usar esta promoción una sola vez durante su vigencia</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> No aplica en artículos en liquidación o con descuento previo</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Se requiere presentar código de cliente registrado</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> El local se reserva el derecho de aceptar o rechazar la solicitud de descuento</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cómo usar la promoción -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">
+                                <i class="bi bi-question-circle"></i> ¿Cómo usar esta promoción?
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="feature-box bg-white">
+                                        <i class="bi bi-person-plus"></i>
+                                        <h5>1. Registrate</h5>
+                                        <p>Creá tu cuenta en el sistema del shopping</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="feature-box bg-white">
+                                        <i class="bi bi-upc-scan"></i>
+                                        <h5>3. Ingresá el Código</h5>
+                                        <p>Proporcioná el código del local (001)</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="feature-box bg-white">
+                                        <i class="bi bi-shop"></i>
+                                        <h5>2. Visitá el Local</h5>
+                                        <p>Dirigite al local Fashion Store</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="feature-box bg-white">
+                                        <i class="bi bi-upc-scan"></i>
+                                        <h5>3. Ingresá el Código</h5>
+                                        <p>Proporcioná el código del local (001)</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="feature-box bg-white">
+                                        <i class="bi bi-check-circle"></i>
+                                        <h5>4. Disfrutá</h5>
+                                        <p>El local aprobará tu descuento</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Otras promociones del local -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="section-title mb-4">Otras promociones de Fashion Store</h3>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card promo-card">
+                        <span class="badge bg-warning promo-badge">Vigente</span>
+                        <img src="https://via.placeholder.com/400x200/3498db/ffffff?text=30%25+OFF" class="card-img-top" alt="Promoción">
+                        <div class="card-body">
+                            <span class="badge badge-medium badge-category">Medium</span>
+                            <h5 class="card-title mt-2">30% OFF en nueva colección</h5>
+                            <p class="card-text">Descuento especial en toda la colección de primavera-verano.</p>
+                            <a href="promocion-detalle.html?id=2" class="btn btn-primary w-100 mt-2">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card promo-card">
+                        <span class="badge bg-warning promo-badge">Vigente</span>
+                        <img src="https://via.placeholder.com/400x200/8e44ad/ffffff?text=Exclusivo" class="card-img-top" alt="Promoción">
+                        <div class="card-body">
+                            <span class="badge badge-premium badge-category">Premium</span>
+                            <h5 class="card-title mt-2">Acceso exclusivo a preventa</h5>
+                            <p class="card-text">Comprá con anticipación las piezas de la próxima temporada.</p>
+                            <a href="promocion-detalle.html?id=3" class="btn btn-primary w-100 mt-2">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón volver -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="promociones.html" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Volver a Promociones
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>Shopping Rosario</h5>
+                    <p>Tu centro comercial favorito con las mejores ofertas y promociones de la ciudad.</p>
+                    <div class="social-links mt-3">
+                        <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" title="Twitter"><i class="bi bi-twitter"></i></a>
+                        <a href="#" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Enlaces Rápidos</h5>
+                    <ul>
+                        <li><a href="../index.html">Inicio</a></li>
+                        <li><a href="locales.html">Locales</a></li>
+                        <li><a href="promociones.html">Promociones</a></li>
+                        <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+                        <li><a href="contacto.html">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Contacto</h5>
+                    <ul>
+                        <li><i class="bi bi-geo-alt"></i> Av. Pellegrini 1234, Rosario</li>
+                        <li><i class="bi bi-telephone"></i> (0341) 123-4567</li>
+                        <li><i class="bi bi-envelope"></i> info@shoppingrosario.com</li>
+                        <li><i class="bi bi-clock"></i> Lun - Dom: 10:00 - 22:00</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 Shopping Rosario. Todos los derechos reservados. | Trabajo Final - Entornos Gráficos - UTN FRR</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="../js/main.js"></script>
+</body>
+</html>
