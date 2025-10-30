@@ -1,0 +1,41 @@
+/* Import Bootstrap CSS */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Custom CSS for ShoppingRio */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.promotion-card {
+    transition: transform 0.2s;
+}
+
+.promotion-card:hover {
+    transform: translateY(-5px);
+}
+
+.category-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.footer {
+    background-color: #343a40;
+    color: white;
+    margin-top: auto;
+}
