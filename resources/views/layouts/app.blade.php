@@ -12,8 +12,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="{{ asset('images/branding/logoFavIconBYG.png') }}">
 
-  <!-- Bootstrap & Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
   <!-- Fonts -->
@@ -22,6 +21,7 @@
 
   @stack('styles')
 
+  <!-- Vite: Bootstrap CSS + JS + Custom Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   @stack('head')
@@ -50,8 +50,7 @@
 
   <x-footer.main />
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+  <!-- Page-specific scripts loaded via @vite() in individual views -->
   @stack('scripts')
 </body>
 

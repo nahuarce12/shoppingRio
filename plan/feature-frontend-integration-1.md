@@ -2,13 +2,16 @@
 goal: Integrate frontEndEG mockup into Laravel view layer
 version: 1.0
 date_created: 2025-10-29
-status: Planned
+date_updated: 2025-10-31
+status: In Progress
+progress: Phase 3 Complete (60%)
 tags: [feature, frontend, integration]
 ---
 
 # Introduction
 
-Status badge: (status: Planned, color: blue)
+Status badge: (status: In Progress, color: yellow)
+Progress: Phases 1-3 Complete | Phases 4-5 Pending
 
 Integrate the static mockup contained in `frontEndEG/` into the Laravel application structure so the shopping site uses Blade templates, Vite-managed assets, and Laravel routing while preserving the existing visual design. This plan prepares the project for backend feature development.
 
@@ -98,15 +101,54 @@ Integrate the static mockup contained in `frontEndEG/` into the Laravel applicat
 -   Admin, store-owner, and client dashboards (`resources/views/dashboard/*/index.blade.php`) leverage `layouts/dashboard.blade.php`, mock data, and section navigation scripts.
 -   Frontoffice JavaScript entry points (`resources/js/frontoffice/*.js`) are enqueued via `@vite` to preserve navbar, form, and dashboard interactivity.
 
-### Implementation Phase 3
+**Phase 2 Review & Corrections (2025-10-31):**
+
+-   **FIXED:** Removed duplicate Bootstrap CSS/JS loading - layouts were loading Bootstrap via both CDN and Vite, causing conflicts and bloat. Now Bootstrap loads only via Vite from `resources/css/app.css` and `resources/js/app.js`.
+-   **FIXED:** Removed redundant `main.js` import from `app.js` - `main.js` is already loaded per-page via `@vite('resources/js/frontoffice/main.js')` in view templates, preventing double initialization.
+-   **FIXED:** Navbar overlay conditional rendering - `navbar-overlay` class now applies only on home page where transparent navbar over hero carousel is needed; other pages use standard `bg-white` navbar.
+-   **IMPROVED:** Clarified asset loading strategy in comments: `app.js` provides global Bootstrap bundle, page-specific modules load separately for code splitting.
+
+### Implementation Phase 3 ✅
 
 -   GOAL-003: Integrate CSS/JS assets into Laravel's Vite build pipeline.
+-   **Status:** COMPLETED (2025-10-31)
 
-| Task     | Description                                                                                                                                   | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-007 | Merge `frontEndEG/css/style.css` into `resources/css/app.css`, preserving selectors and resolving conflicts; document removed styles.         |           |      |
-| TASK-008 | Port `frontEndEG/js/*.js` modules into `resources/js/` (splitting into ES modules as needed) and register them within `resources/js/app.js`.  |           |      |
-| TASK-009 | Add any required third-party dependencies (e.g., Bootstrap plugins) to `package.json` and update `vite.config.js` paths for asset resolution. |           |      |
+| Task     | Description                                                                                                                                   | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-007 | Merge `frontEndEG/css/style.css` into `resources/css/app.css`, preserving selectors and resolving conflicts; document removed styles.         | ✅        | 2025-10-30 |
+| TASK-008 | Port `frontEndEG/js/*.js` modules into `resources/js/` (splitting into ES modules as needed) and register them within `resources/js/app.js`.  | ✅        | 2025-10-31 |
+| TASK-009 | Add any required third-party dependencies (e.g., Bootstrap plugins) to `package.json` and update `vite.config.js` paths for asset resolution. | ✅        | 2025-10-31 |
+
+#### Phase 3 Findings (2025-10-30 / 2025-10-31)
+
+**CSS Integration (TASK-007, 2025-10-30):**
+
+-   Consolidated the legacy mockup styles into `resources/css/app.css`, keeping the palette, hero, card, and dashboard aesthetics intact while aligning variable names with the Vite pipeline.
+-   Normalized navbar overlay behavior to work with the Blade component (`<x-nav.main>`) by ensuring default and scrolled states are defined in the shared stylesheet.
+-   Revalidated responsive breakpoints for hero, cards, and navbar toggles so mobile layouts match the mockup behavior now that Vite serves the CSS bundle.
+
+**JavaScript Modularization (TASK-008, 2025-10-31):**
+
+-   Refactored all five frontoffice JavaScript files (`main.js`, `register.js`, `perfil-admin.js`, `perfil-dueno.js`, `perfil-cliente.js`) from IIFE/window-attached patterns to ES6 modules with named exports.
+-   Maintained backward compatibility by re-exporting functions to `window` object for existing inline onclick handlers in Blade templates (planned for future refactoring to event delegation).
+-   Enhanced code maintainability with JSDoc comments, extracted configuration objects (section-to-button color mappings), and clear module documentation.
+-   Verified modular loading strategy: `app.js` serves as global entry importing shared navbar behavior, while page-specific modules load via dedicated `@vite()` directives in respective Blade views.
+-   Created `resources/js/frontoffice/README.md` documenting module purposes, exports, loading strategy, and future enhancement roadmap.
+-   Confirmed all modules pass Node.js syntax validation; Vite entry points remain registered in `vite.config.js` for proper bundling.
+-   Bootstrap 5.3.8 and `@popperjs/core` confirmed installed in `package.json`; no additional dependencies required for current functionality.
+
+**Vite Configuration & Dependencies (TASK-009, 2025-10-31):**
+
+-   Verified Bootstrap 5.3.8 and Popper.js already present in `package.json` (installed during Laravel Breeze scaffolding); no additional third-party plugins required for current mockup functionality.
+-   Enhanced `vite.config.js` with path aliases for cleaner imports: `~bootstrap` (Bootstrap modules), `@` (JS root), `@css` (CSS root).
+-   All seven asset entry points correctly registered in laravel-vite-plugin input array (1 CSS, 6 JS bundles).
+-   Confirmed Tailwind CSS v4 plugin active alongside Bootstrap for future utility-first styling if needed (current mockup uses pure Bootstrap classes).
+-   Vite refresh enabled for hot module replacement during development.
+-   **Build Validation:** Successfully executed `npm run build` with zero errors, producing optimized production bundles:
+    -   `app.css`: 242.54 KB (33.65 KB gzipped) - consolidated stylesheet
+    -   `app.js`: 117.03 KB (38.87 KB gzipped) - global bundle with Bootstrap
+    -   5 page-specific bundles ranging from 0.72-1.19 KB each (register, dashboards, main nav)
+    -   Build manifest generated at `public/build/manifest.json` for asset fingerprinting
 
 ### Implementation Phase 4
 

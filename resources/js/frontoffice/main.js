@@ -1,4 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * Navbar behavior module
+ * Handles mobile menu toggle, overlay scroll effects, and Bootstrap tooltips
+ */
+
+/**
+ * Initialize mobile navbar auto-collapse on link click
+ */
+export function initMobileNavCollapse() {
     const navbarToggle = document.querySelector('.navbar-toggler');
     const navbarLinks = document.querySelectorAll('.navbar-nav a');
 
@@ -9,7 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+}
 
+/**
+ * Initialize navbar overlay scroll behavior with logo swap
+ */
+export function initNavbarOverlayScroll() {
     const navbar = document.querySelector('.navbar');
     const navbarLogo = document.querySelector('.navbar-brand img');
     const originalLogoSrc = navbarLogo ? navbarLogo.getAttribute('src') : null;
@@ -32,10 +45,27 @@ document.addEventListener('DOMContentLoaded', () => {
         handleNavbarScroll();
         window.addEventListener('scroll', handleNavbarScroll);
     }
+}
 
+/**
+ * Initialize Bootstrap tooltips across the page
+ */
+export function initTooltips() {
     const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.forEach((tooltipTriggerEl) => {
-        // eslint-disable-next-line no-undef
-        new bootstrap.Tooltip(tooltipTriggerEl);
+        // Bootstrap tooltip initialization
+        new window.bootstrap.Tooltip(tooltipTriggerEl);
     });
-});
+}
+
+/**
+ * Main initialization entry point
+ */
+export function initNavbarBehavior() {
+    initMobileNavCollapse();
+    initNavbarOverlayScroll();
+    initTooltips();
+}
+
+// Auto-initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initNavbarBehavior);

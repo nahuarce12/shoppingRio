@@ -37,7 +37,13 @@ $navLinks = [
 $brandUrl = Route::has('home.index') ? route('home.index') : url('/');
 @endphp
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top navbar-overlay shadow-sm">
+@php
+// Apply navbar-overlay class only on home page for transparent effect over hero carousel
+$isHomePage = request()->routeIs('home.index') || request()->is('/');
+$navbarClasses = $isHomePage ? 'navbar navbar-expand-lg navbar-light navbar-overlay' : 'navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm';
+@endphp
+
+<nav class="{{ $navbarClasses }}">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="{{ $brandUrl }}">
       <img src="{{ asset('images/branding/logoBYG.png') }}" alt="Shopping Rosario" height="40" class="me-2">
