@@ -23,3 +23,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 .github/
+
+# Legacy mockup (archived after Phase 5 - see MOCKUP-ARCHIVE-README.md)
+frontEndEG/
