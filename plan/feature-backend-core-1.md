@@ -2,15 +2,17 @@
 goal: Implement core backend functionality and business logic
 version: 1.0
 date_created: 2025-10-31
-last_updated: 2025-10-31
+last_updated: 2025-11-01
 owner: Development Team
-status: Planned
+status: In Progress
+progress: Phase 1 Complete (10%)
 tags: [feature, backend, database, authentication, business-logic]
 ---
 
 # Introduction
 
-Status badge: (status: Planned, color: blue)
+Status badge: (status: In Progress, color: yellow)
+Progress: Phase 1 Complete (Database Schema) | Phases 2-10 Pending
 
 Implement the core backend functionality for the ShoppingRio application, including database schema, Eloquent models with relationships, authentication system with role-based access control, and business logic services. This plan builds upon the completed frontend integration (feature-frontend-integration-1) and establishes the foundation for all CRUD operations, user workflows, and automated processes required by the project specifications.
 
@@ -95,155 +97,272 @@ Implement the core backend functionality for the ShoppingRio application, includ
 
 ## 2. Implementation Steps
 
-### Implementation Phase 1: Database Schema & Migrations
+### Implementation Phase 1: Database Schema & Migrations ✅
 
 -   GOAL-001: Create complete database schema with all tables, relationships, and constraints.
+-   **Status:** COMPLETED (2025-11-01)
 
-| Task     | Description                                                                                                                                                                                                                                                      | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-001 | Create migration for `users` table extension: add `tipo_usuario` enum ('administrador', 'dueño de local', 'cliente'), `categoria_cliente` enum ('Inicial', 'Medium', 'Premium'), `approved_at` timestamp, `approved_by` foreign key.                             |           |      |
-| TASK-002 | Create migration for `stores` table (locales): `id` (auto-increment), `codigo` (unique sequential), `nombre`, `ubicacion`, `rubro`, `owner_id` (FK to users), soft deletes, timestamps.                                                                          |           |      |
-| TASK-003 | Create migration for `promotions` table (promociones): `id`, `codigo` (unique sequential), `texto`, `fecha_desde`, `fecha_hasta`, `dias_semana` JSON (7 booleans), `categoria_minima` enum, `estado` enum, `store_id` FK, soft deletes, timestamps.             |           |      |
-| TASK-004 | Create migration for `news` table (novedades): `id`, `codigo`, `texto`, `fecha_desde`, `fecha_hasta`, `categoria_destino` enum ('Inicial', 'Medium', 'Premium'), `created_by` FK to users, timestamps.                                                          |           |      |
-| TASK-005 | Create migration for `promotion_usage` pivot table (uso_promociones): `id`, `client_id` FK to users, `promotion_id` FK to promotions, `fecha_uso`, `estado` enum ('enviada', 'aceptada', 'rechazada'), unique constraint on (client_id, promotion_id), timestamps. |           |      |
-| TASK-006 | Add database indexes: `users.tipo_usuario`, `users.categoria_cliente`, `stores.codigo`, `promotions.codigo`, `promotions.estado`, `promotions.fecha_desde/hasta`, `news.fecha_hasta`, `promotion_usage.estado`.                                                  |           |      |
+| Task     | Description                                                                                                                                                                                                                                                        | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-001 | Create migration for `users` table extension: add `tipo_usuario` enum ('administrador', 'dueño de local', 'cliente'), `categoria_cliente` enum ('Inicial', 'Medium', 'Premium'), `approved_at` timestamp, `approved_by` foreign key.                               | ✅        | 2025-11-01 |
+| TASK-002 | Create migration for `stores` table (locales): `id` (auto-increment), `codigo` (unique sequential), `nombre`, `ubicacion`, `rubro`, `owner_id` (FK to users), soft deletes, timestamps.                                                                            | ✅        | 2025-11-01 |
+| TASK-003 | Create migration for `promotions` table (promociones): `id`, `codigo` (unique sequential), `texto`, `fecha_desde`, `fecha_hasta`, `dias_semana` JSON (7 booleans), `categoria_minima` enum, `estado` enum, `store_id` FK, soft deletes, timestamps.                | ✅        | 2025-11-01 |
+| TASK-004 | Create migration for `news` table (novedades): `id`, `codigo`, `texto`, `fecha_desde`, `fecha_hasta`, `categoria_destino` enum ('Inicial', 'Medium', 'Premium'), `created_by` FK to users, timestamps.                                                             | ✅        | 2025-11-01 |
+| TASK-005 | Create migration for `promotion_usage` pivot table (uso_promociones): `id`, `client_id` FK to users, `promotion_id` FK to promotions, `fecha_uso`, `estado` enum ('enviada', 'aceptada', 'rechazada'), unique constraint on (client_id, promotion_id), timestamps. | ✅        | 2025-11-01 |
+| TASK-006 | Add database indexes: `users.tipo_usuario`, `users.categoria_cliente`, `stores.codigo`, `promotions.codigo`, `promotions.estado`, `promotions.fecha_desde/hasta`, `news.fecha_hasta`, `promotion_usage.estado`.                                                    | ✅        | 2025-11-01 |
+
+#### Phase 1 Findings (2025-11-01)
+
+**Migration Files Created:**
+
+-   `2025_11_01_170951_add_role_fields_to_users_table.php` - Extended users table with role system
+-   `2025_11_01_171024_create_stores_table.php` - Created stores table with sequential codes
+-   `2025_11_01_171057_create_promotions_table.php` - Created promotions table with complex business rules
+-   `2025_11_01_171145_create_news_table.php` - Created news table with category targeting
+-   `2025_11_01_171218_create_promotion_usage_table.php` - Created pivot table for usage tracking
+
+**Users Table Extensions (TASK-001):**
+
+-   Added `tipo_usuario` enum field with values ('administrador', 'dueño de local', 'cliente'), defaults to 'cliente', indexed for performance
+-   Added `categoria_cliente` enum ('Inicial', 'Medium', 'Premium'), nullable, defaults to 'Inicial' for new clients, indexed
+-   Added `approved_at` timestamp to track when store owner accounts were approved by admin
+-   Added `approved_by` foreign key referencing users table to track which admin approved the account (set null on admin deletion)
+-   All new fields positioned after existing fields for logical grouping
+-   Proper down() migration to rollback changes cleanly
+
+**Stores Table (TASK-002):**
+
+-   Primary key `id` using auto-increment
+-   `codigo` field as unsigned integer with unique constraint and index (sequential codes will be generated via model events in Phase 2)
+-   `nombre` varchar(100) for store name
+-   `ubicacion` varchar(50) for location within shopping center
+-   `rubro` varchar(20) for business category (indexed for filtering queries)
+-   `owner_id` foreign key to users table with cascade deletion
+-   Soft deletes enabled to preserve historical data and references
+-   Timestamps for audit trail
+-   Indexes on `codigo`, `rubro`, and `owner_id` for query optimization
+
+**Promotions Table (TASK-003):**
+
+-   Primary key `id` using auto-increment
+-   `codigo` field as unsigned integer with unique constraint (sequential generation via model)
+-   `texto` varchar(200) for promotion description
+-   `fecha_desde` and `fecha_hasta` date fields defining validity period (both indexed)
+-   `dias_semana` JSON column storing array of 7 boolean values (Monday=0 to Sunday=6) for day-of-week restrictions
+-   `categoria_minima` enum ('Inicial', 'Medium', 'Premium') defining minimum client category, defaults to 'Inicial'
+-   `estado` enum ('pendiente', 'aprobada', 'denegada') for admin approval workflow, defaults to 'pendiente', indexed
+-   `store_id` foreign key with cascade deletion
+-   Soft deletes to preserve usage history even after deletion
+-   Composite index on (`estado`, `fecha_desde`, `fecha_hasta`) for efficient active promotions queries
+-   Individual indexes on `categoria_minima` for filtering
+
+**News Table (TASK-004):**
+
+-   Primary key `id` using auto-increment
+-   `codigo` unsigned integer with unique constraint (sequential generation via model)
+-   `texto` varchar(200) for news content
+-   `fecha_desde` and `fecha_hasta` date fields for validity period
+-   `categoria_destino` enum ('Inicial', 'Medium', 'Premium') for category-based visibility, defaults to 'Inicial'
+-   `created_by` foreign key to users (admin) with cascade deletion
+-   Timestamps for creation/update tracking
+-   Index on `fecha_hasta` for auto-expiration queries
+-   Composite index on (`fecha_hasta`, `categoria_destino`) for efficient active news filtering by category
+
+**Promotion Usage Pivot Table (TASK-005):**
+
+-   Primary key `id` using auto-increment
+-   `client_id` foreign key to users table (cascade deletion)
+-   `promotion_id` foreign key to promotions table (cascade deletion)
+-   `fecha_uso` date field recording when usage was requested/accepted
+-   `estado` enum ('enviada', 'aceptada', 'rechazada') tracking request lifecycle, defaults to 'enviada', indexed
+-   **Unique constraint on (`client_id`, `promotion_id`) to enforce single-use business rule (BUS-008)**
+-   Composite index on (`promotion_id`, `estado`) for store owners to query pending requests
+-   Index on `fecha_uso` for date range queries and category upgrade calculations
+
+**Index Strategy (TASK-006):**
+All required indexes implemented directly in table creation migrations:
+
+-   `users`: indexes on `tipo_usuario`, `categoria_cliente` for role-based queries
+-   `stores`: indexes on `codigo` (unique), `rubro`, `owner_id` for listing/filtering
+-   `promotions`: indexes on `codigo` (unique), `estado`, `fecha_desde`, `fecha_hasta`, `categoria_minima`, plus composite index for active promotion queries
+-   `news`: indexes on `fecha_hasta`, `categoria_destino`, plus composite index for active news queries
+-   `promotion_usage`: indexes on `estado`, `fecha_uso`, plus composite index for request management
+
+**Database Validation:**
+
+-   All 8 migrations executed successfully in batch 1
+-   Zero errors during migration execution
+-   Foreign key constraints properly established (cascade deletions configured)
+-   Enum values match project specifications exactly
+-   JSON column type supported (requires MySQL 5.7+ / MariaDB 10.2+, compatible with XAMPP default installations)
+-   Soft deletes configured for `stores` and `promotions` tables as required by TECH-002
+-   Unique constraints enforced at database level (single-use promotion rule, sequential codes)
+
+**Schema Alignment with Requirements:**
+
+-   ✅ REQ-001: Minimum data model implemented (USUARIOS, LOCALES, PROMOCIONES, NOVEDADES, USO_PROMOCIONES)
+-   ✅ TECH-001: Laravel 11.x migrations with proper indexes and foreign keys
+-   ✅ TECH-002: Soft deletes implemented for Stores and Promotions
+-   ✅ BUS-001: Store sequential codes ready (field created, generation logic pending Phase 2)
+-   ✅ BUS-002: Promotion sequential codes ready (field created, generation logic pending Phase 2)
+-   ✅ BUS-003: Days of week stored as JSON array (validation logic pending Phase 5)
+-   ✅ BUS-008: Single-use constraint enforced via unique index on pivot table
+-   ✅ BUS-010: Promotion usage states defined ('enviada', 'aceptada', 'rechazada')
+-   ✅ BUS-011: Promotion approval states defined ('pendiente', 'aprobada', 'denegada')
+-   ✅ CON-002: MySQL/MariaDB compatible (no PostgreSQL-specific features used)
+
+**Technical Decisions:**
+
+-   Used unsigned integers for `codigo` fields instead of VARCHAR to save space and improve index performance
+-   Sequential code generation deferred to model events (Phase 2) rather than database triggers for better Laravel integration
+-   JSON column for `dias_semana` chosen over 7 separate boolean columns to reduce table width and simplify queries
+-   Composite indexes added proactively for anticipated common queries (active promotions, active news by category)
+-   Soft deletes use Laravel's built-in `deleted_at` timestamp column (no custom implementation needed)
+-   Foreign keys configured with appropriate deletion strategies: cascade for mandatory relationships, set null for optional audit fields
+
+**Next Steps:**
+
+-   Phase 2: Create Eloquent models with relationships, casts, and scopes to interact with these tables
+-   Implement model observers for sequential code generation (BUS-001, BUS-002)
+-   Add date/JSON casting in models for type safety
+-   Create query scopes for common filtering patterns (active promotions, category-based visibility)
 
 ### Implementation Phase 2: Eloquent Models & Relationships
 
 -   GOAL-002: Create Eloquent models with proper relationships, casts, and scopes.
 
-| Task     | Description                                                                                                                                                                                                                                              | Completed | Date |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-007 | Extend `User` model: add fillable fields, casts for enums, relationships (`stores()`, `promotionUsages()`, `createdNews()`, `approvedUsers()`), scopes (`clients()`, `storeOwners()`, `admins()`), accessor for category hierarchy check.                |           |      |
-| TASK-008 | Create `Store` model: fillable, soft deletes, relationships (`owner()`, `promotions()`), accessor for sequential `codigo` generation, scope `active()`.                                                                                                  |           |      |
-| TASK-009 | Create `Promotion` model: fillable, soft deletes, casts for `dias_semana` JSON and date fields, relationships (`store()`, `usages()`), scopes (`approved()`, `active()`, `validToday()`, `forCategory()`), accessor for eligibility check.                |           |      |
-| TASK-010 | Create `News` model: fillable, casts for dates, relationships (`creator()`), scopes (`active()`, `forCategory()`), automatic expiration check in scope.                                                                                                  |           |      |
-| TASK-011 | Create `PromotionUsage` pivot model: fillable, relationships (`client()`, `promotion()`), casts for estado enum, scopes (`pending()`, `accepted()`, `rejected()`).                                                                                        |           |      |
-| TASK-012 | Implement model events (boot method): auto-generate sequential codes for Store/Promotion, send notification emails on promotion approval/usage status changes.                                                                                            |           |      |
+| Task     | Description                                                                                                                                                                                                                                | Completed | Date |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-007 | Extend `User` model: add fillable fields, casts for enums, relationships (`stores()`, `promotionUsages()`, `createdNews()`, `approvedUsers()`), scopes (`clients()`, `storeOwners()`, `admins()`), accessor for category hierarchy check.  |           |      |
+| TASK-008 | Create `Store` model: fillable, soft deletes, relationships (`owner()`, `promotions()`), accessor for sequential `codigo` generation, scope `active()`.                                                                                    |           |      |
+| TASK-009 | Create `Promotion` model: fillable, soft deletes, casts for `dias_semana` JSON and date fields, relationships (`store()`, `usages()`), scopes (`approved()`, `active()`, `validToday()`, `forCategory()`), accessor for eligibility check. |           |      |
+| TASK-010 | Create `News` model: fillable, casts for dates, relationships (`creator()`), scopes (`active()`, `forCategory()`), automatic expiration check in scope.                                                                                    |           |      |
+| TASK-011 | Create `PromotionUsage` pivot model: fillable, relationships (`client()`, `promotion()`), casts for estado enum, scopes (`pending()`, `accepted()`, `rejected()`).                                                                         |           |      |
+| TASK-012 | Implement model events (boot method): auto-generate sequential codes for Store/Promotion, send notification emails on promotion approval/usage status changes.                                                                             |           |      |
 
 ### Implementation Phase 3: Authentication & Authorization
 
 -   GOAL-003: Implement multi-role authentication with email verification and approval workflows.
 
-| Task     | Description                                                                                                                                                                                                                                   | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-013 | Configure Laravel Breeze or Fortify for basic authentication (login, registration, password reset).                                                                                                                                           |           |      |
-| TASK-014 | Customize registration to add `tipo_usuario` field, set default `categoria_cliente='Inicial'` for clients, enable email verification for clients.                                                                                             |           |      |
-| TASK-015 | Create `AdminMiddleware`, `StoreOwnerMiddleware`, `ClientMiddleware` to check `tipo_usuario` and approved status, redirect unauthorized users.                                                                                                |           |      |
-| TASK-016 | Implement admin approval workflow for store owners: create admin dashboard route/controller for approving pending users, send approval notification email.                                                                                    |           |      |
-| TASK-017 | Create `StorePolicy` with methods: `viewAny`, `view`, `create` (admin only), `update` (admin only), `delete` (admin only), `manage` (owner or admin).                                                                                         |           |      |
-| TASK-018 | Create `PromotionPolicy` with methods: `viewAny` (all), `view` (all), `create` (store owner for own store), `update` (none - promotions immutable), `delete` (owner for own store), `approve` (admin only), `request` (client only).          |           |      |
-| TASK-019 | Create `NewsPolicy` with methods: `viewAny` (clients based on category), `create` (admin), `update` (admin), `delete` (admin).                                                                                                                |           |      |
+| Task     | Description                                                                                                                                                                                                                          | Completed | Date |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-013 | Configure Laravel Breeze or Fortify for basic authentication (login, registration, password reset).                                                                                                                                  |           |      |
+| TASK-014 | Customize registration to add `tipo_usuario` field, set default `categoria_cliente='Inicial'` for clients, enable email verification for clients.                                                                                    |           |      |
+| TASK-015 | Create `AdminMiddleware`, `StoreOwnerMiddleware`, `ClientMiddleware` to check `tipo_usuario` and approved status, redirect unauthorized users.                                                                                       |           |      |
+| TASK-016 | Implement admin approval workflow for store owners: create admin dashboard route/controller for approving pending users, send approval notification email.                                                                           |           |      |
+| TASK-017 | Create `StorePolicy` with methods: `viewAny`, `view`, `create` (admin only), `update` (admin only), `delete` (admin only), `manage` (owner or admin).                                                                                |           |      |
+| TASK-018 | Create `PromotionPolicy` with methods: `viewAny` (all), `view` (all), `create` (store owner for own store), `update` (none - promotions immutable), `delete` (owner for own store), `approve` (admin only), `request` (client only). |           |      |
+| TASK-019 | Create `NewsPolicy` with methods: `viewAny` (clients based on category), `create` (admin), `update` (admin), `delete` (admin).                                                                                                       |           |      |
 
 ### Implementation Phase 4: Core Business Logic Services
 
 -   GOAL-004: Implement business logic services for promotions, categories, and usage tracking.
 
-| Task     | Description                                                                                                                                                                                                                                            | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-020 | Create `PromotionService`: methods for eligibility checking (date range, day of week, category, already used), filtering available promotions for client, approval/denial by admin.                                                                    |           |      |
-| TASK-021 | Create `PromotionUsageService`: methods for creating usage request (validates eligibility, checks single-use rule), accepting/rejecting request by store owner, calculating usage statistics.                                                          |           |      |
-| TASK-022 | Create `CategoryUpgradeService`: method to evaluate client category based on accepted promotions in last 6 months, configurable thresholds (e.g., 5 for Medium, 15 for Premium), update user category and log changes.                                 |           |      |
-| TASK-023 | Create `NewsService`: methods for filtering active news by category and date, auto-expire checking, admin CRUD operations.                                                                                                                             |           |      |
-| TASK-024 | Create `ReportService`: methods for generating admin reports (promotion usage stats by store, client category distribution), store owner reports (promotion usage count, client list per promotion).                                                   |           |      |
-| TASK-025 | Implement configuration file `config/shopping.php` for category upgrade thresholds, promotion code prefix, news expiration defaults, report date ranges.                                                                                               |           |      |
+| Task     | Description                                                                                                                                                                                                            | Completed | Date |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-020 | Create `PromotionService`: methods for eligibility checking (date range, day of week, category, already used), filtering available promotions for client, approval/denial by admin.                                    |           |      |
+| TASK-021 | Create `PromotionUsageService`: methods for creating usage request (validates eligibility, checks single-use rule), accepting/rejecting request by store owner, calculating usage statistics.                          |           |      |
+| TASK-022 | Create `CategoryUpgradeService`: method to evaluate client category based on accepted promotions in last 6 months, configurable thresholds (e.g., 5 for Medium, 15 for Premium), update user category and log changes. |           |      |
+| TASK-023 | Create `NewsService`: methods for filtering active news by category and date, auto-expire checking, admin CRUD operations.                                                                                             |           |      |
+| TASK-024 | Create `ReportService`: methods for generating admin reports (promotion usage stats by store, client category distribution), store owner reports (promotion usage count, client list per promotion).                   |           |      |
+| TASK-025 | Implement configuration file `config/shopping.php` for category upgrade thresholds, promotion code prefix, news expiration defaults, report date ranges.                                                               |           |      |
 
 ### Implementation Phase 5: Form Requests & Validation
 
 -   GOAL-005: Implement server-side validation for all user inputs.
 
-| Task     | Description                                                                                                                                                                                                                        | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-026 | Create `StoreStoreRequest`: validate `nombre` required string max 100, `ubicacion` required max 50, `rubro` required max 20, `owner_id` exists in users table with tipo='dueño de local'.                                          |           |      |
-| TASK-027 | Create `StorePromotionRequest`: validate `texto` required max 200, `fecha_desde/hasta` required dates with hasta >= desde, `dias_semana` array of 7 booleans, `categoria_minima` enum, `store_id` exists and user owns store.     |           |      |
-| TASK-028 | Create `StoreNewsRequest`: validate `texto` required max 200, `fecha_desde/hasta` dates with auto-expiration logic, `categoria_destino` enum.                                                                                      |           |      |
-| TASK-029 | Create `PromotionUsageRequest`: validate `promotion_id` exists and is approved/active, check client hasn't used promotion before, verify category eligibility, check day of week validity.                                         |           |      |
-| TASK-030 | Create `ApproveUserRequest`: validate `user_id` exists and is pending store owner approval.                                                                                                                                        |           |      |
-| TASK-031 | Create `UpdatePromotionStatusRequest`: validate `estado` enum ('aprobada', 'denegada'), `promotion_id` exists and is pending, optional admin notes field.                                                                          |           |      |
+| Task     | Description                                                                                                                                                                                                                   | Completed | Date |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-026 | Create `StoreStoreRequest`: validate `nombre` required string max 100, `ubicacion` required max 50, `rubro` required max 20, `owner_id` exists in users table with tipo='dueño de local'.                                     |           |      |
+| TASK-027 | Create `StorePromotionRequest`: validate `texto` required max 200, `fecha_desde/hasta` required dates with hasta >= desde, `dias_semana` array of 7 booleans, `categoria_minima` enum, `store_id` exists and user owns store. |           |      |
+| TASK-028 | Create `StoreNewsRequest`: validate `texto` required max 200, `fecha_desde/hasta` dates with auto-expiration logic, `categoria_destino` enum.                                                                                 |           |      |
+| TASK-029 | Create `PromotionUsageRequest`: validate `promotion_id` exists and is approved/active, check client hasn't used promotion before, verify category eligibility, check day of week validity.                                    |           |      |
+| TASK-030 | Create `ApproveUserRequest`: validate `user_id` exists and is pending store owner approval.                                                                                                                                   |           |      |
+| TASK-031 | Create `UpdatePromotionStatusRequest`: validate `estado` enum ('aprobada', 'denegada'), `promotion_id` exists and is pending, optional admin notes field.                                                                     |           |      |
 
 ### Implementation Phase 6: Email Notifications
 
 -   GOAL-006: Implement all email notifications required by the system.
 
-| Task     | Description                                                                                                                                                                     | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                                                  |           |      |
-| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                                                    |           |      |
-| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                                               |           |      |
-| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                                             |           |      |
-| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                                                    |           |      |
-| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                                                         |           |      |
-| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject.                           |           |      |
-| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                                          |           |      |
-| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                                                         |           |      |
+| Task     | Description                                                                                                                                           | Completed | Date |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                        |           |      |
+| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                          |           |      |
+| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                     |           |      |
+| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                   |           |      |
+| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                          |           |      |
+| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                               |           |      |
+| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject. |           |      |
+| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                |           |      |
+| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                               |           |      |
 
 ### Implementation Phase 7: Background Jobs & Scheduled Tasks
 
 -   GOAL-007: Implement automated tasks for category upgrades and news expiration.
 
-| Task     | Description                                                                                                                                                                                    | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                                |           |      |
-| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                                              |           |      |
-| TASK-043 | Register jobs in `app/Console/Kernel.php` schedule: run `EvaluateClientCategoriesJob` every 6 months (or configurable interval), run `CleanupExpiredNewsJob` daily at midnight.                |           |      |
-| TASK-044 | Create `SendCategoryUpgradeNotificationMail` Mailable: congratulate client on upgrade, explain new benefits, list accessible promotions.                                                       |           |      |
-| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in README.                                                                   |           |      |
+| Task     | Description                                                                                                                                                                     | Completed | Date |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                 |           |      |
+| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                               |           |      |
+| TASK-043 | Register jobs in `app/Console/Kernel.php` schedule: run `EvaluateClientCategoriesJob` every 6 months (or configurable interval), run `CleanupExpiredNewsJob` daily at midnight. |           |      |
+| TASK-044 | Create `SendCategoryUpgradeNotificationMail` Mailable: congratulate client on upgrade, explain new benefits, list accessible promotions.                                        |           |      |
+| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in README.                                                    |           |      |
 
 ### Implementation Phase 8: Controller Implementation
 
 -   GOAL-008: Implement controller logic to replace placeholder TODOs from Phase 1.
 
-| Task     | Description                                                                                                                                                                                                                 | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-046 | Implement `LocalController@index`: fetch all stores with pagination, apply filters (rubro, search), pass to view.                                                                                                           |           |      |
-| TASK-047 | Implement `LocalController@show`: fetch store by ID with promotions relationship, check policy authorization, pass to view.                                                                                                 |           |      |
-| TASK-048 | Implement `PromocionController@index`: fetch approved/active promotions, filter by category for authenticated clients, apply search/category filters, paginate.                                                             |           |      |
-| TASK-049 | Implement `PromocionController@show`: fetch promotion with store relationship, check eligibility for authenticated client, pass usage status to view.                                                                       |           |      |
-| TASK-050 | Implement `NovedadController@index`: fetch active news filtered by client category (or all for unregistered), paginate.                                                                                                     |           |      |
-| TASK-051 | Implement `Admin\AdminDashboardController@index`: dashboard stats (total stores, pending approvals, promotion stats), recent activity, navigation to management sections.                                                   |           |      |
-| TASK-052 | Implement `Admin\StoreController`: CRUD for stores (create, edit, delete), assign owners, manage store status.                                                                                                              |           |      |
-| TASK-053 | Implement `Admin\UserController`: list pending store owners, approve/reject with email notifications, view all users with filters.                                                                                          |           |      |
-| TASK-054 | Implement `Admin\PromotionController`: list all promotions with filters (status, store, date), approve/deny pending promotions with email notifications, view usage stats.                                                  |           |      |
-| TASK-055 | Implement `Admin\NewsController`: CRUD for news (create, edit, delete), set category targets and date ranges.                                                                                                               |           |      |
-| TASK-056 | Implement `Admin\ReportController`: generate reports (promotion usage by store, client distribution, category trends), export to Excel/PDF.                                                                                 |           |      |
-| TASK-057 | Implement `Store\StoreDashboardController@index`: show owned store info, promotion list, pending usage requests count, recent activity.                                                                                     |           |      |
-| TASK-058 | Implement `Store\PromotionController`: create promotions (validated by FormRequest), delete own promotions, view usage statistics, cannot edit (immutable).                                                                 |           |      |
-| TASK-059 | Implement `Store\UsageRequestController`: list pending requests for owned store's promotions, accept/reject with email notifications, view accepted usage history.                                                          |           |      |
-| TASK-060 | Implement `Client\ClientDashboardController@index`: show client category, usage history, available promotions count, category upgrade progress.                                                                             |           |      |
-| TASK-061 | Implement `Client\PromotionUsageController`: search promotions by store code, request promotion usage (validates eligibility via service), view request status history.                                                     |           |      |
-| TASK-062 | Implement `PageController@contact`: handle contact form submission, validate inputs, send email to admin, return success message.                                                                                           |           |      |
+| Task     | Description                                                                                                                                                                | Completed | Date |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-046 | Implement `LocalController@index`: fetch all stores with pagination, apply filters (rubro, search), pass to view.                                                          |           |      |
+| TASK-047 | Implement `LocalController@show`: fetch store by ID with promotions relationship, check policy authorization, pass to view.                                                |           |      |
+| TASK-048 | Implement `PromocionController@index`: fetch approved/active promotions, filter by category for authenticated clients, apply search/category filters, paginate.            |           |      |
+| TASK-049 | Implement `PromocionController@show`: fetch promotion with store relationship, check eligibility for authenticated client, pass usage status to view.                      |           |      |
+| TASK-050 | Implement `NovedadController@index`: fetch active news filtered by client category (or all for unregistered), paginate.                                                    |           |      |
+| TASK-051 | Implement `Admin\AdminDashboardController@index`: dashboard stats (total stores, pending approvals, promotion stats), recent activity, navigation to management sections.  |           |      |
+| TASK-052 | Implement `Admin\StoreController`: CRUD for stores (create, edit, delete), assign owners, manage store status.                                                             |           |      |
+| TASK-053 | Implement `Admin\UserController`: list pending store owners, approve/reject with email notifications, view all users with filters.                                         |           |      |
+| TASK-054 | Implement `Admin\PromotionController`: list all promotions with filters (status, store, date), approve/deny pending promotions with email notifications, view usage stats. |           |      |
+| TASK-055 | Implement `Admin\NewsController`: CRUD for news (create, edit, delete), set category targets and date ranges.                                                              |           |      |
+| TASK-056 | Implement `Admin\ReportController`: generate reports (promotion usage by store, client distribution, category trends), export to Excel/PDF.                                |           |      |
+| TASK-057 | Implement `Store\StoreDashboardController@index`: show owned store info, promotion list, pending usage requests count, recent activity.                                    |           |      |
+| TASK-058 | Implement `Store\PromotionController`: create promotions (validated by FormRequest), delete own promotions, view usage statistics, cannot edit (immutable).                |           |      |
+| TASK-059 | Implement `Store\UsageRequestController`: list pending requests for owned store's promotions, accept/reject with email notifications, view accepted usage history.         |           |      |
+| TASK-060 | Implement `Client\ClientDashboardController@index`: show client category, usage history, available promotions count, category upgrade progress.                            |           |      |
+| TASK-061 | Implement `Client\PromotionUsageController`: search promotions by store code, request promotion usage (validates eligibility via service), view request status history.    |           |      |
+| TASK-062 | Implement `PageController@contact`: handle contact form submission, validate inputs, send email to admin, return success message.                                          |           |      |
 
 ### Implementation Phase 9: Database Seeders & Factories
 
 -   GOAL-009: Create comprehensive test data for development and testing.
 
-| Task     | Description                                                                                                                                                                                                      | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-063 | Create `UserFactory`: generate realistic users for all types (admin, store owners, clients) with proper categories, email verification states.                                                                   |           |      |
-| TASK-064 | Create `StoreFactory`: generate stores with sequential codes, varied rubros (indumentaria, comida, etc.), assign to existing store owners.                                                                       |           |      |
-| TASK-065 | Create `PromotionFactory`: generate promotions with realistic date ranges, varied dias_semana combinations, all estados (pendiente, aprobada, denegada), assign to stores.                                       |           |      |
-| TASK-066 | Create `NewsFactory`: generate news with varied category targets, some expired, some active, realistic text content.                                                                                             |           |      |
-| TASK-067 | Create `PromotionUsageFactory`: generate usage records for clients with mixed estados, respect single-use rule, realistic date distribution.                                                                     |           |      |
-| TASK-068 | Create `DatabaseSeeder`: seed 1 admin, 5 store owners (3 approved, 2 pending), 20 stores, 50 promotions (30 approved, 10 pending, 10 denied), 30 clients (10 per category), 15 news, 80 usage records.          |           |      |
-| TASK-069 | Create `TestCategoriesSeeder`: seed specific test cases for category upgrade logic (clients with exactly threshold counts, edge cases for 6-month window).                                                       |           |      |
+| Task     | Description                                                                                                                                                                                            | Completed | Date |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-063 | Create `UserFactory`: generate realistic users for all types (admin, store owners, clients) with proper categories, email verification states.                                                         |           |      |
+| TASK-064 | Create `StoreFactory`: generate stores with sequential codes, varied rubros (indumentaria, comida, etc.), assign to existing store owners.                                                             |           |      |
+| TASK-065 | Create `PromotionFactory`: generate promotions with realistic date ranges, varied dias_semana combinations, all estados (pendiente, aprobada, denegada), assign to stores.                             |           |      |
+| TASK-066 | Create `NewsFactory`: generate news with varied category targets, some expired, some active, realistic text content.                                                                                   |           |      |
+| TASK-067 | Create `PromotionUsageFactory`: generate usage records for clients with mixed estados, respect single-use rule, realistic date distribution.                                                           |           |      |
+| TASK-068 | Create `DatabaseSeeder`: seed 1 admin, 5 store owners (3 approved, 2 pending), 20 stores, 50 promotions (30 approved, 10 pending, 10 denied), 30 clients (10 per category), 15 news, 80 usage records. |           |      |
+| TASK-069 | Create `TestCategoriesSeeder`: seed specific test cases for category upgrade logic (clients with exactly threshold counts, edge cases for 6-month window).                                             |           |      |
 
 ### Implementation Phase 10: Integration & Testing
 
 -   GOAL-010: Validate all backend functionality and integrate with frontend views.
 
-| Task     | Description                                                                                                                                                                           | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-070 | Update all Blade views to use real data from controllers instead of mock arrays (home, locales, promociones, dashboards).                                                             |           |      |
-| TASK-071 | Implement pagination controls in Blade views using Laravel's pagination links.                                                                                                        |           |      |
-| TASK-072 | Add form submissions to views: promotion creation forms in store dashboard, usage request forms in client interface, admin approval forms.                                            |           |      |
-| TASK-073 | Implement client-side validation using Bootstrap validation classes matching server-side FormRequest rules.                                                                           |           |      |
-| TASK-074 | Add flash message displays for success/error feedback in all forms (promotion submitted, approval granted, etc.).                                                                     |           |      |
-| TASK-075 | Create feature tests: user registration flows (client email verification, store owner approval), promotion lifecycle (create, approve, request, accept), category upgrades.           |           |      |
-| TASK-076 | Create unit tests: `PromotionService` eligibility logic, `CategoryUpgradeService` threshold calculations, date/day validations.                                                       |           |      |
-| TASK-077 | Test email sending in development environment (Mailtrap), verify all Mailable templates render correctly with test data.                                                              |           |      |
-| TASK-078 | Run `php artisan migrate:fresh --seed` and verify all seeders execute without errors, inspect database tables for data integrity.                                                     |           |      |
-| TASK-079 | Perform manual end-to-end testing: register as client, request promotion, login as store owner to accept, verify emails sent, check category upgrade after threshold reached.         |           |      |
-| TASK-080 | Execute scheduled jobs manually (`php artisan schedule:run --verbose`), verify category evaluation and news cleanup work correctly.                                                   |           |      |
+| Task     | Description                                                                                                                                                                   | Completed | Date |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-070 | Update all Blade views to use real data from controllers instead of mock arrays (home, locales, promociones, dashboards).                                                     |           |      |
+| TASK-071 | Implement pagination controls in Blade views using Laravel's pagination links.                                                                                                |           |      |
+| TASK-072 | Add form submissions to views: promotion creation forms in store dashboard, usage request forms in client interface, admin approval forms.                                    |           |      |
+| TASK-073 | Implement client-side validation using Bootstrap validation classes matching server-side FormRequest rules.                                                                   |           |      |
+| TASK-074 | Add flash message displays for success/error feedback in all forms (promotion submitted, approval granted, etc.).                                                             |           |      |
+| TASK-075 | Create feature tests: user registration flows (client email verification, store owner approval), promotion lifecycle (create, approve, request, accept), category upgrades.   |           |      |
+| TASK-076 | Create unit tests: `PromotionService` eligibility logic, `CategoryUpgradeService` threshold calculations, date/day validations.                                               |           |      |
+| TASK-077 | Test email sending in development environment (Mailtrap), verify all Mailable templates render correctly with test data.                                                      |           |      |
+| TASK-078 | Run `php artisan migrate:fresh --seed` and verify all seeders execute without errors, inspect database tables for data integrity.                                             |           |      |
+| TASK-079 | Perform manual end-to-end testing: register as client, request promotion, login as store owner to accept, verify emails sent, check category upgrade after threshold reached. |           |      |
+| TASK-080 | Execute scheduled jobs manually (`php artisan schedule:run --verbose`), verify category evaluation and news cleanup work correctly.                                           |           |      |
 
 ## 3. Alternatives
 
@@ -488,29 +607,34 @@ Once this backend implementation plan is fully executed, the following work rema
 ### Priority Matrix for Next Steps
 
 **Critical (Must Complete for Project Submission):**
-- All backend implementation tasks (TASK-001 through TASK-080)
-- Testing validation (TEST-001 through TEST-016)
-- Documentation for submission (NEXT-040 through NEXT-044)
+
+-   All backend implementation tasks (TASK-001 through TASK-080)
+-   Testing validation (TEST-001 through TEST-016)
+-   Documentation for submission (NEXT-040 through NEXT-044)
 
 **High Priority (Should Complete Before Submission):**
-- Performance optimization basics (NEXT-010, NEXT-011)
-- Security hardening (NEXT-014, NEXT-017)
-- User documentation (NEXT-031)
+
+-   Performance optimization basics (NEXT-010, NEXT-011)
+-   Security hardening (NEXT-014, NEXT-017)
+-   User documentation (NEXT-031)
 
 **Medium Priority (Nice to Have for Demo):**
-- Advanced features (NEXT-001, NEXT-004, NEXT-007)
-- Mobile optimization (NEXT-008)
-- Deployment preparation (NEXT-024, NEXT-025)
+
+-   Advanced features (NEXT-001, NEXT-004, NEXT-007)
+-   Mobile optimization (NEXT-008)
+-   Deployment preparation (NEXT-024, NEXT-025)
 
 **Low Priority (Post-Submission Enhancements):**
-- Optional features (NEXT-045 through NEXT-050)
-- Advanced analytics (NEXT-004 with ML predictions)
-- Third-party integrations beyond email
+
+-   Optional features (NEXT-045 through NEXT-050)
+-   Advanced analytics (NEXT-004 with ML predictions)
+-   Third-party integrations beyond email
 
 **Estimated Timeline:**
-- Phase 1-3 (Database, Models, Auth): 2 weeks
-- Phase 4-6 (Services, Validation, Emails): 2 weeks
-- Phase 7-9 (Jobs, Controllers, Seeders): 2 weeks
-- Phase 10 (Integration & Testing): 1 week
-- Final polish and documentation: 1 week
-- **Total: 8 weeks for complete MVP**
+
+-   Phase 1-3 (Database, Models, Auth): 2 weeks
+-   Phase 4-6 (Services, Validation, Emails): 2 weeks
+-   Phase 7-9 (Jobs, Controllers, Seeders): 2 weeks
+-   Phase 10 (Integration & Testing): 1 week
+-   Final polish and documentation: 1 week
+-   **Total: 8 weeks for complete MVP**
