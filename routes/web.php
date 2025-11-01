@@ -63,8 +63,16 @@ Route::get('/register', function () {
 | Protected by auth + role middleware
 */
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Store Owner Approval Workflow
+    Route::prefix('store-owners')->name('store-owners.')->group(function () {
+        Route::get('/pending', [\App\Http\Controllers\Admin\StoreOwnerApprovalController::class, 'index'])->name('pending');
+        Route::post('/{user}/approve', [\App\Http\Controllers\Admin\StoreOwnerApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{user}/reject', [\App\Http\Controllers\Admin\StoreOwnerApprovalController::class, 'reject'])->name('reject');
+    });
+    
     // Future: CRUD routes for stores, promotions approval, news management, reports
 });
 
