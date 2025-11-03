@@ -11,9 +11,9 @@ El sistema tiene dos tareas programadas:
 
 ## Requisitos Previos
 
-- XAMPP instalado con PHP en PATH del sistema
-- Laravel configurado y funcionando
-- Acceso administrativo a Windows
+-   XAMPP instalado con PHP en PATH del sistema
+-   Laravel configurado y funcionando
+-   Acceso administrativo a Windows
 
 ## Método 1: Windows Task Scheduler (Recomendado para Producción)
 
@@ -26,6 +26,7 @@ php -v
 ```
 
 Si no funciona, agrega PHP al PATH:
+
 1. Abre "Variables de entorno del sistema"
 2. Agrega `C:\xampp\php` (o la ruta de tu instalación XAMPP) a la variable PATH
 
@@ -44,47 +45,52 @@ Guárdalo con codificación ANSI (no UTF-8) para evitar problemas con caracteres
 ### Paso 3: Configurar Task Scheduler
 
 1. Abre **Task Scheduler** (Programador de tareas):
-   - Presiona `Win + R`
-   - Escribe `taskschd.msc`
-   - Presiona Enter
+
+    - Presiona `Win + R`
+    - Escribe `taskschd.msc`
+    - Presiona Enter
 
 2. Crea una nueva tarea:
-   - Click derecho en "Task Scheduler Library" → "Create Task"
-   
+    - Click derecho en "Task Scheduler Library" → "Create Task"
 3. **Pestaña General:**
-   - Name: `Laravel Scheduler - ShoppingRio`
-   - Description: `Ejecuta tareas programadas de Laravel cada minuto`
-   - Marca: "Run whether user is logged on or not"
-   - Marca: "Run with highest privileges"
-   - Configure for: Windows 10 (o tu versión de Windows)
+
+    - Name: `Laravel Scheduler - ShoppingRio`
+    - Description: `Ejecuta tareas programadas de Laravel cada minuto`
+    - Marca: "Run whether user is logged on or not"
+    - Marca: "Run with highest privileges"
+    - Configure for: Windows 10 (o tu versión de Windows)
 
 4. **Pestaña Triggers:**
-   - Click "New"
-   - Begin the task: "On a schedule"
-   - Settings: "Daily"
-   - Recur every: 1 days
-   - Repeat task every: **1 minute**
-   - For a duration of: "Indefinitely"
-   - Enabled: Marcado
-   - Click "OK"
+
+    - Click "New"
+    - Begin the task: "On a schedule"
+    - Settings: "Daily"
+    - Recur every: 1 days
+    - Repeat task every: **1 minute**
+    - For a duration of: "Indefinitely"
+    - Enabled: Marcado
+    - Click "OK"
 
 5. **Pestaña Actions:**
-   - Click "New"
-   - Action: "Start a program"
-   - Program/script: `C:\Programas\xampp\htdocs\shoppingRio\run-scheduler.bat`
-   - Start in: `C:\Programas\xampp\htdocs\shoppingRio`
-   - Click "OK"
+
+    - Click "New"
+    - Action: "Start a program"
+    - Program/script: `C:\Programas\xampp\htdocs\shoppingRio\run-scheduler.bat`
+    - Start in: `C:\Programas\xampp\htdocs\shoppingRio`
+    - Click "OK"
 
 6. **Pestaña Conditions:**
-   - Desmarca: "Start the task only if the computer is on AC power"
-   - Marca: "Wake the computer to run this task" (opcional)
+
+    - Desmarca: "Start the task only if the computer is on AC power"
+    - Marca: "Wake the computer to run this task" (opcional)
 
 7. **Pestaña Settings:**
-   - Marca: "Allow task to be run on demand"
-   - Marca: "Run task as soon as possible after a scheduled start is missed"
-   - If the task fails, restart every: 1 minute
-   - Attempt to restart up to: 3 times
-   - If the running task does not end when requested: "Stop the existing instance"
+
+    - Marca: "Allow task to be run on demand"
+    - Marca: "Run task as soon as possible after a scheduled start is missed"
+    - If the task fails, restart every: 1 minute
+    - Attempt to restart up to: 3 times
+    - If the running task does not end when requested: "Stop the existing instance"
 
 8. Click "OK" para guardar la tarea
 
@@ -158,8 +164,8 @@ powershell -File scheduler-loop.ps1
 
 Los logs de las tareas programadas se encuentran en:
 
-- **Laravel Log**: `storage/logs/laravel.log`
-- **Scheduler Log** (si configuraste el batch): `storage/logs/scheduler.log`
+-   **Laravel Log**: `storage/logs/laravel.log`
+-   **Scheduler Log** (si configuraste el batch): `storage/logs/scheduler.log`
 
 Busca entradas como:
 
@@ -201,31 +207,32 @@ JOB_NEWS_CLEANUP_ENABLED=false
 ### La tarea no se ejecuta
 
 1. Verifica que Task Scheduler esté corriendo:
-   ```powershell
-   Get-Service -Name "Task Scheduler"
-   ```
+
+    ```powershell
+    Get-Service -Name "Task Scheduler"
+    ```
 
 2. Revisa el "Last Run Result" en Task Scheduler (0x0 = éxito)
 
 3. Ejecuta manualmente el batch file para ver errores:
-   ```powershell
-   C:\Programas\xampp\htdocs\shoppingRio\run-scheduler.bat
-   ```
+    ```powershell
+    C:\Programas\xampp\htdocs\shoppingRio\run-scheduler.bat
+    ```
 
 ### Errores de permisos
 
-- Asegúrate de que la tarea se ejecuta "con privilegios más altos"
-- Verifica que el usuario tenga permisos de escritura en `storage/logs`
+-   Asegúrate de que la tarea se ejecuta "con privilegios más altos"
+-   Verifica que el usuario tenga permisos de escritura en `storage/logs`
 
 ### PHP no encontrado
 
-- Verifica que PHP esté en el PATH del sistema
-- Usa la ruta completa en el batch: `C:\xampp\php\php.exe artisan schedule:run`
+-   Verifica que PHP esté en el PATH del sistema
+-   Usa la ruta completa en el batch: `C:\xampp\php\php.exe artisan schedule:run`
 
 ### Logs no se generan
 
-- Verifica permisos de escritura en `storage/logs`
-- Ejecuta: `php artisan cache:clear` y `php artisan config:clear`
+-   Verifica permisos de escritura en `storage/logs`
+-   Ejecuta: `php artisan cache:clear` y `php artisan config:clear`
 
 ## Monitoreo en Producción
 
@@ -238,5 +245,5 @@ Para producción, considera:
 
 ## Recursos Adicionales
 
-- [Laravel Task Scheduling Documentation](https://laravel.com/docs/11.x/scheduling)
-- [Windows Task Scheduler Documentation](https://docs.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page)
+-   [Laravel Task Scheduling Documentation](https://laravel.com/docs/11.x/scheduling)
+-   [Windows Task Scheduler Documentation](https://docs.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page)

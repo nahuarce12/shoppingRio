@@ -1603,13 +1603,13 @@ All required indexes implemented directly in table creation migrations:
 
 -   GOAL-007: Implement automated tasks for category upgrades and news expiration.
 
-| Task     | Description                                                                                                                                                                     | Completed | Date       |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
-| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                 | ✅        | 2025-11-03 |
-| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                               | ✅        | 2025-11-03 |
-| TASK-043 | Register jobs in `routes/console.php` schedule: run `EvaluateClientCategoriesJob` monthly, run `CleanupExpiredNewsJob` daily at midnight.                                       | ✅        | 2025-11-03 |
-| TASK-044 | ~~Create `SendCategoryUpgradeNotificationMail` Mailable~~ (Already created in Phase 6 as `CategoryUpgradeNotificationMail`)                                                     | ✅        | 2025-11-03 |
-| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in `SCHEDULER_SETUP.md`.                                      | ✅        | 2025-11-03 |
+| Task     | Description                                                                                                                                                     | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events. | ✅        | 2025-11-03 |
+| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                               | ✅        | 2025-11-03 |
+| TASK-043 | Register jobs in `routes/console.php` schedule: run `EvaluateClientCategoriesJob` monthly, run `CleanupExpiredNewsJob` daily at midnight.                       | ✅        | 2025-11-03 |
+| TASK-044 | ~~Create `SendCategoryUpgradeNotificationMail` Mailable~~ (Already created in Phase 6 as `CategoryUpgradeNotificationMail`)                                     | ✅        | 2025-11-03 |
+| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in `SCHEDULER_SETUP.md`.                      | ✅        | 2025-11-03 |
 
 ---
 
