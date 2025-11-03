@@ -711,251 +711,274 @@ All required indexes implemented directly in table creation migrations:
 
 **PromotionService (TASK-020):**
 
-- **Eligibility Checking (`checkEligibility()`):**
-  - Validates promotion approval status (estado='aprobada')
-  - Checks date range validity (today between fecha_desde and fecha_hasta)
-  - Validates day of week (converts PHP convention to project convention: 0=Monday to 6=Sunday)
-  - Checks client category access using hierarchy logic
-  - Verifies single-use rule (client hasn't used promotion before)
-  - Returns array with ['eligible' => bool, 'reason' => string|null]
-  
-- **Promotion Filtering:**
-  - `getAvailablePromotions()`: Returns promotions for authenticated client with filters (store_id, search)
-    - Applies approved(), active(), validToday(), forCategory() scopes
-    - Excludes already used promotions
-    - Supports search in promotion text and store name
-  - `getFilteredPromotions()`: Admin/store owner view with filters (estado, store_id, date range)
-  - `getPublicPromotions()`: Unregistered user view (all approved promotions with filters)
+-   **Eligibility Checking (`checkEligibility()`):**
+    -   Validates promotion approval status (estado='aprobada')
+    -   Checks date range validity (today between fecha_desde and fecha_hasta)
+    -   Validates day of week (converts PHP convention to project convention: 0=Monday to 6=Sunday)
+    -   Checks client category access using hierarchy logic
+    -   Verifies single-use rule (client hasn't used promotion before)
+    -   Returns array with ['eligible' => bool, 'reason' => string|null]
+-   **Promotion Filtering:**
 
-- **Approval Workflow:**
-  - `approvePromotion()`: Changes estado to 'aprobada', uses DB transaction, logs event
-  - `denyPromotion()`: Changes estado to 'denegada', accepts optional reason parameter
-  - Both methods check current estado='pendiente' before processing
-  - TODO placeholders for email notifications (Phase 6)
+    -   `getAvailablePromotions()`: Returns promotions for authenticated client with filters (store_id, search)
+        -   Applies approved(), active(), validToday(), forCategory() scopes
+        -   Excludes already used promotions
+        -   Supports search in promotion text and store name
+    -   `getFilteredPromotions()`: Admin/store owner view with filters (estado, store_id, date range)
+    -   `getPublicPromotions()`: Unregistered user view (all approved promotions with filters)
 
-- **Statistics:**
-  - `getPromotionStats()`: Returns usage counts by estado (total, pending, accepted, rejected)
-  - `validateDiasSemana()`: Validates array structure (7 booleans)
+-   **Approval Workflow:**
+
+    -   `approvePromotion()`: Changes estado to 'aprobada', uses DB transaction, logs event
+    -   `denyPromotion()`: Changes estado to 'denegada', accepts optional reason parameter
+    -   Both methods check current estado='pendiente' before processing
+    -   TODO placeholders for email notifications (Phase 6)
+
+-   **Statistics:**
+    -   `getPromotionStats()`: Returns usage counts by estado (total, pending, accepted, rejected)
+    -   `validateDiasSemana()`: Validates array structure (7 booleans)
 
 **PromotionUsageService (TASK-021):**
 
-- **Usage Request Creation (`createUsageRequest()`):**
-  - Validates eligibility via PromotionService before creating request
-  - Creates PromotionUsage record with estado='enviada', fecha_uso=today
-  - Handles unique constraint violation (duplicate request) gracefully
-  - Uses DB transaction with try-catch for QueryException
-  - Returns array with ['success', 'message', 'usage']
-  
-- **Request Management:**
-  - `acceptUsageRequest()`: Changes estado to 'aceptada', validates current estado='enviada'
-  - `rejectUsageRequest()`: Changes estado to 'rechazada', accepts optional reason
-  - Both use DB transactions and log errors
-  - TODO placeholders for email notifications
+-   **Usage Request Creation (`createUsageRequest()`):**
+    -   Validates eligibility via PromotionService before creating request
+    -   Creates PromotionUsage record with estado='enviada', fecha_uso=today
+    -   Handles unique constraint violation (duplicate request) gracefully
+    -   Uses DB transaction with try-catch for QueryException
+    -   Returns array with ['success', 'message', 'usage']
+-   **Request Management:**
 
-- **Data Retrieval:**
-  - `getPendingRequestsForStore()`: Returns pending requests for specific store with eager loading
-  - `getClientUsageHistory()`: Returns client's usage history with filters (estado, date range)
-  - `getFilteredUsageRequests()`: Admin report view with multiple filters
+    -   `acceptUsageRequest()`: Changes estado to 'aceptada', validates current estado='enviada'
+    -   `rejectUsageRequest()`: Changes estado to 'rechazada', accepts optional reason
+    -   Both use DB transactions and log errors
+    -   TODO placeholders for email notifications
 
-- **Statistics & Analysis:**
-  - `getPromotionUsageStats()`: Returns detailed stats including acceptance_rate calculation
-  - `getStoreUsageStats()`: Store-level statistics (total, pending, accepted, rejected, unique clients)
-  - `getAcceptedUsageCount()`: Critical for category upgrade evaluation (last N months)
-  - `hasPendingRequests()`: Quick check for client pending requests
+-   **Data Retrieval:**
+
+    -   `getPendingRequestsForStore()`: Returns pending requests for specific store with eager loading
+    -   `getClientUsageHistory()`: Returns client's usage history with filters (estado, date range)
+    -   `getFilteredUsageRequests()`: Admin report view with multiple filters
+
+-   **Statistics & Analysis:**
+    -   `getPromotionUsageStats()`: Returns detailed stats including acceptance_rate calculation
+    -   `getStoreUsageStats()`: Store-level statistics (total, pending, accepted, rejected, unique clients)
+    -   `getAcceptedUsageCount()`: Critical for category upgrade evaluation (last N months)
+    -   `hasPendingRequests()`: Quick check for client pending requests
 
 **CategoryUpgradeService (TASK-022):**
 
-- **Category Evaluation (`evaluateClient()`):**
-  - Gets accepted promotion count via PromotionUsageService (last 6 months)
-  - Retrieves thresholds from config/shopping.php (default: 5 for Medium, 15 for Premium)
-  - Determines new category using `determineCategory()` helper
-  - Prevents downgrades (only upgrades allowed)
-  - Updates User model categoria_cliente field
-  - Comprehensive logging with user details and upgrade event
-  - Returns array with ['upgraded', 'old_category', 'new_category', 'message']
+-   **Category Evaluation (`evaluateClient()`):**
 
-- **Batch Processing (`evaluateAllClients()`):**
-  - Iterates all clients using User::clients() scope
-  - Calls evaluateClient() for each
-  - Aggregates results (total_evaluated, total_upgraded, upgrades array)
-  - Logs summary after completion
-  - Used by scheduled job (Phase 7)
+    -   Gets accepted promotion count via PromotionUsageService (last 6 months)
+    -   Retrieves thresholds from config/shopping.php (default: 5 for Medium, 15 for Premium)
+    -   Determines new category using `determineCategory()` helper
+    -   Prevents downgrades (only upgrades allowed)
+    -   Updates User model categoria_cliente field
+    -   Comprehensive logging with user details and upgrade event
+    -   Returns array with ['upgraded', 'old_category', 'new_category', 'message']
 
-- **Client Progress Tracking:**
-  - `getClientProgress()`: Shows client's progress towards next category
-    - Returns current_category, accepted_count, next_category, needed_count
-    - Calculates progress_percentage for UI display
-  - `calculateProgressPercentage()`: Private helper for percentage calculation
+-   **Batch Processing (`evaluateAllClients()`):**
 
-- **Configuration Validation:**
-  - `validateThresholds()`: Checks config file has valid thresholds
-  - Ensures premium threshold > medium threshold
-  - Returns ['valid' => bool, 'errors' => array]
+    -   Iterates all clients using User::clients() scope
+    -   Calls evaluateClient() for each
+    -   Aggregates results (total_evaluated, total_upgraded, upgrades array)
+    -   Logs summary after completion
+    -   Used by scheduled job (Phase 7)
+
+-   **Client Progress Tracking:**
+
+    -   `getClientProgress()`: Shows client's progress towards next category
+        -   Returns current_category, accepted_count, next_category, needed_count
+        -   Calculates progress_percentage for UI display
+    -   `calculateProgressPercentage()`: Private helper for percentage calculation
+
+-   **Configuration Validation:**
+    -   `validateThresholds()`: Checks config file has valid thresholds
+    -   Ensures premium threshold > medium threshold
+    -   Returns ['valid' => bool, 'errors' => array]
 
 **NewsService (TASK-023):**
 
-- **Active News Filtering (`getActiveNewsForUser()`):**
-  - For authenticated clients: uses forCategory() scope with category hierarchy
-  - For unregistered users: shows only 'Inicial' category news
-  - Uses active() scope to filter expired news
-  - Eager loads creator relationship
-  
-- **Admin CRUD Operations:**
-  - `createNews()`: Validates date range, auto-generates codigo via model event, logs creation
-  - `updateNews()`: Updates existing news, validates date range, uses DB transaction
-  - `deleteNews()`: Hard deletes news (no soft deletes on news), logs deletion
-  - All methods return ['success' => bool, 'message' => string]
+-   **Active News Filtering (`getActiveNewsForUser()`):**
+    -   For authenticated clients: uses forCategory() scope with category hierarchy
+    -   For unregistered users: shows only 'Inicial' category news
+    -   Uses active() scope to filter expired news
+    -   Eager loads creator relationship
+-   **Admin CRUD Operations:**
 
-- **Expiration Management:**
-  - `deleteExpiredNews()`: Batch deletion for scheduled cleanup job
-  - `getExpiredNewsCount()`: Returns count of expired news
-  - `willExpireSoon()`: Checks if news expires within N days (default 7)
-  - `getExpiringSoon()`: Returns collection of news expiring soon
-  - `extendExpiration()`: Adds N days to fecha_hasta, logs extension
+    -   `createNews()`: Validates date range, auto-generates codigo via model event, logs creation
+    -   `updateNews()`: Updates existing news, validates date range, uses DB transaction
+    -   `deleteNews()`: Hard deletes news (no soft deletes on news), logs deletion
+    -   All methods return ['success' => bool, 'message' => string]
 
-- **Statistics & Reporting:**
-  - `getNewsStats()`: Returns total, active, expired counts + by_category breakdown
-  - `getFilteredNews()`: Admin view with filters (categoria, active/expired status)
+-   **Expiration Management:**
+
+    -   `deleteExpiredNews()`: Batch deletion for scheduled cleanup job
+    -   `getExpiredNewsCount()`: Returns count of expired news
+    -   `willExpireSoon()`: Checks if news expires within N days (default 7)
+    -   `getExpiringSoon()`: Returns collection of news expiring soon
+    -   `extendExpiration()`: Adds N days to fecha_hasta, logs extension
+
+-   **Statistics & Reporting:**
+    -   `getNewsStats()`: Returns total, active, expired counts + by_category breakdown
+    -   `getFilteredNews()`: Admin view with filters (categoria, active/expired status)
 
 **ReportService (TASK-024):**
 
-- **Admin Reports:**
-  - `getPromotionUsageByStore()`: Comprehensive store-level statistics
-    - Returns array with store details, promotion counts, usage requests, unique clients
-    - Supports date range filters
-    - Calculates approved_promotions, accepted_requests, etc.
-  - `getClientCategoryDistribution()`: Distribution and percentages by category
-    - Returns total_clients, distribution counts, percentage calculations
-  - `getAdminDashboardStats()`: Summary statistics for admin dashboard
-    - Stores (total, by_rubro), store_owners (total, approved, pending)
-    - Promotions (total, pending, approved, denied, active)
-    - Clients (total, by_category breakdown)
-    - Usage requests (total, pending, accepted, rejected, this_month)
+-   **Admin Reports:**
 
-- **Store Owner Reports:**
-  - `getStoreOwnerReport()`: Multi-store report for store owners
-    - Returns array per store with promotions, usage_requests, clients statistics
-    - Groups clients by category
-    - Supports date range filters
-  - `getPromotionDetailedReport()`: Detailed client list for specific promotion
-    - Includes client details (name, email, category)
-    - Usage status and fecha_uso for each client
-    - Promotion and store information
+    -   `getPromotionUsageByStore()`: Comprehensive store-level statistics
+        -   Returns array with store details, promotion counts, usage requests, unique clients
+        -   Supports date range filters
+        -   Calculates approved_promotions, accepted_requests, etc.
+    -   `getClientCategoryDistribution()`: Distribution and percentages by category
+        -   Returns total_clients, distribution counts, percentage calculations
+    -   `getAdminDashboardStats()`: Summary statistics for admin dashboard
+        -   Stores (total, by_rubro), store_owners (total, approved, pending)
+        -   Promotions (total, pending, approved, denied, active)
+        -   Clients (total, by_category breakdown)
+        -   Usage requests (total, pending, accepted, rejected, this_month)
 
-- **Trend Analysis:**
-  - `getCategoryUpgradeTrends()`: Monthly trends over N months (default 6)
-    - Returns usage_requests and accepted_requests per month
-    - Sorted chronologically for charting
+-   **Store Owner Reports:**
 
-- **Export Functionality:**
-  - `exportReport()`: Generic export method supporting multiple report types
-    - 'usage_by_store', 'category_distribution', 'store_owner'
-    - Returns data array suitable for Excel/PDF generation (Laravel Excel in Phase 8)
+    -   `getStoreOwnerReport()`: Multi-store report for store owners
+        -   Returns array per store with promotions, usage_requests, clients statistics
+        -   Groups clients by category
+        -   Supports date range filters
+    -   `getPromotionDetailedReport()`: Detailed client list for specific promotion
+        -   Includes client details (name, email, category)
+        -   Usage status and fecha_uso for each client
+        -   Promotion and store information
+
+-   **Trend Analysis:**
+
+    -   `getCategoryUpgradeTrends()`: Monthly trends over N months (default 6)
+        -   Returns usage_requests and accepted_requests per month
+        -   Sorted chronologically for charting
+
+-   **Export Functionality:**
+    -   `exportReport()`: Generic export method supporting multiple report types
+        -   'usage_by_store', 'category_distribution', 'store_owner'
+        -   Returns data array suitable for Excel/PDF generation (Laravel Excel in Phase 8)
 
 **Shopping Configuration File (TASK-025):**
 
-- **Category Thresholds:**
-  - `category_thresholds.medium`: Default 5 (env: CATEGORY_THRESHOLD_MEDIUM)
-  - `category_thresholds.premium`: Default 15 (env: CATEGORY_THRESHOLD_PREMIUM)
-  - `category_evaluation_months`: Default 6 months lookback period
+-   **Category Thresholds:**
 
-- **Sequential Code Settings:**
-  - `sequential_codes.start_value`: Starting code value (default 1)
-  - `sequential_codes.padding`: Display format (default 5 digits: 00001)
+    -   `category_thresholds.medium`: Default 5 (env: CATEGORY_THRESHOLD_MEDIUM)
+    -   `category_thresholds.premium`: Default 15 (env: CATEGORY_THRESHOLD_PREMIUM)
+    -   `category_evaluation_months`: Default 6 months lookback period
 
-- **News Configuration:**
-  - `news.default_duration_days`: Default validity (30 days)
-  - `news.cleanup_retention_days`: How long to keep expired (90 days)
+-   **Sequential Code Settings:**
 
-- **Promotion Configuration:**
-  - `promotion.default_duration_days`: Default promotion duration (30 days)
-  - `promotion.min_duration_days`: Minimum allowed (1 day)
-  - `promotion.max_duration_days`: Maximum allowed (365 days)
+    -   `sequential_codes.start_value`: Starting code value (default 1)
+    -   `sequential_codes.padding`: Display format (default 5 digits: 00001)
 
-- **Report Settings:**
-  - `reports.default_date_range_months`: Default report period (3 months)
-  - `reports.export_formats`: Supported formats (excel, pdf, csv)
-  - `reports.items_per_page`: Pagination default (20)
+-   **News Configuration:**
 
-- **Store Rubros:**
-  - Pre-defined business categories: indumentaria, perfumeria, optica, comida, tecnologia, deportes, libreria, jugueteria, hogar, otros
+    -   `news.default_duration_days`: Default validity (30 days)
+    -   `news.cleanup_retention_days`: How long to keep expired (90 days)
 
-- **Client Categories Configuration:**
-  - Level mapping (1-3), display colors (Bootstrap colors), benefits descriptions
-  - Used for UI display and category comparison logic
+-   **Promotion Configuration:**
 
-- **Scheduled Jobs Configuration:**
-  - `scheduled_jobs.category_evaluation`: Enabled flag, schedule frequency (monthly)
-  - `scheduled_jobs.news_cleanup`: Enabled flag, schedule frequency (daily)
+    -   `promotion.default_duration_days`: Default promotion duration (30 days)
+    -   `promotion.min_duration_days`: Minimum allowed (1 day)
+    -   `promotion.max_duration_days`: Maximum allowed (365 days)
 
-- **Admin Contact Information:**
-  - Email, phone, support hours for user-facing contact pages
+-   **Report Settings:**
+
+    -   `reports.default_date_range_months`: Default report period (3 months)
+    -   `reports.export_formats`: Supported formats (excel, pdf, csv)
+    -   `reports.items_per_page`: Pagination default (20)
+
+-   **Store Rubros:**
+
+    -   Pre-defined business categories: indumentaria, perfumeria, optica, comida, tecnologia, deportes, libreria, jugueteria, hogar, otros
+
+-   **Client Categories Configuration:**
+
+    -   Level mapping (1-3), display colors (Bootstrap colors), benefits descriptions
+    -   Used for UI display and category comparison logic
+
+-   **Scheduled Jobs Configuration:**
+
+    -   `scheduled_jobs.category_evaluation`: Enabled flag, schedule frequency (monthly)
+    -   `scheduled_jobs.news_cleanup`: Enabled flag, schedule frequency (daily)
+
+-   **Admin Contact Information:**
+    -   Email, phone, support hours for user-facing contact pages
 
 **Technical Implementation Details:**
 
 **Service Layer Architecture:**
-- All services follow consistent patterns: public methods return arrays with success/error states
-- Comprehensive error handling with try-catch blocks and logging
-- Database transactions for multi-step operations (approval, category upgrade)
-- Integration points via service composition (PromotionService uses PromotionUsageService)
+
+-   All services follow consistent patterns: public methods return arrays with success/error states
+-   Comprehensive error handling with try-catch blocks and logging
+-   Database transactions for multi-step operations (approval, category upgrade)
+-   Integration points via service composition (PromotionService uses PromotionUsageService)
 
 **Date Handling:**
-- Consistent use of Carbon::today() to avoid time component issues
-- Date range validations in all create/update operations
-- Last N months queries use Carbon::now()->subMonths() for accurate date math
+
+-   Consistent use of Carbon::today() to avoid time component issues
+-   Date range validations in all create/update operations
+-   Last N months queries use Carbon::now()->subMonths() for accurate date math
 
 **Query Optimization:**
-- Eager loading relationships (with()) to prevent N+1 queries
-- Scopes reused from models (approved(), active(), pending(), etc.)
-- Filtered queries return Builder instances for pagination in controllers
+
+-   Eager loading relationships (with()) to prevent N+1 queries
+-   Scopes reused from models (approved(), active(), pending(), etc.)
+-   Filtered queries return Builder instances for pagination in controllers
 
 **Logging Strategy:**
-- Info-level logs for successful business events (category upgrades, approvals)
-- Error-level logs for exceptions with full error messages
-- Contextual data in log entries (user IDs, codes, timestamps)
+
+-   Info-level logs for successful business events (category upgrades, approvals)
+-   Error-level logs for exceptions with full error messages
+-   Contextual data in log entries (user IDs, codes, timestamps)
 
 **Configuration Management:**
-- All magic numbers extracted to config/shopping.php
-- Environment variable overrides via env() for production flexibility
-- Validation helpers to ensure config integrity (validateThresholds())
+
+-   All magic numbers extracted to config/shopping.php
+-   Environment variable overrides via env() for production flexibility
+-   Validation helpers to ensure config integrity (validateThresholds())
 
 **Code Quality Metrics:**
-- Total lines of code: 1,400+ across 5 services + 1 config file
-- 56 public methods across all services
-- Zero lint errors after implementation
-- Comprehensive docblocks for all public methods
-- Type hints on all parameters and return types
+
+-   Total lines of code: 1,400+ across 5 services + 1 config file
+-   56 public methods across all services
+-   Zero lint errors after implementation
+-   Comprehensive docblocks for all public methods
+-   Type hints on all parameters and return types
 
 **Alignment with Requirements:**
 
-- ✅ REQ-006: Client category system with automatic upgrade logic implemented
-- ✅ REQ-007: Promotion validation rules (date, day, category, single-use) in PromotionService
-- ✅ REQ-008: Promotion approval workflow in PromotionService
-- ✅ REQ-009: Promotion usage request flow in PromotionUsageService
-- ✅ REQ-011: Auto-expire news logic in NewsService
-- ✅ REQ-012: Category-based visibility in NewsService and PromotionService
-- ✅ PAT-002: Service classes for complex business logic
-- ✅ CON-005: Category upgrade thresholds configurable via config file
-- ✅ BUS-007: Category upgrade based on 6-month usage with configurable thresholds
-- ✅ BUS-009: Category evaluation logic ready for scheduled job (Phase 7)
-- ✅ BUS-012: News auto-expiration with cleanup functionality
-- ✅ BUS-013: News visibility follows category hierarchy
+-   ✅ REQ-006: Client category system with automatic upgrade logic implemented
+-   ✅ REQ-007: Promotion validation rules (date, day, category, single-use) in PromotionService
+-   ✅ REQ-008: Promotion approval workflow in PromotionService
+-   ✅ REQ-009: Promotion usage request flow in PromotionUsageService
+-   ✅ REQ-011: Auto-expire news logic in NewsService
+-   ✅ REQ-012: Category-based visibility in NewsService and PromotionService
+-   ✅ PAT-002: Service classes for complex business logic
+-   ✅ CON-005: Category upgrade thresholds configurable via config file
+-   ✅ BUS-007: Category upgrade based on 6-month usage with configurable thresholds
+-   ✅ BUS-009: Category evaluation logic ready for scheduled job (Phase 7)
+-   ✅ BUS-012: News auto-expiration with cleanup functionality
+-   ✅ BUS-013: News visibility follows category hierarchy
 
 **Integration Points Established:**
 
-- Services ready for controller consumption (Phase 8)
-- Email notification placeholders for Phase 6 integration
-- Report data structured for Excel/PDF export (Phase 8)
-- Category evaluation ready for scheduled job (Phase 7)
-- Configuration file ready for environment-specific overrides
+-   Services ready for controller consumption (Phase 8)
+-   Email notification placeholders for Phase 6 integration
+-   Report data structured for Excel/PDF export (Phase 8)
+-   Category evaluation ready for scheduled job (Phase 7)
+-   Configuration file ready for environment-specific overrides
 
 **Next Steps:**
 
-- Phase 5: Create Form Request validation classes using service layer for complex validations
-- Phase 6: Wire up email notifications (remove TODO placeholders in services)
-- Phase 7: Create scheduled jobs that call CategoryUpgradeService and NewsService
-- Phase 8: Implement controllers that utilize all 5 services for business operations
-- Testing: Create unit tests for service methods with various edge cases
+-   Phase 5: Create Form Request validation classes using service layer for complex validations
+-   Phase 6: Wire up email notifications (remove TODO placeholders in services)
+-   Phase 7: Create scheduled jobs that call CategoryUpgradeService and NewsService
+-   Phase 8: Implement controllers that utilize all 5 services for business operations
+-   Testing: Create unit tests for service methods with various edge cases
 
 ### Implementation Phase 5: Form Requests & Validation
 
