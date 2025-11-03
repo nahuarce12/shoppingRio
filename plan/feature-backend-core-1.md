@@ -5,7 +5,7 @@ date_created: 2025-10-31
 last_updated: 2025-11-03
 owner: Development Team
 status: In Progress
-progress: Phase 6 Complete (50%)
+progress: Phase 7 Complete (58%)
 tags:
     [
         feature,
@@ -14,13 +14,15 @@ tags:
         authentication,
         business-logic,
         email-notifications,
+        background-jobs,
+        scheduled-tasks,
     ]
 ---
 
 # Introduction
 
 Status badge: (status: In Progress, color: yellow)
-Progress: Phases 1-6 Complete (Database + Models + Auth + Services + Validation + Email) | Phases 7-10 Pending
+Progress: Phases 1-7 Complete (Database + Models + Auth + Services + Validation + Email + Jobs) | Phases 8-10 Pending
 
 Implement the core backend functionality for the ShoppingRio application, including database schema, Eloquent models with relationships, authentication system with role-based access control, and business logic services. This plan builds upon the completed frontend integration (feature-frontend-integration-1) and establishes the foundation for all CRUD operations, user workflows, and automated processes required by the project specifications.
 
@@ -1597,17 +1599,377 @@ All required indexes implemented directly in table creation migrations:
     -   Sign up at mailtrap.io → get SMTP credentials
     -   Update .env with Mailtrap host/port/username/password
 
-### Implementation Phase 7: Background Jobs & Scheduled Tasks
+### Implementation Phase 7: Background Jobs & Scheduled Tasks ✅
 
 -   GOAL-007: Implement automated tasks for category upgrades and news expiration.
 
-| Task     | Description                                                                                                                                                                     | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                 |           |      |
-| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                               |           |      |
-| TASK-043 | Register jobs in `app/Console/Kernel.php` schedule: run `EvaluateClientCategoriesJob` every 6 months (or configurable interval), run `CleanupExpiredNewsJob` daily at midnight. |           |      |
-| TASK-044 | Create `SendCategoryUpgradeNotificationMail` Mailable: congratulate client on upgrade, explain new benefits, list accessible promotions.                                        |           |      |
-| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in README.                                                    |           |      |
+| Task     | Description                                                                                                                                                                     | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                 | ✅        | 2025-11-03 |
+| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                               | ✅        | 2025-11-03 |
+| TASK-043 | Register jobs in `routes/console.php` schedule: run `EvaluateClientCategoriesJob` monthly, run `CleanupExpiredNewsJob` daily at midnight.                                       | ✅        | 2025-11-03 |
+| TASK-044 | ~~Create `SendCategoryUpgradeNotificationMail` Mailable~~ (Already created in Phase 6 as `CategoryUpgradeNotificationMail`)                                                     | ✅        | 2025-11-03 |
+| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in `SCHEDULER_SETUP.md`.                                      | ✅        | 2025-11-03 |
+
+---
+
+#### Phase 7 Findings (2025-11-03)
+
+**Jobs Created:**
+
+-   `app/Jobs/EvaluateClientCategoriesJob.php` - 139 lines
+-   `app/Jobs/CleanupExpiredNewsJob.php` - 125 lines
+-   `app/Console/Commands/EvaluateClientCategories.php` - 44 lines
+-   `app/Console/Commands/CleanupExpiredNews.php` - 44 lines
+
+**Configuration Updates:**
+
+-   `config/shopping.php`: Added retention_days setting to news_cleanup configuration
+-   `routes/console.php`: Registered scheduled tasks with Laravel 11's Schedule facade
+
+**Documentation Created:**
+
+-   `SCHEDULER_SETUP.md`: Comprehensive guide for configuring Laravel Scheduler on Windows/XAMPP (170+ lines)
+
+**EvaluateClientCategoriesJob (TASK-041):**
+
+-   **Purpose:** Automatically evaluate and upgrade client categories based on promotion usage
+-   **Queue Implementation:**
+    -   Implements `ShouldQueue` interface for background processing
+    -   Uses Laravel's queue traits: Dispatchable, InteractsWithQueue, Queueable, SerializesModels
+    -   Configured with 3 retry attempts (`$tries = 3`)
+    -   Timeout set to 300 seconds (5 minutes) for large client bases
+-   **Business Logic:**
+    -   Queries all clients with `tipo_usuario='cliente'` and `email_verified_at IS NOT NULL`
+    -   Iterates through each client and calls `CategoryUpgradeService->evaluateClient()`
+    -   Only evaluates verified clients (business requirement)
+    -   Tracks old category before evaluation for upgrade statistics
+-   **Statistics Tracking:**
+    -   `total_clients`: Count of all eligible clients
+    -   `evaluated`: Number of clients successfully evaluated
+    -   `upgraded`: Number of clients that received category upgrade
+    -   `errors`: Count of failed evaluations
+    -   `upgrades_by_category`: Breakdown of upgrade types:
+        -   'Inicial -> Medium'
+        -   'Inicial -> Premium'
+        -   'Medium -> Premium'
+-   **Logging:**
+    -   Info log at job start: "Starting client category evaluation job"
+    -   Info log for each successful upgrade with user details
+    -   Error log for individual client evaluation failures (doesn't stop job)
+    -   Completion log with duration and statistics summary
+    -   Error log for catastrophic job failure (triggers retry)
+-   **Error Handling:**
+    -   Individual client errors caught and logged, job continues with remaining clients
+    -   Errors increment error counter but don't fail entire job
+    -   Exception re-thrown at top level to trigger Laravel's job retry mechanism
+    -   `failed()` method logs permanent failure after all retries exhausted
+    -   TODO placeholder for admin alert email on permanent failure
+-   **Email Integration:**
+    -   Leverages `CategoryUpgradeService` which sends `CategoryUpgradeNotificationMail`
+    -   No direct email sending in job (follows service layer pattern)
+    -   Emails sent automatically when `evaluateClient()` returns `['upgraded' => true]`
+-   **Performance Considerations:**
+    -   Batch processing of all clients in single job execution
+    -   5-minute timeout suitable for ~1000-5000 clients (depends on DB speed)
+    -   Could be optimized with chunking for very large client bases (>10k)
+    -   Eager loading opportunity: `->with('promotionUsages')` if needed
+
+**CleanupExpiredNewsJob (TASK-042):**
+
+-   **Purpose:** Remove expired news items after retention period to keep database clean
+-   **Queue Configuration:**
+    -   Implements `ShouldQueue` for background execution
+    -   3 retry attempts on failure
+    -   2-minute timeout (sufficient for news cleanup)
+-   **Deletion Strategy:**
+    -   Queries news with `fecha_hasta < (now - retention_days)`
+    -   Uses configurable retention period from `config('shopping.scheduled_jobs.news_cleanup.retention_days', 30)`
+    -   Default retention: 30 days after expiration before permanent deletion
+    -   Allows expired news to remain visible briefly for reference
+-   **Retention Period Logic:**
+    -   Example: News expires on 2025-10-01, retention = 30 days
+    -   Cleanup runs on 2025-11-03: (10/01 + 30 days) = 10/31, now > 10/31, so news deleted
+    -   Provides grace period for users to see recently expired news
+    -   Prevents immediate deletion when news just expired
+-   **Statistics Tracked:**
+    -   `total_expired`: Count of news items past retention period
+    -   `deleted`: Successfully deleted news items
+    -   `errors`: Failed deletions (logged but don't stop job)
+-   **Logging Details:**
+    -   Info log at job start
+    -   If no expired news found: "No expired news to cleanup" (early return)
+    -   Each deletion logs:
+        -   `news_id`: Deleted news identifier
+        -   `title_preview`: First 50 characters of texto_novedad
+        -   `expired_date`: Original fecha_hasta date
+        -   `days_since_expiration`: How long ago news expired
+    -   Completion log includes:
+        -   Duration in seconds
+        -   Cutoff date used for query
+        -   Retention days setting
+        -   Statistics summary
+-   **Error Handling:**
+    -   Individual deletion failures logged separately
+    -   Job continues processing remaining news items
+    -   Catastrophic failures re-thrown for retry
+    -   `failed()` method with TODO for admin alert
+-   **Configuration Flexibility:**
+    -   Retention period adjustable via `.env`: `NEWS_RETENTION_DAYS=30`
+    -   Can be disabled completely via `JOB_NEWS_CLEANUP_ENABLED=false`
+    -   Schedule frequency configurable in `routes/console.php`
+
+**Scheduled Tasks Registration (TASK-043):**
+
+-   **Laravel 11 Architecture Change:**
+    -   Laravel 11 removed `app/Console/Kernel.php`
+    -   Scheduled tasks now registered in `routes/console.php`
+    -   Uses `Illuminate\Support\Facades\Schedule` facade
+-   **EvaluateClientCategoriesJob Schedule:**
+    -   `Schedule::job(new EvaluateClientCategoriesJob())`
+    -   `->monthly()`: Runs on 1st day of each month
+    -   `->at('02:00')`: Executes at 2 AM (low traffic time)
+    -   `->name('evaluate-client-categories')`: Named for monitoring
+    -   `->withoutOverlapping()`: Prevents concurrent executions
+    -   `->onOneServer()`: Ensures single execution in multi-server setup
+    -   Respects `config('shopping.scheduled_jobs.category_evaluation.enabled')` setting
+-   **CleanupExpiredNewsJob Schedule:**
+    -   `Schedule::job(new CleanupExpiredNewsJob())`
+    -   `->daily()`: Runs every day
+    -   `->at('00:00')`: Executes at midnight
+    -   `->name('cleanup-expired-news')`: Monitoring label
+    -   `->withoutOverlapping()`: Prevents overlap
+    -   `->onOneServer()`: Single server execution
+    -   Respects `config('shopping.scheduled_jobs.news_cleanup.enabled')` setting
+-   **Conditional Execution:**
+    -   Both jobs check config before scheduling
+    -   Can be disabled via `.env` without code changes:
+        -   `JOB_CATEGORY_EVALUATION_ENABLED=false`
+        -   `JOB_NEWS_CLEANUP_ENABLED=false`
+    -   Useful for maintenance windows or debugging
+
+**Custom Artisan Commands Created:**
+
+**EvaluateClientCategories Command:**
+
+-   **Signature:** `php artisan app:evaluate-categories`
+-   **Purpose:** Manually trigger category evaluation for testing/debugging
+-   **Description:** "Evaluate all client categories and upgrade based on promotion usage"
+-   **Implementation:**
+    -   Uses `EvaluateClientCategoriesJob::dispatchSync()` for synchronous execution
+    -   Provides immediate console feedback (success/failure)
+    -   Returns `Command::SUCCESS` (0) or `Command::FAILURE` (1)
+-   **Output Messages:**
+    -   Start: "Starting client category evaluation..."
+    -   Success: "✓ Client category evaluation completed successfully!"
+    -   Hint: "Check storage/logs/laravel.log for detailed statistics."
+    -   Error: "✗ Failed to evaluate client categories: {error message}"
+-   **Use Cases:**
+    -   Testing category upgrade logic without waiting for schedule
+    -   Manual execution after database seeding
+    -   Debugging category calculation issues
+    -   Running in CI/CD pipeline for integration tests
+
+**CleanupExpiredNews Command:**
+
+-   **Signature:** `php artisan app:cleanup-news`
+-   **Purpose:** Manually cleanup expired news for testing
+-   **Description:** "Cleanup expired news items based on retention period"
+-   **Implementation:** Same pattern as category evaluation command
+-   **Output Messages:** Similar structure with news-specific wording
+-   **Use Cases:**
+    -   Testing news expiration logic
+    -   Manual cleanup before backups
+    -   Verifying retention period calculations
+    -   Database maintenance tasks
+
+**Configuration Updates:**
+
+**config/shopping.php Additions:**
+
+```php
+'scheduled_jobs' => [
+    'category_evaluation' => [
+        'enabled' => env('JOB_CATEGORY_EVALUATION_ENABLED', true),
+        'schedule' => 'monthly',
+    ],
+    'news_cleanup' => [
+        'enabled' => env('JOB_NEWS_CLEANUP_ENABLED', true),
+        'schedule' => 'daily',
+        'retention_days' => env('NEWS_RETENTION_DAYS', 30), // NEW
+    ]
+],
+```
+
+-   Added `retention_days` setting for news cleanup job
+-   Default value: 30 days (configurable via environment variable)
+-   Allows different retention policies per environment (dev/staging/prod)
+
+**SCHEDULER_SETUP.md Documentation:**
+
+-   **Comprehensive Windows/XAMPP Guide** (170+ lines):
+    -   Overview of scheduled tasks (what, when, why)
+    -   3 setup methods:
+        1. **Windows Task Scheduler** (production-ready)
+        2. **Manual execution** (development/testing)
+        3. **PowerShell loop script** (alternative)
+-   **Method 1: Windows Task Scheduler (Detailed):**
+    -   Step-by-step Task Scheduler configuration
+    -   Batch file creation (`run-scheduler.bat`)
+    -   Trigger configuration (every 1 minute)
+    -   Action setup (program path, working directory)
+    -   Conditions and settings (AC power, wake computer, restart on failure)
+    -   Testing instructions
+    -   Verification steps
+-   **Batch File Template:**
+
+    ```batch
+    @echo off
+    cd /d C:\Programas\xampp\htdocs\shoppingRio
+    php artisan schedule:run >> storage\logs\scheduler.log 2>&1
+    ```
+
+    -   Changes to project directory
+    -   Runs Laravel scheduler
+    -   Redirects output to scheduler.log
+    -   Captures errors (2>&1)
+
+-   **Method 2: Manual Execution:**
+    -   Direct `php artisan schedule:run` command
+    -   Tinker examples for job dispatch
+    -   Custom Artisan commands usage
+-   **Method 3: PowerShell Loop:**
+    -   Infinite loop with 60-second sleep
+    -   Suitable for development without Task Scheduler
+    -   Requires keeping PowerShell window open
+-   **Log Verification:**
+    -   Laravel log location: `storage/logs/laravel.log`
+    -   Scheduler log: `storage/logs/scheduler.log`
+    -   Example log entries for both jobs
+    -   What to look for (timestamps, statistics, errors)
+-   **Configuration Section:**
+    -   How to modify schedules in config/shopping.php
+    -   Environment variable overrides
+    -   Disabling jobs temporarily
+-   **Troubleshooting:**
+    -   Task Scheduler not running (service check)
+    -   PHP not found in PATH (PATH configuration)
+    -   Permission errors (run as admin, file permissions)
+    -   Logs not generated (cache clear, permissions)
+-   **Production Monitoring Recommendations:**
+    -   Laravel Horizon for queue monitoring
+    -   Laravel Telescope for debugging
+    -   Email alerts on job failures
+    -   Centralized logging (Papertrail, Loggly)
+    -   Health checks for scheduler uptime
+-   **Resource Links:**
+    -   Laravel Task Scheduling documentation
+    -   Windows Task Scheduler documentation
+
+**Code Quality Metrics:**
+
+-   Total LOC: ~352 lines across 4 new files
+-   Zero lint errors after implementation
+-   Comprehensive docblocks for all classes and methods
+-   Type hints on all method parameters and returns
+-   Consistent error handling patterns across jobs
+-   Detailed logging for production debugging
+
+**Alignment with Requirements:**
+
+-   ✅ TECH-006: Scheduled job for category upgrades (every 6 months → implemented as monthly with 6-month lookback)
+-   ✅ REQ-006: Automatic category upgrade logic
+-   ✅ REQ-011: Auto-expire news based on date ranges
+-   ✅ BUS-007: Category upgrade based on usage in last 6 months
+-   ✅ BUS-009: Category evaluation runs automatically (monthly schedule)
+-   ✅ BUS-012: News auto-expire (via cleanup job with retention period)
+-   ✅ CON-001: XAMPP-compatible setup (comprehensive Windows documentation)
+-   ✅ CON-005: Category thresholds configurable (via config/shopping.php)
+-   ✅ GUD-005: Important events logged (upgrade statistics, cleanup results)
+-   ✅ GUD-006: Database transactions used (via service layer)
+
+**Job Execution Flow:**
+
+**Category Evaluation Flow:**
+
+1. Task Scheduler triggers `php artisan schedule:run` every minute
+2. Laravel checks `routes/console.php` for due schedules
+3. On 1st day of month at 2 AM, EvaluateClientCategoriesJob dispatched to queue
+4. Job queries all verified clients
+5. For each client:
+    - CategoryUpgradeService evaluates usage in last 6 months
+    - If threshold met, category upgraded, email sent
+    - Statistics tracked (upgraded, old/new category)
+6. Job completion logged with summary statistics
+7. Admin can review logs for monthly upgrade report
+
+**News Cleanup Flow:**
+
+1. Task Scheduler runs every minute
+2. Laravel checks schedule
+3. Daily at midnight, CleanupExpiredNewsJob dispatched
+4. Job calculates cutoff date (now - retention_days)
+5. Queries news with fecha_hasta < cutoff date
+6. For each expired news:
+    - Delete record from database
+    - Log deletion with details
+7. Summary statistics logged
+8. Database stays clean, no stale news data
+
+**Testing Strategy:**
+
+-   **Manual Testing:**
+
+    ```powershell
+    # Test category evaluation
+    php artisan app:evaluate-categories
+
+    # Test news cleanup
+    php artisan app:cleanup-news
+
+    # Test scheduler
+    php artisan schedule:run --verbose
+    ```
+
+-   **Unit Testing (Phase 10):**
+    -   Mock CategoryUpgradeService in job test
+    -   Assert correct clients are queried
+    -   Verify statistics calculation
+    -   Test error handling for failed evaluations
+-   **Integration Testing:**
+    -   Seed test clients with varied usage patterns
+    -   Run EvaluateClientCategoriesJob
+    -   Assert categories upgraded correctly
+    -   Verify CategoryUpgradeNotificationMail sent
+    -   Check logs for expected entries
+
+**Performance Considerations:**
+
+-   **Scalability:**
+    -   Current implementation suitable for ~1000-5000 clients
+    -   For larger systems (>10k clients), implement chunking:
+        ```php
+        User::where('tipo_usuario', 'cliente')
+            ->chunk(100, function ($clients) {
+                // Process chunk
+            });
+        ```
+-   **Database Optimization:**
+    -   Indexes on `tipo_usuario`, `email_verified_at` recommended
+    -   Consider composite index: `(tipo_usuario, email_verified_at)`
+    -   News cleanup query benefits from index on `fecha_hasta`
+-   **Queue Workers:**
+    -   Jobs should run on queue worker: `php artisan queue:work`
+    -   Configure queue driver in `.env`: `QUEUE_CONNECTION=database`
+    -   Monitor failed jobs: `php artisan queue:failed`
+
+**Next Steps:**
+
+-   ~~Phase 7: Background Jobs & Scheduled Tasks~~ ✅ COMPLETED
+-   Phase 8: Controller Implementation (use services in controllers)
+-   Phase 9: Blade Email Templates (create HTML templates for all Mailable classes)
+-   Phase 10: Testing & Documentation (feature tests for jobs, verify scheduler)
+-   Production: Configure proper queue worker (Supervisor on Linux, NSSM on Windows)
 
 ### Implementation Phase 8: Controller Implementation
 

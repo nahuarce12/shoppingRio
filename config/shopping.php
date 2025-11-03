@@ -198,6 +198,7 @@ return [
     |
     | - category_evaluation_schedule: Cron expression for category evaluation
     | - news_cleanup_schedule: Cron expression for news cleanup
+    | - retention_days: Days after expiration before permanent deletion
     |
     */
 
@@ -209,6 +210,7 @@ return [
         'news_cleanup' => [
             'enabled' => env('JOB_NEWS_CLEANUP_ENABLED', true),
             'schedule' => 'daily', // Run daily at midnight
+            'retention_days' => env('NEWS_RETENTION_DAYS', 30), // Days after expiration before deletion
         ]
     ],
 
