@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -26,8 +27,11 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'tipo_usuario' => 'cliente',
+            'categoria_cliente' => 'Inicial',
+            'approved_at' => now(),
+            'email_verified_at' => now(),
             'remember_token' => Str::random(10),
         ];
     }
@@ -40,5 +44,80 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Create an administrator user.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_usuario' => 'administrador',
+            'categoria_cliente' => null,
+            'approved_at' => now(),
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Create a store owner user.
+     */
+    public function storeOwner(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_usuario' => 'dueño de local',
+            'categoria_cliente' => null,
+            'approved_at' => now(),
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Create a pending store owner (not yet approved).
+     */
+    public function pendingStoreOwner(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_usuario' => 'dueño de local',
+            'categoria_cliente' => null,
+            'approved_at' => null,
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Create a client with specific category.
+     */
+    public function client(string $category = 'Inicial'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_usuario' => 'cliente',
+            'categoria_cliente' => $category,
+            'approved_at' => now(),
+        ]);
+    }
+
+    /**
+     * Create an Initial category client.
+     */
+    public function inicial(): static
+    {
+        return $this->client('Inicial');
+    }
+
+    /**
+     * Create a Medium category client.
+     */
+    public function medium(): static
+    {
+        return $this->client('Medium');
+    }
+
+    /**
+     * Create a Premium category client.
+     */
+    public function premium(): static
+    {
+        return $this->client('Premium');
     }
 }
