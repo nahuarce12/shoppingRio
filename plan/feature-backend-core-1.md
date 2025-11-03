@@ -2054,15 +2054,157 @@ Created 12 controller files (~1,743 lines) implementing complete request/respons
 
 -   GOAL-009: Create comprehensive test data for development and testing.
 
-| Task     | Description                                                                                                                                                                                            | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-063 | Create `UserFactory`: generate realistic users for all types (admin, store owners, clients) with proper categories, email verification states.                                                         |           |      |
-| TASK-064 | Create `StoreFactory`: generate stores with sequential codes, varied rubros (indumentaria, comida, etc.), assign to existing store owners.                                                             |           |      |
-| TASK-065 | Create `PromotionFactory`: generate promotions with realistic date ranges, varied dias_semana combinations, all estados (pendiente, aprobada, denegada), assign to stores.                             |           |      |
-| TASK-066 | Create `NewsFactory`: generate news with varied category targets, some expired, some active, realistic text content.                                                                                   |           |      |
-| TASK-067 | Create `PromotionUsageFactory`: generate usage records for clients with mixed estados, respect single-use rule, realistic date distribution.                                                           |           |      |
-| TASK-068 | Create `DatabaseSeeder`: seed 1 admin, 5 store owners (3 approved, 2 pending), 20 stores, 50 promotions (30 approved, 10 pending, 10 denied), 30 clients (10 per category), 15 news, 80 usage records. |           |      |
-| TASK-069 | Create `TestCategoriesSeeder`: seed specific test cases for category upgrade logic (clients with exactly threshold counts, edge cases for 6-month window).                                             |           |      |
+| Task     | Description                                                                                                                                                                                            | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-063 | Create `UserFactory`: generate realistic users for all types (admin, store owners, clients) with proper categories, email verification states.                                                         | ✅        | 2025-01-03 |
+| TASK-064 | Create `StoreFactory`: generate stores with sequential codes, varied rubros (indumentaria, comida, etc.), assign to existing store owners.                                                             | ✅        | 2025-01-03 |
+| TASK-065 | Create `PromotionFactory`: generate promotions with realistic date ranges, varied dias_semana combinations, all estados (pendiente, aprobada, denegada), assign to stores.                             | ✅        | 2025-01-03 |
+| TASK-066 | Create `NewsFactory`: generate news with varied category targets, some expired, some active, realistic text content.                                                                                   | ✅        | 2025-01-03 |
+| TASK-067 | Create `PromotionUsageFactory`: generate usage records for clients with mixed estados, respect single-use rule, realistic date distribution.                                                           | ✅        | 2025-01-03 |
+| TASK-068 | Create `DatabaseSeeder`: seed 1 admin, 5 store owners (3 approved, 2 pending), 20 stores, 50 promotions (30 approved, 10 pending, 10 denied), 30 clients (10 per category), 15 news, 80 usage records. | ✅        | 2025-01-03 |
+| TASK-069 | Create `TestCategoriesSeeder`: seed specific test cases for category upgrade logic (clients with exactly threshold counts, edge cases for 6-month window).                                             | ✅        | 2025-01-03 |
+
+**Phase 9 Findings:**
+
+Created 5 factory files and 2 seeder classes with comprehensive test data generation:
+
+**Factories (5 files):**
+
+1. **UserFactory** (Extended existing, ~115 lines):
+   - Default state: Creates clients with 'Inicial' category, verified email, approved status
+   - `admin()`: Administrator users with no category
+   - `storeOwner()`: Approved store owners
+   - `pendingStoreOwner()`: Store owners awaiting admin approval (approved_at = null)
+   - `client($category)`: Clients with specific category
+   - `inicial()`, `medium()`, `premium()`: Category-specific client shortcuts
+   - `unverified()`: Clients without email verification
+   - Uses Laravel's default column names (name, email, password) with tipo_usuario, categoria_cliente, approved_at
+
+2. **StoreFactory** (~130 lines):
+   - Default state: Random store names, 12 rubro options (indumentaria, calzado, perfumeria, comida, tecnologia, etc.), varied ubicaciones (Planta Baja, Pisos, Patio de Comidas)
+   - `forOwner(User $owner)`: Assigns store to specific owner
+   - `rubro(string)`: Sets specific rubro
+   - `indumentaria()`, `comida()`, `tecnologia()`: Specialized store types with themed names
+   - Realistic location assignments (food stores in Patio de Comidas)
+   - Uses English column names (nombre, ubicacion, rubro, owner_id)
+
+3. **PromotionFactory** (~170 lines):
+   - Default state: 15 realistic promo texts ('20% descuento', '2x1', '3 cuotas sin interés'), date ranges (now to +3 months), random dias_semana (1-7 days active), random category_minima
+   - `forStore(Store $store)`: Assigns to specific store
+   - `pending()`, `approved()`, `denied()`: Set estado
+   - `forCategory(string)`, `inicial()`, `medium()`, `premium()`: Category-specific promotions
+   - `allWeek()`, `weekendsOnly()`, `weekdaysOnly()`: Day-of-week patterns
+   - `expired()`: Past date ranges for testing
+   - `upcoming()`: Future start dates
+   - dias_semana as array of 7 integers (0 or 1) for each day
+
+4. **NewsFactory** (~120 lines):
+   - Default state: 15 realistic news templates ('Nuevas marcas internacionales', 'Gran apertura', 'Fashion Week'), varied date ranges, random categoria_destino, created_by defaults to admin (ID 1)
+   - `forCategory(string)`, `inicial()`, `medium()`, `premium()`: Category targeting
+   - `active()`: Currently valid news (fecha_desde in past, fecha_hasta in future)
+   - `expired()`: Past news items
+   - `upcoming()`: Future news
+   - `longDuration()`: 3-6 month validity periods
+
+5. **PromotionUsageFactory** (~95 lines):
+   - Default state: client_id and promotion_id set by seeder, fecha_uso within last 6 months, estado weighted toward 'aceptada'
+   - `forClient(User $client)`: Assigns to specific client
+   - `forPromotion(Promotion $promotion)`: Assigns to specific promotion
+   - `sent()`, `accepted()`, `rejected()`: Set usage estado
+   - `recentSixMonths()`: Usages within category evaluation window
+   - `oldUsage()`: Usages older than 6 months (outside evaluation)
+   - `onDate(\DateTime|string)`: Specific date assignment for testing
+
+**Seeders (2 files):**
+
+1. **DatabaseSeeder** (Updated, ~180 lines):
+   - Comprehensive seeding with pretty console output and statistics table
+   - Creates exactly: 1 admin, 3 approved + 2 pending store owners, 20 stores (distributed 8+7+5), 50 promotions (30 approved/10 pending/10 denied), 30 clients (10 per category), 15 active + 3 expired news, 90+ usage records
+   - Store distribution: First owner gets 8 stores, second 7, third 5
+   - Promotions: Each store gets 2-3 promotions, then shuffled and assigned estados
+   - Usage patterns: Each client uses 1-5 promotions respecting category eligibility and single-use constraint
+   - Intelligent eligibility filtering: Uses category hierarchy to ensure clients only use eligible promotions
+   - Displays summary table with all entity counts and default credentials
+   - Truncates all tables before seeding for clean slate
+   - Admin default: admin@shoppingrio.com / Admin123!
+   - All other users: [email] / password
+
+2. **TestCategoriesSeeder** (~260 lines):
+   - Creates 8 edge case test scenarios for CategoryUpgradeService validation
+   - Ensures minimum 25 approved promotions exist to avoid single-use constraint violations
+   - Test Case 1: Exactly 5 usages (Initial→Medium threshold)
+   - Test Case 2: Exactly 15 usages (Medium→Premium threshold)
+   - Test Case 3: 4 usages (1 below threshold, should not upgrade)
+   - Test Case 4: 3 usages within 6 months, 5 outside window (tests time boundary)
+   - Test Case 5: 3 accepted + 5 rejected (tests estado filtering)
+   - Test Case 6: 2 accepted + 4 pending (tests pending exclusion)
+   - Test Case 7: 7 usages (above threshold, should upgrade)
+   - Test Case 8: 25 usages for Premium client (should stay Premium)
+   - Each test client uses different promotions to respect unique constraint
+   - Outputs detailed table with expected outcomes
+   - Includes instructions to run `php artisan categories:evaluate`
+
+**Seeding Results:**
+```
+Entity                  | Count
+-----------------------+-------
+Administrators          | 1
+Store Owners (Approved) | 3
+Store Owners (Pending)  | 2
+Stores                  | 20
+Promotions (Approved)   | 30
+Promotions (Pending)    | 10
+Promotions (Denied)     | 10
+Clients (Initial)       | 10
+Clients (Medium)        | 10
+Clients (Premium)       | 10
+News (Active)           | 15
+News (Expired)          | 3
+Promotion Usages        | 90+
+Test Clients            | 8
+```
+
+**Column Name Mappings:**
+- Project spec (Spanish) → Laravel implementation (English/default)
+- nombre_usuario → name, email
+- clave_usuario → password
+- cod_usuario/cod_local/cod_promo → id (auto-increment primary keys)
+- nombre_local → nombre
+- ubicacion_local → ubicacion
+- rubro_local → rubro
+- texto_promo → texto
+- fecha_desde_promo → fecha_desde
+- fecha_hasta_promo → fecha_hasta
+- categoria_cliente → categoria_minima (for promotions), categoria_cliente (for users)
+- estado_promo → estado
+- estado_aprobacion → approved_at (timestamp)
+
+**Testing Commands:**
+```bash
+# Seed database with all data
+php artisan migrate:fresh --seed
+
+# Add test category cases
+php artisan db:seed --class=TestCategoriesSeeder
+
+# Test category upgrade logic
+php artisan categories:evaluate
+
+# Verify data
+php artisan tinker
+>>> User::count()
+>>> Promotion::where('estado', 'aprobada')->count()
+>>> PromotionUsage::where('estado', 'aceptada')->count()
+```
+
+**Known Issues Resolved:**
+- Initial attempt used Spanish column names from spec; corrected to match actual model fillable arrays
+- News factory missing created_by field; added default to admin ID 1
+- TestCategoriesSeeder had unique constraint violations; fixed by using different promotions for each usage
+- All factories and seeders now have zero lint errors and execute successfully
+
+**Next Steps:**
+- Phase 10: Integration & Testing (feature tests, Blade view integration, manual E2E testing)
 
 ### Implementation Phase 10: Integration & Testing
 
