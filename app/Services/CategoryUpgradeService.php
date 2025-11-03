@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Mail\CategoryUpgradeNotificationMail;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Service class for client category upgrade logic.
@@ -76,15 +78,16 @@ class CategoryUpgradeService
             // Log the upgrade event
             Log::info("Client category upgraded: User {$client->id} from {$oldCategory} to {$newCategory}", [
                 'user_id' => $client->id,
-                'email' => $client->email,
+                'email' => $client->nombreUsuario,
                 'old_category' => $oldCategory,
                 'new_category' => $newCategory,
                 'accepted_count' => $acceptedCount,
                 'upgraded_at' => Carbon::now()
             ]);
 
-            // TODO: Send upgrade notification email (Phase 6)
-            // Mail::to($client->email)->send(new CategoryUpgradeNotificationMail($client, $oldCategory, $newCategory));
+            // Send upgrade notification email to client
+            Mail::to($client->nombreUsuario)
+                ->send(new CategoryUpgradeNotificationMail($client, $oldCategory, $newCategory));
 
             DB::commit();
 

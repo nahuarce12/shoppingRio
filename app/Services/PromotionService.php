@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Mail\PromotionApprovedMail;
+use App\Mail\PromotionDeniedMail;
 use App\Models\Promotion;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Service class for promotion-related business logic.
@@ -168,8 +171,9 @@ class PromotionService
             $promotion->estado = 'aprobada';
             $promotion->save();
 
-            // TODO: Send approval email to store owner (Phase 6)
-            // Mail::to($promotion->store->owner->email)->send(new PromotionApprovedMail($promotion));
+            // Send approval email to store owner
+            Mail::to($promotion->store->owner->nombreUsuario)
+                ->send(new PromotionApprovedMail($promotion));
 
             DB::commit();
             return true;
@@ -200,8 +204,9 @@ class PromotionService
             $promotion->estado = 'denegada';
             $promotion->save();
 
-            // TODO: Send denial email to store owner with reason (Phase 6)
-            // Mail::to($promotion->store->owner->email)->send(new PromotionDeniedMail($promotion, $reason));
+            // Send denial email to store owner with reason
+            Mail::to($promotion->store->owner->nombreUsuario)
+                ->send(new PromotionDeniedMail($promotion, $reason));
 
             DB::commit();
             return true;

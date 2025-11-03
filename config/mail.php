@@ -115,4 +115,31 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | ShoppingRio Email Addresses
+    |--------------------------------------------------------------------------
+    |
+    | These email addresses are used throughout the ShoppingRio application
+    | for specific purposes like support, notifications, and admin alerts.
+    |
+    */
+
+    'support_email' => env('MAIL_SUPPORT_ADDRESS', 'soporte@shoppingrio.com'),
+    'admin_email' => env('MAIL_ADMIN_ADDRESS', 'admin@shoppingrio.com'),
+    'notifications_email' => env('MAIL_NOTIFICATIONS_ADDRESS', 'notificaciones@shoppingrio.com'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Queue Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure whether emails should be queued for better performance.
+    | When enabled, emails will be sent asynchronously via the queue system.
+    |
+    */
+
+    'queue_emails' => env('MAIL_QUEUE', true),
+    'queue_connection' => env('MAIL_QUEUE_CONNECTION', 'sync'),
+
 ];

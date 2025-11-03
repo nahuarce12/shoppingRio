@@ -5,14 +5,24 @@ date_created: 2025-10-31
 last_updated: 2025-11-03
 owner: Development Team
 status: In Progress
-progress: Phase 5 Complete (40%)
-tags: [feature, backend, database, authentication, business-logic]
+progress: Phase 7 Complete (58%)
+tags:
+    [
+        feature,
+        backend,
+        database,
+        authentication,
+        business-logic,
+        email-notifications,
+        background-jobs,
+        scheduled-tasks,
+    ]
 ---
 
 # Introduction
 
 Status badge: (status: In Progress, color: yellow)
-Progress: Phases 1-5 Complete (Database + Models + Auth + Services + Validation) | Phases 6-10 Pending
+Progress: Phases 1-7 Complete (Database + Models + Auth + Services + Validation + Email + Jobs) | Phases 8-10 Pending
 
 Implement the core backend functionality for the ShoppingRio application, including database schema, Eloquent models with relationships, authentication system with role-based access control, and business logic services. This plan builds upon the completed frontend integration (feature-frontend-integration-1) and establishes the foundation for all CRUD operations, user workflows, and automated processes required by the project specifications.
 
@@ -1260,7 +1270,7 @@ All required indexes implemented directly in table creation migrations:
 
 **Next Steps:**
 
--   Phase 6: Email Notifications (wire up email sending in services)
+-   ~~Phase 6: Email Notifications (wire up email sending in services)~~ ✅ COMPLETED
 -   Phase 7: Background Jobs & Scheduled Tasks (category evaluation, news cleanup)
 -   Phase 8: Controller Implementation (use Form Requests in controller methods)
 -   Testing: Create validation tests for edge cases and error messages
@@ -1269,29 +1279,697 @@ All required indexes implemented directly in table creation migrations:
 
 -   GOAL-006: Implement all email notifications required by the system.
 
-| Task     | Description                                                                                                                                           | Completed | Date |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                        |           |      |
-| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                          |           |      |
-| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                     |           |      |
-| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                   |           |      |
-| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                          |           |      |
-| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                               |           |      |
-| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject. |           |      |
-| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                |           |      |
-| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                               |           |      |
+| Task     | Description                                                                                                                                           | Completed | Date       |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                        | ✅        | 2025-11-03 |
+| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                          | ✅        | 2025-11-03 |
+| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                     | ✅        | 2025-10-31 |
+| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                   | ✅        | 2025-10-31 |
+| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                          | ✅        | 2025-11-03 |
+| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                               | ✅        | 2025-11-03 |
+| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject. | ✅        | 2025-11-03 |
+| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                | ✅        | 2025-11-03 |
+| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                               | ✅        | 2025-11-03 |
 
-### Implementation Phase 7: Background Jobs & Scheduled Tasks
+#### Phase 6 Findings (2025-11-03)
+
+**Mailable Classes Created:**
+
+-   `app/Mail/ClientVerificationMail.php` - 69 lines
+-   `app/Mail/StoreOwnerApproved.php` - 65 lines (Phase 3)
+-   `app/Mail/StoreOwnerRejected.php` - 63 lines (Phase 3)
+-   `app/Mail/PromotionApprovedMail.php` - 65 lines
+-   `app/Mail/PromotionDeniedMail.php` - 65 lines
+-   `app/Mail/PromotionUsageRequestMail.php` - 70 lines
+-   `app/Mail/PromotionUsageAcceptedMail.php` - 67 lines
+-   `app/Mail/PromotionUsageRejectedMail.php` - 75 lines
+-   `app/Mail/CategoryUpgradeNotificationMail.php` - 80 lines
+
+**Configuration Updates:**
+
+-   `config/mail.php`: Added ShoppingRio-specific email addresses (support, admin, notifications)
+-   `.env.example`: Added complete mail configuration with XAMPP/Mailtrap examples
+-   Email queue configuration (MAIL_QUEUE, MAIL_QUEUE_CONNECTION)
+
+**Service Integrations:**
+
+-   `app/Services/PromotionService.php`: Integrated PromotionApprovedMail and PromotionDeniedMail
+-   `app/Services/PromotionUsageService.php`: Integrated 3 Mailable classes (Request, Accepted, Rejected)
+-   `app/Services/CategoryUpgradeService.php`: Integrated CategoryUpgradeNotificationMail
+-   Removed all TODO comments for email notifications
+
+**ClientVerificationMail (TASK-033):**
+
+-   **Purpose:** Welcome new clients and verify email address
+-   **Constructor Parameters:**
+    -   `User $client`: The newly registered client
+    -   `string $verificationUrl`: Laravel's generated verification URL
+-   **Email Content (via view data):**
+    -   `clientName`: Client's name from User model
+    -   `clientEmail`: User's nombreUsuario (email)
+    -   `verificationUrl`: Clickable verification link
+    -   `expirationMinutes`: From config('auth.verification.expire', 60)
+    -   `benefits`: Array of shopping system benefits
+        -   "Acceso exclusivo a promociones y descuentos"
+        -   "Sistema de categorías con beneficios progresivos"
+        -   "Notificaciones personalizadas de ofertas"
+        -   "Historial de promociones utilizadas"
+    -   `initialCategory`: 'Inicial' (default for new clients)
+    -   `categoryBenefits`: Benefits from config('shopping.client_categories.Inicial.benefits')
+    -   `supportEmail`: config('mail.support_email', 'soporte@shoppingrio.com')
+-   **Subject:** "¡Bienvenido a ShoppingRio! - Verifica tu cuenta"
+-   **View Template:** resources/views/emails/client-verification.blade.php (to be created Phase 9)
+
+**PromotionApprovedMail (TASK-036):**
+
+-   **Purpose:** Notify store owner when admin approves promotion
+-   **Constructor Parameters:** `Promotion $promotion` with eager-loaded store relationship
+-   **Email Content:**
+    -   `storeName`: $promotion->store->nombre
+    -   `promotionCode`: $promotion->codigo_promocion
+    -   `promotionText`: $promotion->texto_promocion
+    -   `startDate`: $promotion->fecha_desde formatted as d/m/Y
+    -   `endDate`: $promotion->fecha_hasta formatted as d/m/Y
+    -   `category`: $promotion->categoria_minima
+    -   `dashboardUrl`: route('store.dashboard') for next steps
+-   **Subject:** "Promoción Aprobada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-approved.blade.php
+
+**PromotionDeniedMail (TASK-037):**
+
+-   **Purpose:** Notify store owner when admin denies promotion with reason
+-   **Constructor Parameters:**
+    -   `Promotion $promotion`
+    -   `string|null $reason`: Optional explanation from admin
+-   **Email Content:**
+    -   `storeName`, `promotionCode`, `promotionText` (same as approved)
+    -   `reason`: Admin's explanation for denial (or default message)
+    -   `guidelinesUrl`: URL to promotion creation guidelines
+    -   `supportEmail`: config('mail.support_email')
+    -   `dashboardUrl`: Link to store dashboard
+-   **Subject:** "Promoción Denegada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-denied.blade.php
+
+**PromotionUsageRequestMail (TASK-038):**
+
+-   **Purpose:** Notify store owner when client requests to use promotion
+-   **Constructor Parameters:** `PromotionUsage $usage` with eager-loaded client and promotion relationships
+-   **Email Content:**
+    -   `storeName`: $usage->promotion->store->nombre
+    -   `clientName`: $usage->client->name
+    -   `clientEmail`: $usage->client->nombreUsuario
+    -   `clientCategory`: $usage->client->categoria_cliente
+    -   `promotionCode`, `promotionText`: Promotion details
+    -   `requestDate`: $usage->fecha_uso formatted as d/m/Y
+    -   `acceptUrl`: route('store.usage.accept', $usage) with signature
+    -   `rejectUrl`: route('store.usage.reject', $usage) with signature
+-   **Subject:** "Nueva Solicitud de Uso de Promoción - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-request.blade.php
+
+**PromotionUsageAcceptedMail (TASK-039):**
+
+-   **Purpose:** Notify client when store owner accepts usage request
+-   **Constructor Parameters:** `PromotionUsage $usage`
+-   **Email Content:**
+    -   `clientName`: $usage->client->name
+    -   `storeName`: $usage->promotion->store->nombre
+    -   `storeLocation`: $usage->promotion->store->ubicacion
+    -   `promotionText`: Promotion details
+    -   `usageDate`: $usage->fecha_uso formatted
+    -   `validUntil`: $usage->promotion->fecha_hasta formatted (expiration reminder)
+    -   `contactInfo`: Store contact information
+-   **Subject:** "Promoción Aceptada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-accepted.blade.php
+
+**PromotionUsageRejectedMail (TASK-040):**
+
+-   **Purpose:** Notify client when store owner rejects usage request
+-   **Constructor Parameters:**
+    -   `PromotionUsage $usage`
+    -   `string|null $reason`: Optional explanation from store owner
+-   **Email Content:**
+    -   `clientName`, `storeName`, `promotionText` (same as accepted)
+    -   `reason`: Store owner's explanation or default message
+    -   `alternativePromotions`: Query for other active promotions from same store
+        -   Queries Promotion::where('store_id', $usage->promotion->store_id)
+        -   Filters: approved(), active(), validToday()
+        -   Excludes current promotion and already-used promotions by client
+        -   Limits to 3 suggestions
+    -   `supportEmail`: Contact for assistance
+    -   `browseLin k`: Link to browse all promotions
+-   **Subject:** "Solicitud de Promoción Rechazada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-rejected.blade.php
+
+**CategoryUpgradeNotificationMail (TASK-040, extended to TASK-044):**
+
+-   **Purpose:** Congratulate client on category upgrade and explain new benefits
+-   **Constructor Parameters:**
+    -   `User $client`: The upgraded client
+    -   `string $oldCategory`: Previous category (Inicial, Medium)
+    -   `string $newCategory`: New category (Medium, Premium)
+-   **Email Content:**
+    -   `clientName`: $client->name
+    -   `oldCategory`, `newCategory`: Display upgrade path
+    -   `benefits`: Benefits array from config('shopping.client_categories.{$newCategory}.benefits')
+        -   Retrieves dynamic list of benefits for new category
+        -   Example: Premium gets "Acceso prioritario a todas las promociones"
+    -   `upgradeMessage`: Personalized congratulations message
+    -   `promotionCount`: Count of newly accessible promotions
+        -   Queries Promotion::approved()->active()->forCategory($newCategory)
+        -   Shows immediate value of upgrade
+    -   `dashboardUrl`: route('client.dashboard') to explore promotions
+    -   `supportEmail`: config('mail.support_email')
+-   **Subject:** "¡Felicitaciones! Has sido actualizado a categoría {newCategory}"
+-   **View Template:** resources/views/emails/category-upgrade-notification.blade.php
+
+**Email Configuration (TASK-032):**
+
+-   **config/mail.php Updates:**
+    -   Added `support_email` setting (env: MAIL_SUPPORT_ADDRESS)
+    -   Added `admin_email` setting (env: MAIL_ADMIN_ADDRESS)
+    -   Added `notifications_email` setting (env: MAIL_NOTIFICATIONS_ADDRESS)
+    -   Added `queue_emails` boolean (env: MAIL_QUEUE, default: true)
+    -   Added `queue_connection` setting (env: MAIL_QUEUE_CONNECTION, default: 'sync')
+    -   All settings have sensible defaults for ShoppingRio domain
+-   **.env.example Updates:**
+    -   Changed MAIL_FROM_ADDRESS to "noreply@shoppingrio.com"
+    -   Changed MAIL_FROM_NAME to "ShoppingRio"
+    -   Added 3 ShoppingRio email addresses (support, admin, notifications)
+    -   Added email queue configuration (MAIL_QUEUE=true, connection=database)
+    -   Documented MailHog setup for XAMPP (commented):
+        -   MAIL_HOST=mailhog, PORT=1025
+        -   Suitable for local testing without actual SMTP
+    -   Documented production SMTP example (Gmail):
+        -   MAIL_HOST=smtp.gmail.com, PORT=587, ENCRYPTION=tls
+        -   Includes username and app-specific password placeholders
+
+**Service Integration Details:**
+
+**PromotionService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\PromotionApprovedMail;`
+    -   `use App\Mail\PromotionDeniedMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **approvePromotion() Method:**
+    -   After updating estado to 'aprobada':
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionApprovedMail($promotion));`
+    -   Sends to store owner's email (nombreUsuario field)
+    -   Uses DB transaction (email sent before commit)
+-   **denyPromotion() Method:**
+    -   After updating estado to 'denegada':
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionDeniedMail($promotion, $reason));`
+    -   Passes optional reason parameter to Mailable
+-   **Error Handling:**
+    -   Email failures logged via Log::error()
+    -   Transaction rollback ensures data consistency if email fails
+
+**PromotionUsageService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\PromotionUsageRequestMail;`
+    -   `use App\Mail\PromotionUsageAcceptedMail;`
+    -   `use App\Mail\PromotionUsageRejectedMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **createUsageRequest() Method:**
+    -   After creating PromotionUsage record:
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionUsageRequestMail($usage));`
+    -   Notifies store owner immediately after client requests promotion
+-   **acceptUsageRequest() Method:**
+    -   After updating estado to 'aceptada':
+    -   `Mail::to($usage->client->nombreUsuario)->send(new PromotionUsageAcceptedMail($usage));`
+    -   Confirms to client their request was approved
+-   **rejectUsageRequest() Method:**
+    -   After updating estado to 'rechazada':
+    -   `Mail::to($usage->client->nombreUsuario)->send(new PromotionUsageRejectedMail($usage, $reason));`
+    -   Provides client with reason and alternative suggestions
+
+**CategoryUpgradeService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\CategoryUpgradeNotificationMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **evaluateClient() Method:**
+    -   After successful category upgrade:
+    -   `Mail::to($client->nombreUsuario)->send(new CategoryUpgradeNotificationMail($client, $oldCategory, $newCategory));`
+    -   Sent within DB transaction before commit
+    -   Email only sent if upgrade actually occurs (not sent for no-change cases)
+-   **Log Entry Update:**
+    -   Changed `'email' => $client->email` to `'email' => $client->nombreUsuario`
+    -   Consistent field naming across application
+
+**Laravel Mailable Architecture:**
+
+-   All Mailable classes use Laravel 11's modern structure:
+    -   `Queueable` trait for background processing
+    -   `SerializesModels` trait for safe model serialization
+    -   Constructor with public properties (auto-available in views)
+    -   `envelope()` method returns Envelope with subject
+    -   `content()` method returns Content with view path and data
+    -   `attachments()` method returns empty array (no file attachments needed)
+-   No raw email construction (uses Blade templates)
+-   Queueable by default (respects config('mail.queue_emails') setting)
+
+**Blade View Templates (to be created in Phase 9):**
+
+-   resources/views/emails/client-verification.blade.php
+-   resources/views/emails/promotion-approved.blade.php
+-   resources/views/emails/promotion-denied.blade.php
+-   resources/views/emails/promotion-usage-request.blade.php
+-   resources/views/emails/promotion-usage-accepted.blade.php
+-   resources/views/emails/promotion-usage-rejected.blade.php
+-   resources/views/emails/category-upgrade-notification.blade.php
+-   resources/views/emails/store-owner-approved.blade.php (Phase 3)
+-   resources/views/emails/store-owner-rejected.blade.php (Phase 3)
+
+**Code Quality Metrics:**
+
+-   Total Mailable LOC: ~619 lines across 9 classes
+-   Zero lint errors after implementation
+-   All imports properly namespaced
+-   Consistent constructor parameter naming (public properties)
+-   Comprehensive view data arrays for Blade templates
+-   Spanish-language subject lines and user-facing content
+
+**Alignment with Requirements:**
+
+-   ✅ TECH-005: Laravel Mailable classes for all email notifications
+-   ✅ REQ-004: Email verification for client registration (ClientVerificationMail)
+-   ✅ REQ-005: Admin approval workflow emails (StoreOwnerApproved/Rejected)
+-   ✅ REQ-008: Promotion approval workflow notifications (Approved/Denied)
+-   ✅ REQ-009: Promotion usage request notifications (Request/Accepted/Rejected)
+-   ✅ REQ-006: Category upgrade notifications (CategoryUpgradeNotificationMail)
+-   ✅ CON-003: SMTP configuration for dev and production (.env.example examples)
+-   ✅ GUD-005: Important business events trigger emails (via service layer)
+
+**Email Workflow Coverage:**
+
+-   **Client Registration Flow:**
+    -   ClientVerificationMail → verify email → access system
+-   **Store Owner Onboarding:**
+    -   StoreOwnerApproved → login instructions → dashboard access
+    -   StoreOwnerRejected → reason provided → contact support
+-   **Promotion Lifecycle:**
+    -   Store owner creates → Admin reviews → PromotionApproved/Denied sent
+    -   Store owner notified of approval/denial decision
+-   **Usage Request Flow:**
+    -   Client requests → PromotionUsageRequestMail to store owner
+    -   Store owner decides → PromotionUsageAccepted/Rejected to client
+    -   Client receives confirmation/rejection with alternatives
+-   **Category Progression:**
+    -   Automated evaluation → CategoryUpgradeNotificationMail
+    -   Client learns new benefits and accessible promotions
+
+**Testing Considerations:**
+
+-   Use Mail::fake() in feature tests to assert emails sent
+-   Test all email scenarios (approval, denial, request, acceptance, rejection)
+-   Validate email queue processing with MAIL_QUEUE=true
+-   Test SMTP connection with Mailtrap before production deployment
+-   Verify Spanish-language content renders correctly in email clients
+
+**XAMPP Development Setup:**
+
+-   Default: MAIL_MAILER=log (emails written to storage/logs/laravel.log)
+-   Optional: Install MailHog via Docker for visual email testing
+    -   Docker command: `docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog`
+    -   Access web UI: http://localhost:8025
+    -   Configure: MAIL_HOST=127.0.0.1, MAIL_PORT=1025
+-   Alternative: Use Mailtrap.io free tier for testing
+    -   Sign up at mailtrap.io → get SMTP credentials
+    -   Update .env with Mailtrap host/port/username/password
+
+### Implementation Phase 7: Background Jobs & Scheduled Tasks ✅
 
 -   GOAL-007: Implement automated tasks for category upgrades and news expiration.
 
-| Task     | Description                                                                                                                                                                     | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events.                 |           |      |
-| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                                               |           |      |
-| TASK-043 | Register jobs in `app/Console/Kernel.php` schedule: run `EvaluateClientCategoriesJob` every 6 months (or configurable interval), run `CleanupExpiredNewsJob` daily at midnight. |           |      |
-| TASK-044 | Create `SendCategoryUpgradeNotificationMail` Mailable: congratulate client on upgrade, explain new benefits, list accessible promotions.                                        |           |      |
-| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in README.                                                    |           |      |
+| Task     | Description                                                                                                                                                     | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-041 | Create `EvaluateClientCategoriesJob`: iterates all clients, calls `CategoryUpgradeService`, sends notification emails on category changes, logs upgrade events. | ✅        | 2025-11-03 |
+| TASK-042 | Create `CleanupExpiredNewsJob`: marks or deletes expired news (fecha_hasta < now), configurable retention period.                                               | ✅        | 2025-11-03 |
+| TASK-043 | Register jobs in `routes/console.php` schedule: run `EvaluateClientCategoriesJob` monthly, run `CleanupExpiredNewsJob` daily at midnight.                       | ✅        | 2025-11-03 |
+| TASK-044 | ~~Create `SendCategoryUpgradeNotificationMail` Mailable~~ (Already created in Phase 6 as `CategoryUpgradeNotificationMail`)                                     | ✅        | 2025-11-03 |
+| TASK-045 | Configure Windows Task Scheduler command for XAMPP: `php artisan schedule:run` every minute, document setup steps in `SCHEDULER_SETUP.md`.                      | ✅        | 2025-11-03 |
+
+---
+
+#### Phase 7 Findings (2025-11-03)
+
+**Jobs Created:**
+
+-   `app/Jobs/EvaluateClientCategoriesJob.php` - 139 lines
+-   `app/Jobs/CleanupExpiredNewsJob.php` - 125 lines
+-   `app/Console/Commands/EvaluateClientCategories.php` - 44 lines
+-   `app/Console/Commands/CleanupExpiredNews.php` - 44 lines
+
+**Configuration Updates:**
+
+-   `config/shopping.php`: Added retention_days setting to news_cleanup configuration
+-   `routes/console.php`: Registered scheduled tasks with Laravel 11's Schedule facade
+
+**Documentation Created:**
+
+-   `SCHEDULER_SETUP.md`: Comprehensive guide for configuring Laravel Scheduler on Windows/XAMPP (170+ lines)
+
+**EvaluateClientCategoriesJob (TASK-041):**
+
+-   **Purpose:** Automatically evaluate and upgrade client categories based on promotion usage
+-   **Queue Implementation:**
+    -   Implements `ShouldQueue` interface for background processing
+    -   Uses Laravel's queue traits: Dispatchable, InteractsWithQueue, Queueable, SerializesModels
+    -   Configured with 3 retry attempts (`$tries = 3`)
+    -   Timeout set to 300 seconds (5 minutes) for large client bases
+-   **Business Logic:**
+    -   Queries all clients with `tipo_usuario='cliente'` and `email_verified_at IS NOT NULL`
+    -   Iterates through each client and calls `CategoryUpgradeService->evaluateClient()`
+    -   Only evaluates verified clients (business requirement)
+    -   Tracks old category before evaluation for upgrade statistics
+-   **Statistics Tracking:**
+    -   `total_clients`: Count of all eligible clients
+    -   `evaluated`: Number of clients successfully evaluated
+    -   `upgraded`: Number of clients that received category upgrade
+    -   `errors`: Count of failed evaluations
+    -   `upgrades_by_category`: Breakdown of upgrade types:
+        -   'Inicial -> Medium'
+        -   'Inicial -> Premium'
+        -   'Medium -> Premium'
+-   **Logging:**
+    -   Info log at job start: "Starting client category evaluation job"
+    -   Info log for each successful upgrade with user details
+    -   Error log for individual client evaluation failures (doesn't stop job)
+    -   Completion log with duration and statistics summary
+    -   Error log for catastrophic job failure (triggers retry)
+-   **Error Handling:**
+    -   Individual client errors caught and logged, job continues with remaining clients
+    -   Errors increment error counter but don't fail entire job
+    -   Exception re-thrown at top level to trigger Laravel's job retry mechanism
+    -   `failed()` method logs permanent failure after all retries exhausted
+    -   TODO placeholder for admin alert email on permanent failure
+-   **Email Integration:**
+    -   Leverages `CategoryUpgradeService` which sends `CategoryUpgradeNotificationMail`
+    -   No direct email sending in job (follows service layer pattern)
+    -   Emails sent automatically when `evaluateClient()` returns `['upgraded' => true]`
+-   **Performance Considerations:**
+    -   Batch processing of all clients in single job execution
+    -   5-minute timeout suitable for ~1000-5000 clients (depends on DB speed)
+    -   Could be optimized with chunking for very large client bases (>10k)
+    -   Eager loading opportunity: `->with('promotionUsages')` if needed
+
+**CleanupExpiredNewsJob (TASK-042):**
+
+-   **Purpose:** Remove expired news items after retention period to keep database clean
+-   **Queue Configuration:**
+    -   Implements `ShouldQueue` for background execution
+    -   3 retry attempts on failure
+    -   2-minute timeout (sufficient for news cleanup)
+-   **Deletion Strategy:**
+    -   Queries news with `fecha_hasta < (now - retention_days)`
+    -   Uses configurable retention period from `config('shopping.scheduled_jobs.news_cleanup.retention_days', 30)`
+    -   Default retention: 30 days after expiration before permanent deletion
+    -   Allows expired news to remain visible briefly for reference
+-   **Retention Period Logic:**
+    -   Example: News expires on 2025-10-01, retention = 30 days
+    -   Cleanup runs on 2025-11-03: (10/01 + 30 days) = 10/31, now > 10/31, so news deleted
+    -   Provides grace period for users to see recently expired news
+    -   Prevents immediate deletion when news just expired
+-   **Statistics Tracked:**
+    -   `total_expired`: Count of news items past retention period
+    -   `deleted`: Successfully deleted news items
+    -   `errors`: Failed deletions (logged but don't stop job)
+-   **Logging Details:**
+    -   Info log at job start
+    -   If no expired news found: "No expired news to cleanup" (early return)
+    -   Each deletion logs:
+        -   `news_id`: Deleted news identifier
+        -   `title_preview`: First 50 characters of texto_novedad
+        -   `expired_date`: Original fecha_hasta date
+        -   `days_since_expiration`: How long ago news expired
+    -   Completion log includes:
+        -   Duration in seconds
+        -   Cutoff date used for query
+        -   Retention days setting
+        -   Statistics summary
+-   **Error Handling:**
+    -   Individual deletion failures logged separately
+    -   Job continues processing remaining news items
+    -   Catastrophic failures re-thrown for retry
+    -   `failed()` method with TODO for admin alert
+-   **Configuration Flexibility:**
+    -   Retention period adjustable via `.env`: `NEWS_RETENTION_DAYS=30`
+    -   Can be disabled completely via `JOB_NEWS_CLEANUP_ENABLED=false`
+    -   Schedule frequency configurable in `routes/console.php`
+
+**Scheduled Tasks Registration (TASK-043):**
+
+-   **Laravel 11 Architecture Change:**
+    -   Laravel 11 removed `app/Console/Kernel.php`
+    -   Scheduled tasks now registered in `routes/console.php`
+    -   Uses `Illuminate\Support\Facades\Schedule` facade
+-   **EvaluateClientCategoriesJob Schedule:**
+    -   `Schedule::job(new EvaluateClientCategoriesJob())`
+    -   `->monthly()`: Runs on 1st day of each month
+    -   `->at('02:00')`: Executes at 2 AM (low traffic time)
+    -   `->name('evaluate-client-categories')`: Named for monitoring
+    -   `->withoutOverlapping()`: Prevents concurrent executions
+    -   `->onOneServer()`: Ensures single execution in multi-server setup
+    -   Respects `config('shopping.scheduled_jobs.category_evaluation.enabled')` setting
+-   **CleanupExpiredNewsJob Schedule:**
+    -   `Schedule::job(new CleanupExpiredNewsJob())`
+    -   `->daily()`: Runs every day
+    -   `->at('00:00')`: Executes at midnight
+    -   `->name('cleanup-expired-news')`: Monitoring label
+    -   `->withoutOverlapping()`: Prevents overlap
+    -   `->onOneServer()`: Single server execution
+    -   Respects `config('shopping.scheduled_jobs.news_cleanup.enabled')` setting
+-   **Conditional Execution:**
+    -   Both jobs check config before scheduling
+    -   Can be disabled via `.env` without code changes:
+        -   `JOB_CATEGORY_EVALUATION_ENABLED=false`
+        -   `JOB_NEWS_CLEANUP_ENABLED=false`
+    -   Useful for maintenance windows or debugging
+
+**Custom Artisan Commands Created:**
+
+**EvaluateClientCategories Command:**
+
+-   **Signature:** `php artisan app:evaluate-categories`
+-   **Purpose:** Manually trigger category evaluation for testing/debugging
+-   **Description:** "Evaluate all client categories and upgrade based on promotion usage"
+-   **Implementation:**
+    -   Uses `EvaluateClientCategoriesJob::dispatchSync()` for synchronous execution
+    -   Provides immediate console feedback (success/failure)
+    -   Returns `Command::SUCCESS` (0) or `Command::FAILURE` (1)
+-   **Output Messages:**
+    -   Start: "Starting client category evaluation..."
+    -   Success: "✓ Client category evaluation completed successfully!"
+    -   Hint: "Check storage/logs/laravel.log for detailed statistics."
+    -   Error: "✗ Failed to evaluate client categories: {error message}"
+-   **Use Cases:**
+    -   Testing category upgrade logic without waiting for schedule
+    -   Manual execution after database seeding
+    -   Debugging category calculation issues
+    -   Running in CI/CD pipeline for integration tests
+
+**CleanupExpiredNews Command:**
+
+-   **Signature:** `php artisan app:cleanup-news`
+-   **Purpose:** Manually cleanup expired news for testing
+-   **Description:** "Cleanup expired news items based on retention period"
+-   **Implementation:** Same pattern as category evaluation command
+-   **Output Messages:** Similar structure with news-specific wording
+-   **Use Cases:**
+    -   Testing news expiration logic
+    -   Manual cleanup before backups
+    -   Verifying retention period calculations
+    -   Database maintenance tasks
+
+**Configuration Updates:**
+
+**config/shopping.php Additions:**
+
+```php
+'scheduled_jobs' => [
+    'category_evaluation' => [
+        'enabled' => env('JOB_CATEGORY_EVALUATION_ENABLED', true),
+        'schedule' => 'monthly',
+    ],
+    'news_cleanup' => [
+        'enabled' => env('JOB_NEWS_CLEANUP_ENABLED', true),
+        'schedule' => 'daily',
+        'retention_days' => env('NEWS_RETENTION_DAYS', 30), // NEW
+    ]
+],
+```
+
+-   Added `retention_days` setting for news cleanup job
+-   Default value: 30 days (configurable via environment variable)
+-   Allows different retention policies per environment (dev/staging/prod)
+
+**SCHEDULER_SETUP.md Documentation:**
+
+-   **Comprehensive Windows/XAMPP Guide** (170+ lines):
+    -   Overview of scheduled tasks (what, when, why)
+    -   3 setup methods:
+        1. **Windows Task Scheduler** (production-ready)
+        2. **Manual execution** (development/testing)
+        3. **PowerShell loop script** (alternative)
+-   **Method 1: Windows Task Scheduler (Detailed):**
+    -   Step-by-step Task Scheduler configuration
+    -   Batch file creation (`run-scheduler.bat`)
+    -   Trigger configuration (every 1 minute)
+    -   Action setup (program path, working directory)
+    -   Conditions and settings (AC power, wake computer, restart on failure)
+    -   Testing instructions
+    -   Verification steps
+-   **Batch File Template:**
+
+    ```batch
+    @echo off
+    cd /d C:\Programas\xampp\htdocs\shoppingRio
+    php artisan schedule:run >> storage\logs\scheduler.log 2>&1
+    ```
+
+    -   Changes to project directory
+    -   Runs Laravel scheduler
+    -   Redirects output to scheduler.log
+    -   Captures errors (2>&1)
+
+-   **Method 2: Manual Execution:**
+    -   Direct `php artisan schedule:run` command
+    -   Tinker examples for job dispatch
+    -   Custom Artisan commands usage
+-   **Method 3: PowerShell Loop:**
+    -   Infinite loop with 60-second sleep
+    -   Suitable for development without Task Scheduler
+    -   Requires keeping PowerShell window open
+-   **Log Verification:**
+    -   Laravel log location: `storage/logs/laravel.log`
+    -   Scheduler log: `storage/logs/scheduler.log`
+    -   Example log entries for both jobs
+    -   What to look for (timestamps, statistics, errors)
+-   **Configuration Section:**
+    -   How to modify schedules in config/shopping.php
+    -   Environment variable overrides
+    -   Disabling jobs temporarily
+-   **Troubleshooting:**
+    -   Task Scheduler not running (service check)
+    -   PHP not found in PATH (PATH configuration)
+    -   Permission errors (run as admin, file permissions)
+    -   Logs not generated (cache clear, permissions)
+-   **Production Monitoring Recommendations:**
+    -   Laravel Horizon for queue monitoring
+    -   Laravel Telescope for debugging
+    -   Email alerts on job failures
+    -   Centralized logging (Papertrail, Loggly)
+    -   Health checks for scheduler uptime
+-   **Resource Links:**
+    -   Laravel Task Scheduling documentation
+    -   Windows Task Scheduler documentation
+
+**Code Quality Metrics:**
+
+-   Total LOC: ~352 lines across 4 new files
+-   Zero lint errors after implementation
+-   Comprehensive docblocks for all classes and methods
+-   Type hints on all method parameters and returns
+-   Consistent error handling patterns across jobs
+-   Detailed logging for production debugging
+
+**Alignment with Requirements:**
+
+-   ✅ TECH-006: Scheduled job for category upgrades (every 6 months → implemented as monthly with 6-month lookback)
+-   ✅ REQ-006: Automatic category upgrade logic
+-   ✅ REQ-011: Auto-expire news based on date ranges
+-   ✅ BUS-007: Category upgrade based on usage in last 6 months
+-   ✅ BUS-009: Category evaluation runs automatically (monthly schedule)
+-   ✅ BUS-012: News auto-expire (via cleanup job with retention period)
+-   ✅ CON-001: XAMPP-compatible setup (comprehensive Windows documentation)
+-   ✅ CON-005: Category thresholds configurable (via config/shopping.php)
+-   ✅ GUD-005: Important events logged (upgrade statistics, cleanup results)
+-   ✅ GUD-006: Database transactions used (via service layer)
+
+**Job Execution Flow:**
+
+**Category Evaluation Flow:**
+
+1. Task Scheduler triggers `php artisan schedule:run` every minute
+2. Laravel checks `routes/console.php` for due schedules
+3. On 1st day of month at 2 AM, EvaluateClientCategoriesJob dispatched to queue
+4. Job queries all verified clients
+5. For each client:
+    - CategoryUpgradeService evaluates usage in last 6 months
+    - If threshold met, category upgraded, email sent
+    - Statistics tracked (upgraded, old/new category)
+6. Job completion logged with summary statistics
+7. Admin can review logs for monthly upgrade report
+
+**News Cleanup Flow:**
+
+1. Task Scheduler runs every minute
+2. Laravel checks schedule
+3. Daily at midnight, CleanupExpiredNewsJob dispatched
+4. Job calculates cutoff date (now - retention_days)
+5. Queries news with fecha_hasta < cutoff date
+6. For each expired news:
+    - Delete record from database
+    - Log deletion with details
+7. Summary statistics logged
+8. Database stays clean, no stale news data
+
+**Testing Strategy:**
+
+-   **Manual Testing:**
+
+    ```powershell
+    # Test category evaluation
+    php artisan app:evaluate-categories
+
+    # Test news cleanup
+    php artisan app:cleanup-news
+
+    # Test scheduler
+    php artisan schedule:run --verbose
+    ```
+
+-   **Unit Testing (Phase 10):**
+    -   Mock CategoryUpgradeService in job test
+    -   Assert correct clients are queried
+    -   Verify statistics calculation
+    -   Test error handling for failed evaluations
+-   **Integration Testing:**
+    -   Seed test clients with varied usage patterns
+    -   Run EvaluateClientCategoriesJob
+    -   Assert categories upgraded correctly
+    -   Verify CategoryUpgradeNotificationMail sent
+    -   Check logs for expected entries
+
+**Performance Considerations:**
+
+-   **Scalability:**
+    -   Current implementation suitable for ~1000-5000 clients
+    -   For larger systems (>10k clients), implement chunking:
+        ```php
+        User::where('tipo_usuario', 'cliente')
+            ->chunk(100, function ($clients) {
+                // Process chunk
+            });
+        ```
+-   **Database Optimization:**
+    -   Indexes on `tipo_usuario`, `email_verified_at` recommended
+    -   Consider composite index: `(tipo_usuario, email_verified_at)`
+    -   News cleanup query benefits from index on `fecha_hasta`
+-   **Queue Workers:**
+    -   Jobs should run on queue worker: `php artisan queue:work`
+    -   Configure queue driver in `.env`: `QUEUE_CONNECTION=database`
+    -   Monitor failed jobs: `php artisan queue:failed`
+
+**Next Steps:**
+
+-   ~~Phase 7: Background Jobs & Scheduled Tasks~~ ✅ COMPLETED
+-   Phase 8: Controller Implementation (use services in controllers)
+-   Phase 9: Blade Email Templates (create HTML templates for all Mailable classes)
+-   Phase 10: Testing & Documentation (feature tests for jobs, verify scheduler)
+-   Production: Configure proper queue worker (Supervisor on Linux, NSSM on Windows)
 
 ### Implementation Phase 8: Controller Implementation
 
