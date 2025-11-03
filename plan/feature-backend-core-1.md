@@ -5,14 +5,22 @@ date_created: 2025-10-31
 last_updated: 2025-11-03
 owner: Development Team
 status: In Progress
-progress: Phase 5 Complete (40%)
-tags: [feature, backend, database, authentication, business-logic]
+progress: Phase 6 Complete (50%)
+tags:
+    [
+        feature,
+        backend,
+        database,
+        authentication,
+        business-logic,
+        email-notifications,
+    ]
 ---
 
 # Introduction
 
 Status badge: (status: In Progress, color: yellow)
-Progress: Phases 1-5 Complete (Database + Models + Auth + Services + Validation) | Phases 6-10 Pending
+Progress: Phases 1-6 Complete (Database + Models + Auth + Services + Validation + Email) | Phases 7-10 Pending
 
 Implement the core backend functionality for the ShoppingRio application, including database schema, Eloquent models with relationships, authentication system with role-based access control, and business logic services. This plan builds upon the completed frontend integration (feature-frontend-integration-1) and establishes the foundation for all CRUD operations, user workflows, and automated processes required by the project specifications.
 
@@ -1260,7 +1268,7 @@ All required indexes implemented directly in table creation migrations:
 
 **Next Steps:**
 
--   Phase 6: Email Notifications (wire up email sending in services)
+-   ~~Phase 6: Email Notifications (wire up email sending in services)~~ ✅ COMPLETED
 -   Phase 7: Background Jobs & Scheduled Tasks (category evaluation, news cleanup)
 -   Phase 8: Controller Implementation (use Form Requests in controller methods)
 -   Testing: Create validation tests for edge cases and error messages
@@ -1269,17 +1277,325 @@ All required indexes implemented directly in table creation migrations:
 
 -   GOAL-006: Implement all email notifications required by the system.
 
-| Task     | Description                                                                                                                                           | Completed | Date |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                        |           |      |
-| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                          |           |      |
-| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                     |           |      |
-| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                   |           |      |
-| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                          |           |      |
-| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                               |           |      |
-| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject. |           |      |
-| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                |           |      |
-| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                               |           |      |
+| Task     | Description                                                                                                                                           | Completed | Date       |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-032 | Configure mail settings in `.env` and `config/mail.php` for SMTP (Mailtrap for dev, production SMTP for prod).                                        | ✅        | 2025-11-03 |
+| TASK-033 | Create `ClientVerificationMail` Mailable: welcome message, email verification link, shopping benefits intro.                                          | ✅        | 2025-11-03 |
+| TASK-034 | Create `StoreOwnerApprovalMail` Mailable: approval notification, login instructions, dashboard link, admin contact for questions.                     | ✅        | 2025-10-31 |
+| TASK-035 | Create `StoreOwnerRejectionMail` Mailable: rejection notification with reason (optional), contact info for appeals.                                   | ✅        | 2025-10-31 |
+| TASK-036 | Create `PromotionApprovedMail` Mailable: notify store owner of approved promotion, include promotion details and start date.                          | ✅        | 2025-11-03 |
+| TASK-037 | Create `PromotionDeniedMail` Mailable: notify store owner of denied promotion with reason, guidelines for resubmission.                               | ✅        | 2025-11-03 |
+| TASK-038 | Create `PromotionUsageRequestMail` Mailable: notify store owner of client request, include client info and promotion details, links to accept/reject. | ✅        | 2025-11-03 |
+| TASK-039 | Create `PromotionUsageAcceptedMail` Mailable: notify client their request was accepted, include usage instructions and store location.                | ✅        | 2025-11-03 |
+| TASK-040 | Create `PromotionUsageRejectedMail` Mailable: notify client their request was rejected, suggest alternative promotions.                               | ✅        | 2025-11-03 |
+
+#### Phase 6 Findings (2025-11-03)
+
+**Mailable Classes Created:**
+
+-   `app/Mail/ClientVerificationMail.php` - 69 lines
+-   `app/Mail/StoreOwnerApproved.php` - 65 lines (Phase 3)
+-   `app/Mail/StoreOwnerRejected.php` - 63 lines (Phase 3)
+-   `app/Mail/PromotionApprovedMail.php` - 65 lines
+-   `app/Mail/PromotionDeniedMail.php` - 65 lines
+-   `app/Mail/PromotionUsageRequestMail.php` - 70 lines
+-   `app/Mail/PromotionUsageAcceptedMail.php` - 67 lines
+-   `app/Mail/PromotionUsageRejectedMail.php` - 75 lines
+-   `app/Mail/CategoryUpgradeNotificationMail.php` - 80 lines
+
+**Configuration Updates:**
+
+-   `config/mail.php`: Added ShoppingRio-specific email addresses (support, admin, notifications)
+-   `.env.example`: Added complete mail configuration with XAMPP/Mailtrap examples
+-   Email queue configuration (MAIL_QUEUE, MAIL_QUEUE_CONNECTION)
+
+**Service Integrations:**
+
+-   `app/Services/PromotionService.php`: Integrated PromotionApprovedMail and PromotionDeniedMail
+-   `app/Services/PromotionUsageService.php`: Integrated 3 Mailable classes (Request, Accepted, Rejected)
+-   `app/Services/CategoryUpgradeService.php`: Integrated CategoryUpgradeNotificationMail
+-   Removed all TODO comments for email notifications
+
+**ClientVerificationMail (TASK-033):**
+
+-   **Purpose:** Welcome new clients and verify email address
+-   **Constructor Parameters:**
+    -   `User $client`: The newly registered client
+    -   `string $verificationUrl`: Laravel's generated verification URL
+-   **Email Content (via view data):**
+    -   `clientName`: Client's name from User model
+    -   `clientEmail`: User's nombreUsuario (email)
+    -   `verificationUrl`: Clickable verification link
+    -   `expirationMinutes`: From config('auth.verification.expire', 60)
+    -   `benefits`: Array of shopping system benefits
+        -   "Acceso exclusivo a promociones y descuentos"
+        -   "Sistema de categorías con beneficios progresivos"
+        -   "Notificaciones personalizadas de ofertas"
+        -   "Historial de promociones utilizadas"
+    -   `initialCategory`: 'Inicial' (default for new clients)
+    -   `categoryBenefits`: Benefits from config('shopping.client_categories.Inicial.benefits')
+    -   `supportEmail`: config('mail.support_email', 'soporte@shoppingrio.com')
+-   **Subject:** "¡Bienvenido a ShoppingRio! - Verifica tu cuenta"
+-   **View Template:** resources/views/emails/client-verification.blade.php (to be created Phase 9)
+
+**PromotionApprovedMail (TASK-036):**
+
+-   **Purpose:** Notify store owner when admin approves promotion
+-   **Constructor Parameters:** `Promotion $promotion` with eager-loaded store relationship
+-   **Email Content:**
+    -   `storeName`: $promotion->store->nombre
+    -   `promotionCode`: $promotion->codigo_promocion
+    -   `promotionText`: $promotion->texto_promocion
+    -   `startDate`: $promotion->fecha_desde formatted as d/m/Y
+    -   `endDate`: $promotion->fecha_hasta formatted as d/m/Y
+    -   `category`: $promotion->categoria_minima
+    -   `dashboardUrl`: route('store.dashboard') for next steps
+-   **Subject:** "Promoción Aprobada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-approved.blade.php
+
+**PromotionDeniedMail (TASK-037):**
+
+-   **Purpose:** Notify store owner when admin denies promotion with reason
+-   **Constructor Parameters:**
+    -   `Promotion $promotion`
+    -   `string|null $reason`: Optional explanation from admin
+-   **Email Content:**
+    -   `storeName`, `promotionCode`, `promotionText` (same as approved)
+    -   `reason`: Admin's explanation for denial (or default message)
+    -   `guidelinesUrl`: URL to promotion creation guidelines
+    -   `supportEmail`: config('mail.support_email')
+    -   `dashboardUrl`: Link to store dashboard
+-   **Subject:** "Promoción Denegada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-denied.blade.php
+
+**PromotionUsageRequestMail (TASK-038):**
+
+-   **Purpose:** Notify store owner when client requests to use promotion
+-   **Constructor Parameters:** `PromotionUsage $usage` with eager-loaded client and promotion relationships
+-   **Email Content:**
+    -   `storeName`: $usage->promotion->store->nombre
+    -   `clientName`: $usage->client->name
+    -   `clientEmail`: $usage->client->nombreUsuario
+    -   `clientCategory`: $usage->client->categoria_cliente
+    -   `promotionCode`, `promotionText`: Promotion details
+    -   `requestDate`: $usage->fecha_uso formatted as d/m/Y
+    -   `acceptUrl`: route('store.usage.accept', $usage) with signature
+    -   `rejectUrl`: route('store.usage.reject', $usage) with signature
+-   **Subject:** "Nueva Solicitud de Uso de Promoción - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-request.blade.php
+
+**PromotionUsageAcceptedMail (TASK-039):**
+
+-   **Purpose:** Notify client when store owner accepts usage request
+-   **Constructor Parameters:** `PromotionUsage $usage`
+-   **Email Content:**
+    -   `clientName`: $usage->client->name
+    -   `storeName`: $usage->promotion->store->nombre
+    -   `storeLocation`: $usage->promotion->store->ubicacion
+    -   `promotionText`: Promotion details
+    -   `usageDate`: $usage->fecha_uso formatted
+    -   `validUntil`: $usage->promotion->fecha_hasta formatted (expiration reminder)
+    -   `contactInfo`: Store contact information
+-   **Subject:** "Promoción Aceptada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-accepted.blade.php
+
+**PromotionUsageRejectedMail (TASK-040):**
+
+-   **Purpose:** Notify client when store owner rejects usage request
+-   **Constructor Parameters:**
+    -   `PromotionUsage $usage`
+    -   `string|null $reason`: Optional explanation from store owner
+-   **Email Content:**
+    -   `clientName`, `storeName`, `promotionText` (same as accepted)
+    -   `reason`: Store owner's explanation or default message
+    -   `alternativePromotions`: Query for other active promotions from same store
+        -   Queries Promotion::where('store_id', $usage->promotion->store_id)
+        -   Filters: approved(), active(), validToday()
+        -   Excludes current promotion and already-used promotions by client
+        -   Limits to 3 suggestions
+    -   `supportEmail`: Contact for assistance
+    -   `browseLin k`: Link to browse all promotions
+-   **Subject:** "Solicitud de Promoción Rechazada - ShoppingRio"
+-   **View Template:** resources/views/emails/promotion-usage-rejected.blade.php
+
+**CategoryUpgradeNotificationMail (TASK-040, extended to TASK-044):**
+
+-   **Purpose:** Congratulate client on category upgrade and explain new benefits
+-   **Constructor Parameters:**
+    -   `User $client`: The upgraded client
+    -   `string $oldCategory`: Previous category (Inicial, Medium)
+    -   `string $newCategory`: New category (Medium, Premium)
+-   **Email Content:**
+    -   `clientName`: $client->name
+    -   `oldCategory`, `newCategory`: Display upgrade path
+    -   `benefits`: Benefits array from config('shopping.client_categories.{$newCategory}.benefits')
+        -   Retrieves dynamic list of benefits for new category
+        -   Example: Premium gets "Acceso prioritario a todas las promociones"
+    -   `upgradeMessage`: Personalized congratulations message
+    -   `promotionCount`: Count of newly accessible promotions
+        -   Queries Promotion::approved()->active()->forCategory($newCategory)
+        -   Shows immediate value of upgrade
+    -   `dashboardUrl`: route('client.dashboard') to explore promotions
+    -   `supportEmail`: config('mail.support_email')
+-   **Subject:** "¡Felicitaciones! Has sido actualizado a categoría {newCategory}"
+-   **View Template:** resources/views/emails/category-upgrade-notification.blade.php
+
+**Email Configuration (TASK-032):**
+
+-   **config/mail.php Updates:**
+    -   Added `support_email` setting (env: MAIL_SUPPORT_ADDRESS)
+    -   Added `admin_email` setting (env: MAIL_ADMIN_ADDRESS)
+    -   Added `notifications_email` setting (env: MAIL_NOTIFICATIONS_ADDRESS)
+    -   Added `queue_emails` boolean (env: MAIL_QUEUE, default: true)
+    -   Added `queue_connection` setting (env: MAIL_QUEUE_CONNECTION, default: 'sync')
+    -   All settings have sensible defaults for ShoppingRio domain
+-   **.env.example Updates:**
+    -   Changed MAIL_FROM_ADDRESS to "noreply@shoppingrio.com"
+    -   Changed MAIL_FROM_NAME to "ShoppingRio"
+    -   Added 3 ShoppingRio email addresses (support, admin, notifications)
+    -   Added email queue configuration (MAIL_QUEUE=true, connection=database)
+    -   Documented MailHog setup for XAMPP (commented):
+        -   MAIL_HOST=mailhog, PORT=1025
+        -   Suitable for local testing without actual SMTP
+    -   Documented production SMTP example (Gmail):
+        -   MAIL_HOST=smtp.gmail.com, PORT=587, ENCRYPTION=tls
+        -   Includes username and app-specific password placeholders
+
+**Service Integration Details:**
+
+**PromotionService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\PromotionApprovedMail;`
+    -   `use App\Mail\PromotionDeniedMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **approvePromotion() Method:**
+    -   After updating estado to 'aprobada':
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionApprovedMail($promotion));`
+    -   Sends to store owner's email (nombreUsuario field)
+    -   Uses DB transaction (email sent before commit)
+-   **denyPromotion() Method:**
+    -   After updating estado to 'denegada':
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionDeniedMail($promotion, $reason));`
+    -   Passes optional reason parameter to Mailable
+-   **Error Handling:**
+    -   Email failures logged via Log::error()
+    -   Transaction rollback ensures data consistency if email fails
+
+**PromotionUsageService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\PromotionUsageRequestMail;`
+    -   `use App\Mail\PromotionUsageAcceptedMail;`
+    -   `use App\Mail\PromotionUsageRejectedMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **createUsageRequest() Method:**
+    -   After creating PromotionUsage record:
+    -   `Mail::to($promotion->store->owner->nombreUsuario)->send(new PromotionUsageRequestMail($usage));`
+    -   Notifies store owner immediately after client requests promotion
+-   **acceptUsageRequest() Method:**
+    -   After updating estado to 'aceptada':
+    -   `Mail::to($usage->client->nombreUsuario)->send(new PromotionUsageAcceptedMail($usage));`
+    -   Confirms to client their request was approved
+-   **rejectUsageRequest() Method:**
+    -   After updating estado to 'rechazada':
+    -   `Mail::to($usage->client->nombreUsuario)->send(new PromotionUsageRejectedMail($usage, $reason));`
+    -   Provides client with reason and alternative suggestions
+
+**CategoryUpgradeService Updates:**
+
+-   **Import Statements Added:**
+    -   `use App\Mail\CategoryUpgradeNotificationMail;`
+    -   `use Illuminate\Support\Facades\Mail;`
+-   **evaluateClient() Method:**
+    -   After successful category upgrade:
+    -   `Mail::to($client->nombreUsuario)->send(new CategoryUpgradeNotificationMail($client, $oldCategory, $newCategory));`
+    -   Sent within DB transaction before commit
+    -   Email only sent if upgrade actually occurs (not sent for no-change cases)
+-   **Log Entry Update:**
+    -   Changed `'email' => $client->email` to `'email' => $client->nombreUsuario`
+    -   Consistent field naming across application
+
+**Laravel Mailable Architecture:**
+
+-   All Mailable classes use Laravel 11's modern structure:
+    -   `Queueable` trait for background processing
+    -   `SerializesModels` trait for safe model serialization
+    -   Constructor with public properties (auto-available in views)
+    -   `envelope()` method returns Envelope with subject
+    -   `content()` method returns Content with view path and data
+    -   `attachments()` method returns empty array (no file attachments needed)
+-   No raw email construction (uses Blade templates)
+-   Queueable by default (respects config('mail.queue_emails') setting)
+
+**Blade View Templates (to be created in Phase 9):**
+
+-   resources/views/emails/client-verification.blade.php
+-   resources/views/emails/promotion-approved.blade.php
+-   resources/views/emails/promotion-denied.blade.php
+-   resources/views/emails/promotion-usage-request.blade.php
+-   resources/views/emails/promotion-usage-accepted.blade.php
+-   resources/views/emails/promotion-usage-rejected.blade.php
+-   resources/views/emails/category-upgrade-notification.blade.php
+-   resources/views/emails/store-owner-approved.blade.php (Phase 3)
+-   resources/views/emails/store-owner-rejected.blade.php (Phase 3)
+
+**Code Quality Metrics:**
+
+-   Total Mailable LOC: ~619 lines across 9 classes
+-   Zero lint errors after implementation
+-   All imports properly namespaced
+-   Consistent constructor parameter naming (public properties)
+-   Comprehensive view data arrays for Blade templates
+-   Spanish-language subject lines and user-facing content
+
+**Alignment with Requirements:**
+
+-   ✅ TECH-005: Laravel Mailable classes for all email notifications
+-   ✅ REQ-004: Email verification for client registration (ClientVerificationMail)
+-   ✅ REQ-005: Admin approval workflow emails (StoreOwnerApproved/Rejected)
+-   ✅ REQ-008: Promotion approval workflow notifications (Approved/Denied)
+-   ✅ REQ-009: Promotion usage request notifications (Request/Accepted/Rejected)
+-   ✅ REQ-006: Category upgrade notifications (CategoryUpgradeNotificationMail)
+-   ✅ CON-003: SMTP configuration for dev and production (.env.example examples)
+-   ✅ GUD-005: Important business events trigger emails (via service layer)
+
+**Email Workflow Coverage:**
+
+-   **Client Registration Flow:**
+    -   ClientVerificationMail → verify email → access system
+-   **Store Owner Onboarding:**
+    -   StoreOwnerApproved → login instructions → dashboard access
+    -   StoreOwnerRejected → reason provided → contact support
+-   **Promotion Lifecycle:**
+    -   Store owner creates → Admin reviews → PromotionApproved/Denied sent
+    -   Store owner notified of approval/denial decision
+-   **Usage Request Flow:**
+    -   Client requests → PromotionUsageRequestMail to store owner
+    -   Store owner decides → PromotionUsageAccepted/Rejected to client
+    -   Client receives confirmation/rejection with alternatives
+-   **Category Progression:**
+    -   Automated evaluation → CategoryUpgradeNotificationMail
+    -   Client learns new benefits and accessible promotions
+
+**Testing Considerations:**
+
+-   Use Mail::fake() in feature tests to assert emails sent
+-   Test all email scenarios (approval, denial, request, acceptance, rejection)
+-   Validate email queue processing with MAIL_QUEUE=true
+-   Test SMTP connection with Mailtrap before production deployment
+-   Verify Spanish-language content renders correctly in email clients
+
+**XAMPP Development Setup:**
+
+-   Default: MAIL_MAILER=log (emails written to storage/logs/laravel.log)
+-   Optional: Install MailHog via Docker for visual email testing
+    -   Docker command: `docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog`
+    -   Access web UI: http://localhost:8025
+    -   Configure: MAIL_HOST=127.0.0.1, MAIL_PORT=1025
+-   Alternative: Use Mailtrap.io free tier for testing
+    -   Sign up at mailtrap.io → get SMTP credentials
+    -   Update .env with Mailtrap host/port/username/password
 
 ### Implementation Phase 7: Background Jobs & Scheduled Tasks
 

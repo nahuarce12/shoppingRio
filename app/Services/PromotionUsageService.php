@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Mail\PromotionUsageAcceptedMail;
+use App\Mail\PromotionUsageRejectedMail;
+use App\Mail\PromotionUsageRequestMail;
 use App\Models\Promotion;
 use App\Models\PromotionUsage;
 use App\Models\User;
@@ -9,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Service class for promotion usage request management.
@@ -49,8 +53,9 @@ class PromotionUsageService
                 'estado' => 'enviada'
             ]);
 
-            // TODO: Send notification email to store owner (Phase 6)
-            // Mail::to($promotion->store->owner->email)->send(new PromotionUsageRequestMail($usage));
+            // Send notification email to store owner
+            Mail::to($promotion->store->owner->nombreUsuario)
+                ->send(new PromotionUsageRequestMail($usage));
 
             DB::commit();
 
@@ -99,8 +104,9 @@ class PromotionUsageService
             $usage->estado = 'aceptada';
             $usage->save();
 
-            // TODO: Send acceptance email to client (Phase 6)
-            // Mail::to($usage->client->email)->send(new PromotionUsageAcceptedMail($usage));
+            // Send acceptance email to client
+            Mail::to($usage->client->nombreUsuario)
+                ->send(new PromotionUsageAcceptedMail($usage));
 
             DB::commit();
             return true;
@@ -131,8 +137,9 @@ class PromotionUsageService
             $usage->estado = 'rechazada';
             $usage->save();
 
-            // TODO: Send rejection email to client with reason (Phase 6)
-            // Mail::to($usage->client->email)->send(new PromotionUsageRejectedMail($usage, $reason));
+            // Send rejection email to client with reason
+            Mail::to($usage->client->nombreUsuario)
+                ->send(new PromotionUsageRejectedMail($usage, $reason));
 
             DB::commit();
             return true;
