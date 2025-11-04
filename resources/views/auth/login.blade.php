@@ -25,7 +25,7 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
               <p class="text-muted">Accedé a tu cuenta para disfrutar de las promociones</p>
             </div>
 
-            <form method="POST" action="{{ $loginAction }}" id="loginForm">
+            <form method="POST" action="{{ $loginAction }}" id="loginForm" novalidate>
               @csrf
               <div class="mb-3">
                 <label for="email" class="form-label">Email *</label>
@@ -33,7 +33,18 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
                   <span class="input-group-text">
                     <i class="bi bi-envelope"></i>
                   </span>
-                  <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autocomplete="email">
+                  <input type="email" 
+                         class="form-control @error('email') is-invalid @enderror" 
+                         id="email" 
+                         name="email" 
+                         value="{{ old('email') }}" 
+                         required 
+                         autocomplete="email"
+                         placeholder="tu@email.com">
+                  @error('email')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                  <div class="invalid-feedback">Por favor ingresá un email válido.</div>
                 </div>
               </div>
 
@@ -43,7 +54,20 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
                   <span class="input-group-text">
                     <i class="bi bi-lock"></i>
                   </span>
-                  <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
+                  <input type="password" 
+                         class="form-control @error('password') is-invalid @enderror" 
+                         id="password" 
+                         name="password" 
+                         required 
+                         autocomplete="current-password"
+                         placeholder="Tu contraseña">
+                  <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                    <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                  </button>
+                  @error('password')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                  <div class="invalid-feedback">Por favor ingresá tu contraseña.</div>
                 </div>
               </div>
 
@@ -55,7 +79,7 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
               </div>
 
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
                   <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                 </button>
               </div>
@@ -153,4 +177,59 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
 
 @push('scripts')
 @vite('resources/js/frontoffice/main.js')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const loginForm = document.getElementById('loginForm');
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+  const toggleIcon = document.getElementById('togglePasswordIcon');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Toggle password visibility
+  if (togglePassword) {
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      toggleIcon.classList.toggle('bi-eye');
+      toggleIcon.classList.toggle('bi-eye-slash');
+    });
+  }
+
+  // Form validation
+  loginForm.addEventListener('submit', function(event) {
+    if (!loginForm.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    } else {
+      // Disable submit button to prevent double submission
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Iniciando sesión...';
+    }
+    
+    loginForm.classList.add('was-validated');
+  }, false);
+
+  // Real-time email validation
+  const emailInput = document.getElementById('email');
+  emailInput.addEventListener('blur', function() {
+    if (this.value && !this.validity.valid) {
+      this.classList.add('is-invalid');
+    } else if (this.value) {
+      this.classList.remove('is-invalid');
+      this.classList.add('is-valid');
+    }
+  });
+
+  // Real-time password validation
+  passwordInput.addEventListener('blur', function() {
+    if (!this.value) {
+      this.classList.add('is-invalid');
+      this.classList.remove('is-valid');
+    } else {
+      this.classList.remove('is-invalid');
+      this.classList.add('is-valid');
+    }
+  });
+});
+</script>
 @endpush

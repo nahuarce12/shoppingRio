@@ -14,8 +14,8 @@
             <div class="carousel-text-box">
               <h1 class="text-uppercase fw-bold">Viví las mejores experiencias</h1>
               <p class="my-3">Promociones exclusivas, locales destacados y beneficios para cada categoría de clientes.</p>
-              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ Route::has('pages.promociones') ? route('pages.promociones') : '#' }}">Ver Promociones</a>
-              <a class="btn btn-outline-primary btn-lg" role="button" href="{{ Route::has('pages.locales') ? route('pages.locales') : '#' }}">Explorar Locales</a>
+              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ route('promociones.index') }}">Ver Promociones</a>
+              <a class="btn btn-outline-primary btn-lg" role="button" href="{{ route('locales.index') }}">Explorar Locales</a>
             </div>
           </div>
         </div>
@@ -29,8 +29,8 @@
             <div class="carousel-text-box">
               <h1 class="text-uppercase fw-bold">Beneficios pensados para vos</h1>
               <p class="my-3">Subí de categoría y obtené acceso anticipado a las promociones más exclusivas.</p>
-              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ Route::has('auth.register') ? route('auth.register') : (Route::has('register') ? route('register') : '#') }}">Registrarme</a>
-              <a class="btn btn-outline-primary btn-lg" role="button" href="{{ Route::has('pages.novedades') ? route('pages.novedades') : '#' }}">Ver Novedades</a>
+              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ route('register') }}">Registrarme</a>
+              <a class="btn btn-outline-primary btn-lg" role="button" href="#">Ver Novedades</a>
             </div>
           </div>
         </div>
@@ -44,8 +44,8 @@
             <div class="carousel-text-box">
               <h1 class="text-uppercase fw-bold">Disfrutá cada visita</h1>
               <p class="my-3">Eventos, gastronomía y experiencias únicas para toda la familia.</p>
-              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ Route::has('pages.about') ? route('pages.about') : '#' }}">Conocenos</a>
-              <a class="btn btn-outline-primary btn-lg" role="button" href="{{ Route::has('pages.contact') ? route('pages.contact') : '#' }}">Contactanos</a>
+              <a class="btn btn-primary btn-lg me-2" role="button" href="{{ route('about') }}">Conocenos</a>
+              <a class="btn btn-outline-primary btn-lg" role="button" href="{{ route('contact') }}">Contactanos</a>
             </div>
           </div>
         </div>
@@ -69,72 +69,45 @@
       <h2 class="section-title">Promociones Destacadas</h2>
     </div>
     <div class="row g-4">
+      @forelse($featuredPromotions as $promotion)
       <div class="col-md-6 col-lg-4">
-        <div class="card promo-card" data-category="inicial" data-local="Fashion Store">
+        <div class="card promo-card" data-category="{{ strtolower($promotion->categoria_minima) }}" data-local="{{ $promotion->store->nombre }}">
+          @php
+            $daysUntilEnd = now()->diffInDays($promotion->fecha_hasta, false);
+          @endphp
+          @if($daysUntilEnd >= 0 && $daysUntilEnd <= 7)
           <span class="badge bg-danger promo-badge">
             <i class="bi bi-exclamation-triangle"></i> ¡Por vencer!
           </span>
-          <a href="{{ Route::has('pages.promociones.show') ? route('pages.promociones.show', 1) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción Fashion Store">
+          @endif
+          <a href="{{ route('promociones.show', $promotion->id) }}">
+            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción {{ $promotion->store->nombre }}">
           </a>
           <div class="card-body">
             <div class="mb-2">
-              <span class="badge badge-inicial badge-category">Inicial</span>
+              <span class="badge badge-{{ strtolower($promotion->categoria_minima) }} badge-category">{{ $promotion->categoria_minima }}</span>
             </div>
-            <h5 class="card-title">50% de descuento en segunda unidad</h5>
+            <h5 class="card-title">{{ Str::limit($promotion->texto, 60) }}</h5>
             <p class="promo-info mb-1">
-              <i class="bi bi-shop"></i> Fashion Store
+              <i class="bi bi-shop"></i> {{ $promotion->store->nombre }}
             </p>
             <div class="promo-validity">
-              <i class="bi bi-calendar-event"></i> Válido hasta: 15/11/2025
+              <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion->fecha_hasta->format('d/m/Y') }}
             </div>
           </div>
         </div>
       </div>
-
-      <div class="col-md-6 col-lg-4">
-        <div class="card promo-card" data-category="medium" data-local="Tech World">
-          <a href="{{ Route::has('pages.promociones.show') ? route('pages.promociones.show', 2) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción Tech World">
-          </a>
-          <div class="card-body">
-            <div class="mb-2">
-              <span class="badge badge-medium badge-category">Medium</span>
-            </div>
-            <h5 class="card-title">20% OFF en accesorios tech</h5>
-            <p class="promo-info mb-1">
-              <i class="bi bi-shop"></i> Tech World
-            </p>
-            <div class="promo-validity">
-              <i class="bi bi-calendar-event"></i> Válido hasta: 31/03/2026
-            </div>
-          </div>
+      @empty
+      <div class="col-12">
+        <div class="alert alert-info text-center">
+          <i class="bi bi-info-circle"></i> No hay promociones destacadas disponibles en este momento.
         </div>
       </div>
-
-      <div class="col-md-6 col-lg-4">
-        <div class="card promo-card" data-category="premium" data-local="Bella Italia">
-          <a href="{{ Route::has('pages.promociones.show') ? route('pages.promociones.show', 3) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción Bella Italia">
-          </a>
-          <div class="card-body">
-            <div class="mb-2">
-              <span class="badge badge-premium badge-category">Premium</span>
-            </div>
-            <h5 class="card-title">2x1 en platos principales</h5>
-            <p class="promo-info mb-1">
-              <i class="bi bi-shop"></i> Bella Italia
-            </p>
-            <div class="promo-validity">
-              <i class="bi bi-calendar-event"></i> Válido hasta: 30/12/2025
-            </div>
-          </div>
-        </div>
-      </div>
+      @endforelse
     </div>
 
     <div class="text-center mt-5">
-      <a href="{{ Route::has('pages.promociones') ? route('pages.promociones') : '#' }}" class="btn btn-primary btn-lg">
+      <a href="{{ route('promociones.index') }}" class="btn btn-primary btn-lg">
         Ver Todas las Promociones <i class="bi bi-arrow-right"></i>
       </a>
     </div>
@@ -149,80 +122,33 @@
       <h2 class="section-title">Locales Destacados</h2>
     </div>
     <div class="row g-4 justify-content-center">
+      @forelse($featuredStores as $store)
       <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="moda">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 1) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Fashion Store">
+        <div class="card local-card" data-category="{{ strtolower($store->rubro) }}">
+          <a href="{{ route('locales.show', $store->id) }}">
+            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $store->nombre }}">
           </a>
           <div class="card-body text-center">
-            <h5 class="card-title">Fashion Store</h5>
-            <p class="category-text">Moda y Accesorios</p>
+            <h5 class="card-title">{{ $store->nombre }}</h5>
+            <p class="category-text">{{ $store->rubro }}</p>
+            @if($store->promotions_count > 0)
+            <small class="text-muted">
+              <i class="bi bi-tag"></i> {{ $store->promotions_count }} {{ Str::plural('promoción', $store->promotions_count) }}
+            </small>
+            @endif
           </div>
         </div>
       </div>
-
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="tecnologia">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 2) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Tech World">
-          </a>
-          <div class="card-body text-center">
-            <h5 class="card-title">Tech World</h5>
-            <p class="category-text">Tecnología</p>
-          </div>
+      @empty
+      <div class="col-12">
+        <div class="alert alert-info text-center">
+          <i class="bi bi-info-circle"></i> No hay locales destacados disponibles en este momento.
         </div>
       </div>
-
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="gastronomia">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 3) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Bella Italia">
-          </a>
-          <div class="card-body text-center">
-            <h5 class="card-title">Bella Italia</h5>
-            <p class="category-text">Gastronomía</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="deportes">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 4) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Sport Zone">
-          </a>
-          <div class="card-body text-center">
-            <h5 class="card-title">Sport Zone</h5>
-            <p class="category-text">Deportes</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="hogar">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 5) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Home Deco">
-          </a>
-          <div class="card-body text-center">
-            <h5 class="card-title">Home Deco</h5>
-            <p class="category-text">Hogar</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="salud">
-          <a href="{{ Route::has('pages.locales.show') ? route('pages.locales.show', 6) : '#' }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Beauty Salon">
-          </a>
-          <div class="card-body text-center">
-            <h5 class="card-title">Beauty Salon</h5>
-            <p class="category-text">Belleza</p>
-          </div>
-        </div>
-      </div>
+      @endforelse
     </div>
     <div class="text-center mt-5">
-      <a href="{{ Route::has('pages.locales') ? route('pages.locales') : '#' }}" class="btn btn-primary btn-lg">
+      <a href="{{ route('locales.index') }}" class="btn btn-primary btn-lg">
         Ver Todos los Locales <i class="bi bi-arrow-right"></i>
       </a>
     </div>

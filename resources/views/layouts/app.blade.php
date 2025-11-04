@@ -31,26 +31,17 @@
   <x-nav.main />
 
   <main id="main-content" class="flex-grow-1">
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
-      {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    {{-- Flash Messages --}}
+    <div class="container mt-3">
+      <x-flash-messages />
     </div>
-    @endif
-
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
-      {{ session('error') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
 
     @yield('content')
   </main>
 
   <x-footer.main />
 
-  <!-- Page-specific scripts loaded via @vite() in individual views -->
+  {{-- Page-specific scripts loaded via vite directive in individual views --}}
   @stack('scripts')
 </body>
 

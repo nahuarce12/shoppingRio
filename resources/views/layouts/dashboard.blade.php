@@ -34,26 +34,17 @@
   @endif
 
   <main id="dashboard-content" class="py-4">
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show container" role="alert">
-      {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    {{-- Flash Messages --}}
+    <div class="container mb-3">
+      <x-flash-messages />
     </div>
-    @endif
-
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show container" role="alert">
-      {{ session('error') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
 
     @yield('content')
   </main>
 
   <x-footer.main />
 
-  <!-- Dashboard-specific scripts loaded via @vite() in individual dashboard views -->
+  {{-- Dashboard-specific scripts loaded via vite directive in individual dashboard views --}}
   @stack('scripts')
 </body>
 
