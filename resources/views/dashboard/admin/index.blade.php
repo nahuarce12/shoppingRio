@@ -3,6 +3,10 @@
 @section('title', 'Panel de Administrador | Shopping Rosario')
 @section('meta_description', 'Supervisá locales, promociones y novedades desde el panel administrativo del Shopping Rosario.')
 
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('content')
 <x-layout.breadcrumbs :items="[['label' => 'Panel de Administrador']]" />
 
@@ -55,7 +59,7 @@
               <div class="card text-center">
                 <div class="card-body">
                   <i class="bi bi-shop-window fs-1 text-primary"></i>
-                  <h3 class="mt-2">48</h3>
+                  <h3 class="mt-2">{{ $stats['stores_active'] }}</h3>
                   <p class="mb-0">Locales Activos</p>
                 </div>
               </div>
@@ -64,7 +68,7 @@
               <div class="card text-center">
                 <div class="card-body">
                   <i class="bi bi-people-fill fs-1 text-success"></i>
-                  <h3 class="mt-2">1,245</h3>
+                  <h3 class="mt-2">{{ $stats['clients_total'] }}</h3>
                   <p class="mb-0">Clientes Registrados</p>
                 </div>
               </div>
@@ -73,7 +77,7 @@
               <div class="card text-center">
                 <div class="card-body">
                   <i class="bi bi-tag-fill fs-1 text-warning"></i>
-                  <h3 class="mt-2">5</h3>
+                  <h3 class="mt-2">{{ $stats['promotions_pending'] }}</h3>
                   <p class="mb-0">Promociones Pendientes</p>
                 </div>
               </div>
@@ -82,7 +86,7 @@
               <div class="card text-center">
                 <div class="card-body">
                   <i class="bi bi-person-plus fs-1 text-info"></i>
-                  <h3 class="mt-2">3</h3>
+                  <h3 class="mt-2">{{ $stats['owners_pending'] }}</h3>
                   <p class="mb-0">Dueños por Validar</p>
                 </div>
               </div>
@@ -112,27 +116,44 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ([
-                    ['codigo' => '001', 'nombre' => 'Fashion Store', 'categoria' => 'Moda y Accesorios', 'dueno' => 'María González', 'estado' => 'Activo'],
-                    ['codigo' => '002', 'nombre' => 'Tech World', 'categoria' => 'Tecnología', 'dueno' => 'Carlos Pérez', 'estado' => 'Activo'],
-                    ['codigo' => '003', 'nombre' => 'Bella Italia', 'categoria' => 'Gastronomía', 'dueno' => 'Giovanni Rossi', 'estado' => 'Activo'],
-                    ] as $local)
+                    @forelse($stores as $store)
                     <tr>
-                      <td>{{ $local['codigo'] }}</td>
-                      <td>{{ $local['nombre'] }}</td>
-                      <td>{{ $local['categoria'] }}</td>
-                      <td>{{ $local['dueno'] }}</td>
-                      <td><span class="badge bg-success">{{ $local['estado'] }}</span></td>
+                      <td>{{ str_pad($store->codigo, 3, '0', STR_PAD_LEFT) }}</td>
+                      <td>{{ $store->nombre }}</td>
+                      <td>{{ ucwords(str_replace(['-', '_'], ' ', $store->rubro)) }}</td>
+                      <td>{{ $store->owner?->name ?? 'Sin asignar' }}</td>
+                      <td>
+                        <span class="badge {{ $store->trashed() ? 'bg-secondary' : 'bg-success' }}">
+                          {{ $store->trashed() ? 'Inactivo' : 'Activo' }}
+                        </span>
+                      </td>
                       <td class="d-flex gap-2">
-                        <button class="btn btn-sm btn-info">
+                        <a href="{{ route('admin.stores.show', $store->id) }}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{{ route('admin.stores.edit', $store->id) }}" class="btn btn-sm btn-info" title="Editar">
                           <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger">
-                          <i class="bi bi-trash"></i>
-                        </button>
+                        </a>
+                        @if(!$store->trashed())
+                        <form action="{{ route('admin.stores.destroy', $store->id) }}" method="POST" onsubmit="return confirm('¿Seguro que querés eliminar este local?');">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                        @else
+                        <span class="badge bg-secondary align-self-center">Eliminado</span>
+                        @endif
                       </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle"></i> Todavía no hay locales cargados.
+                      </td>
+                    </tr>
+                    @endforelse
                   </tbody>
                 </table>
               </div>
@@ -151,35 +172,39 @@
                   <thead>
                     <tr>
                       <th>Nombre</th>
-                      <th>Local Solicitado</th>
                       <th>Email</th>
-                      <th>CUIT</th>
-                      <th>Fecha Solicitud</th>
+                      <th>Fecha de Registro</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ([
-                    ['nombre' => 'Laura Martínez', 'local' => 'Beauty & Spa', 'email' => 'laura.martinez@beautyspa.com', 'cuit' => '27-34567890-2', 'fecha' => '20/10/2025'],
-                    ['nombre' => 'Roberto Sánchez', 'local' => 'Sports Zone', 'email' => 'roberto@sportszone.com', 'cuit' => '20-28765432-9', 'fecha' => '19/10/2025'],
-                    ['nombre' => 'Ana Rodríguez', 'local' => 'Café Central', 'email' => 'ana.rodriguez@cafecentral.com', 'cuit' => '27-39876543-1', 'fecha' => '18/10/2025'],
-                    ] as $solicitud)
+                    @forelse($pendingOwners as $owner)
                     <tr>
-                      <td>{{ $solicitud['nombre'] }}</td>
-                      <td>{{ $solicitud['local'] }}</td>
-                      <td>{{ $solicitud['email'] }}</td>
-                      <td>{{ $solicitud['cuit'] }}</td>
-                      <td>{{ $solicitud['fecha'] }}</td>
-                      <td class="d-inline-flex gap-2">
-                        <button class="btn btn-success btn-sm">
-                          <i class="bi bi-check-lg"></i> Aprobar
-                        </button>
-                        <button class="btn btn-danger btn-sm">
-                          <i class="bi bi-x-lg"></i> Denegar
-                        </button>
+                      <td>{{ $owner->name }}</td>
+                      <td>{{ $owner->email }}</td>
+                      <td>{{ $owner->created_at?->format('d/m/Y H:i') }}</td>
+                      <td class="d-flex gap-2">
+                        <form action="{{ route('admin.users.approve', $owner->id) }}" method="POST" onsubmit="return confirm('¿Aprobar la cuenta de {{ $owner->name }}?');">
+                          @csrf
+                          <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-check-lg"></i> Aprobar
+                          </button>
+                        </form>
+                        <form action="{{ route('admin.users.reject', $owner->id) }}" method="POST" onsubmit="return confirm('¿Rechazar la cuenta de {{ $owner->name }}?');">
+                          @csrf
+                          <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-x-lg"></i> Rechazar
+                          </button>
+                        </form>
                       </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                      <td colspan="4" class="text-center text-muted py-4">
+                        <i class="bi bi-check-circle"></i> No hay solicitudes pendientes en este momento.
+                      </td>
+                    </tr>
+                    @endforelse
                   </tbody>
                 </table>
               </div>
@@ -206,27 +231,35 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ([
-                    ['local' => 'Fashion Store', 'promo' => '30% OFF en toda la tienda', 'categoria' => 'Premium', 'vigencia' => '01/11 - 30/11/2025'],
-                    ['local' => 'Tech World', 'promo' => '15% OFF en notebooks', 'categoria' => 'Medium', 'vigencia' => '25/10 - 15/12/2025'],
-                    ['local' => 'Bella Italia', 'promo' => 'Menú ejecutivo $5000', 'categoria' => 'Inicial', 'vigencia' => '01/11 - 31/12/2025'],
-                    ] as $promo)
+                    @forelse($pendingPromotions as $promotion)
                     <tr>
-                      <td>{{ $promo['local'] }}</td>
-                      <td>{{ $promo['promo'] }}</td>
-                      <td><span class="badge badge-{{ strtolower($promo['categoria']) }}">{{ $promo['categoria'] }}</span></td>
-                      <td>{{ $promo['vigencia'] }}</td>
-                      <td><span class="badge bg-warning">Pendiente</span></td>
-                      <td>
-                        <button class="btn btn-success btn-sm">
-                          <i class="bi bi-check-lg"></i> Aprobar
-                        </button>
-                        <button class="btn btn-danger btn-sm">
-                          <i class="bi bi-x-lg"></i> Denegar
-                        </button>
+                      <td>{{ $promotion->store?->nombre ?? 'Local eliminado' }}</td>
+                      <td>{{ Str::limit($promotion->texto, 80) }}</td>
+                      <td><span class="badge badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span></td>
+                      <td>{{ $promotion->fecha_desde?->format('d/m/Y') }} - {{ $promotion->fecha_hasta?->format('d/m/Y') }}</td>
+                      <td><span class="badge bg-warning text-dark text-uppercase">{{ $promotion->estado }}</span></td>
+                      <td class="d-flex gap-2">
+                        <form action="{{ route('admin.promotions.approve', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Aprobar la promoción \"{{ addslashes($promotion->texto) }}\"?');">
+                          @csrf
+                          <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-check-lg"></i> Aprobar
+                          </button>
+                        </form>
+                        <form action="{{ route('admin.promotions.deny', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Denegar la promoción \"{{ addslashes($promotion->texto) }}\"?');">
+                          @csrf
+                          <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-x-lg"></i> Denegar
+                          </button>
+                        </form>
                       </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-check-circle"></i> No hay promociones pendientes de aprobación.
+                      </td>
+                    </tr>
+                    @endforelse
                   </tbody>
                 </table>
               </div>
@@ -247,36 +280,49 @@
                 <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th>Título</th>
+                      <th>Contenido</th>
                       <th>Categoría Cliente</th>
-                      <th>Fecha Publicación</th>
-                      <th>Vencimiento</th>
+                      <th>Publicación</th>
+                      <th>Vence</th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ([
-                    ['titulo' => 'Nueva Temporada Primavera-Verano', 'categoria' => 'Premium', 'publicacion' => '20/10/2025', 'vence' => '15/12/2025'],
-                    ['titulo' => 'Expo Tech 2025', 'categoria' => 'Inicial', 'publicacion' => '18/10/2025', 'vence' => '25/10/2025'],
-                    ['titulo' => 'Semana Gastronómica', 'categoria' => 'Medium', 'publicacion' => '15/10/2025', 'vence' => '22/10/2025'],
-                    ] as $novedad)
+                    @forelse($latestNews as $news)
+                    @php
+                      $isActive = $news->fecha_hasta?->isFuture() ?? false;
+                    @endphp
                     <tr>
-                      <td>{{ $novedad['titulo'] }}</td>
-                      <td><span class="badge badge-{{ strtolower($novedad['categoria']) }}">{{ $novedad['categoria'] }}</span></td>
-                      <td>{{ $novedad['publicacion'] }}</td>
-                      <td>{{ $novedad['vence'] }}</td>
-                      <td><span class="badge bg-success">Vigente</span></td>
+                      <td>{{ Str::limit($news->texto, 80) }}</td>
+                      <td><span class="badge badge-{{ strtolower($news->categoria_destino) }}">{{ $news->categoria_destino }}</span></td>
+                      <td>{{ $news->fecha_desde?->format('d/m/Y') }}</td>
+                      <td>{{ $news->fecha_hasta?->format('d/m/Y') }}</td>
+                      <td>
+                        <span class="badge {{ $isActive ? 'bg-success' : 'bg-secondary' }}">
+                          {{ $isActive ? 'Vigente' : 'Expirada' }}
+                        </span>
+                      </td>
                       <td class="d-flex gap-2">
-                        <button class="btn btn-sm btn-info">
+                        <a href="{{ route('admin.news.edit', $news->id) }}" class="btn btn-sm btn-info" title="Editar">
                           <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger">
-                          <i class="bi bi-trash"></i>
-                        </button>
+                        </a>
+                        <form action="{{ route('admin.news.destroy', $news->id) }}" method="POST" onsubmit="return confirm('¿Eliminar esta novedad?');">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
                       </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle"></i> No cargaste novedades todavía.
+                      </td>
+                    </tr>
+                    @endforelse
                   </tbody>
                 </table>
               </div>
@@ -303,10 +349,10 @@
                 <div class="col-md-6">
                   <label class="form-label">Local</label>
                   <select class="form-select">
-                    <option selected>Todos los locales</option>
-                    <option>Fashion Store</option>
-                    <option>Tech World</option>
-                    <option>Bella Italia</option>
+                    <option value="" selected>Todos los locales</option>
+                    @foreach($stores->whereNull('deleted_at') as $store)
+                      <option value="{{ $store->id }}">{{ $store->nombre }}</option>
+                    @endforeach
                   </select>
                 </div>
               </div>
@@ -314,35 +360,47 @@
               <h3 class="h6">Resumen General del Shopping</h3>
               <div class="row text-center mb-4">
                 <div class="col-md-3">
-                  <h4>1,245</h4>
+                  <h4>{{ $stats['clients_total'] }}</h4>
                   <p>Clientes Totales</p>
                 </div>
                 <div class="col-md-3">
-                  <h4>3,892</h4>
+                  <h4>{{ $usageStats['total'] }}</h4>
                   <p>Descuentos Utilizados</p>
                 </div>
                 <div class="col-md-3">
-                  <h4>$1,250,000</h4>
-                  <p>Valor Total Descuentos</p>
+                  <h4>{{ $stats['stores_active'] }}</h4>
+                  <p>Locales Activos</p>
                 </div>
                 <div class="col-md-3">
-                  <h4>+35%</h4>
-                  <p>vs. Período Anterior</p>
+                  <h4>{{ $usageStats['this_month'] }}</h4>
+                  <p>Este Mes</p>
                 </div>
               </div>
 
               <h3 class="h6">Locales Más Activos</h3>
+              @if($topStores->count() > 0)
               <div class="alert alert-info">
-                <strong>1. Tech World</strong> - 850 promociones utilizadas<br>
-                <strong>2. Fashion Store</strong> - 720 promociones utilizadas<br>
-                <strong>3. Bella Italia</strong> - 650 promociones utilizadas
+                @foreach($topStores as $index => $store)
+                  <strong>{{ $index + 1 }}. {{ $store->nombre }}</strong> - {{ $store->usage_count }} promociones utilizadas<br>
+                @endforeach
               </div>
+              @else
+              <div class="alert alert-warning">
+                <i class="bi bi-info-circle"></i> Aún no hay datos de uso de promociones.
+              </div>
+              @endif
 
               <h3 class="h6">Distribución por Categoría de Cliente</h3>
+              @php
+                $total = array_sum($categoryDistribution);
+                $inicialPercent = $total > 0 ? ($categoryDistribution['Inicial'] / $total) * 100 : 0;
+                $mediumPercent = $total > 0 ? ($categoryDistribution['Medium'] / $total) * 100 : 0;
+                $premiumPercent = $total > 0 ? ($categoryDistribution['Premium'] / $total) * 100 : 0;
+              @endphp
               <div class="progress mb-2" style="height: 30px;">
-                <div class="progress-bar bg-secondary" style="width: 45%">Inicial (45%)</div>
-                <div class="progress-bar bg-primary" style="width: 35%">Medium (35%)</div>
-                <div class="progress-bar" style="width: 20%; background-color: #8e44ad;">Premium (20%)</div>
+                <div class="progress-bar bg-secondary" style="width: {{ $inicialPercent }}%">Inicial ({{ round($inicialPercent) }}%)</div>
+                <div class="progress-bar bg-primary" style="width: {{ $mediumPercent }}%">Medium ({{ round($mediumPercent) }}%)</div>
+                <div class="progress-bar" style="width: {{ $premiumPercent }}%; background-color: #8e44ad;">Premium ({{ round($premiumPercent) }}%)</div>
               </div>
 
               <div class="d-flex gap-2 mt-3">
@@ -507,4 +565,13 @@
 @push('scripts')
 @vite('resources/js/frontoffice/main.js')
 @vite('resources/js/frontoffice/perfil-admin.js')
+@if(!empty($activeSection))
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof window.showAdminSection === 'function') {
+      window.showAdminSection('{{ $activeSection }}');
+    }
+  });
+</script>
+@endif
 @endpush

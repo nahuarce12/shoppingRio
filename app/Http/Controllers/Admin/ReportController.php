@@ -64,7 +64,7 @@ class ReportController extends Controller
 
         $periodMonths = $request->input('period_months', 3);
 
-        $report = $this->reportService->getStorePerformanceReport($periodMonths);
+    $report = $this->reportService->getStorePerformanceReport($periodMonths);
 
         return view('admin.reports.store-performance', compact('report', 'periodMonths'));
     }
@@ -95,7 +95,7 @@ class ReportController extends Controller
         $limit = $request->input('limit', 10);
         $periodMonths = $request->input('period_months', 1);
 
-        $promotions = $this->reportService->getMostPopularPromotions($limit, $periodMonths);
+    $promotions = $this->reportService->getMostPopularPromotions($limit, $periodMonths);
 
         return view('admin.reports.popular-promotions', compact('promotions', 'limit', 'periodMonths'));
     }
@@ -111,7 +111,7 @@ class ReportController extends Controller
 
         $periodMonths = $request->input('period_months', 3);
 
-        $report = $this->reportService->getClientActivityReport($periodMonths);
+    $report = $this->reportService->getClientActivityReport($periodMonths);
 
         return view('admin.reports.client-activity', compact('report', 'periodMonths'));
     }
@@ -121,7 +121,7 @@ class ReportController extends Controller
      */
     public function pendingApprovals()
     {
-        $pending = $this->reportService->getPendingApprovalsCount();
+    $pending = $this->reportService->getPendingApprovalsCount();
 
         // Get detailed lists
         $pendingPromotions = \App\Models\Promotion::where('estado', 'pendiente')
@@ -140,7 +140,7 @@ class ReportController extends Controller
     /**
      * Export promotion usage report to CSV.
      */
-    public function exportPromotionUsage(Request $request)
+    public function exportCSV(Request $request)
     {
         $request->validate([
             'start_date' => 'nullable|date',

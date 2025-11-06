@@ -1,650 +1,139 @@
-@extends('layouts.app')@extends('layouts.app')
+@extends('layouts.app')
 
+@section('title', 'Promociones - Shopping Rosario')
+@section('meta_description', 'Descubr� todas las promociones vigentes del Shopping Rosario y filtr� por categor�a, local o palabras clave.')
 
-
-@section('title', 'Promociones - Shopping Rosario')@section('title', 'Promociones - Shopping Rosario')
-
-@section('meta_description', 'Descubre todas las promociones activas del Shopping Rosario y encontrá beneficios según tu categoría de cliente.')@section('meta_description', 'Descubre todas las promociones activas del Shopping Rosario y encontrá beneficios según tu categoría de cliente.')
-
-
-
-@section('content')@section('content')
-
-<x-layout.breadcrumbs :items="[['label' => 'Promociones']]" /><x-layout.breadcrumbs :items="[['label' => 'Promociones']]" />
-
-
-
-<section class="py-4"><section class="py-4">
-
-  <div class="container text-center">  <div class="container text-center">
-
-    <h1 class="display-5 fw-bold text-primary">Promociones</h1>    <h1 class="display-5 fw-bold text-primary">Promociones</h1>
-
-    <p class="lead">Descubrí las mejores ofertas y descuentos del shopping.</p>    <p class="lead">Descubrí las mejores ofertas y descuentos del shopping.</p>
-
-  </div>  </div>
-
-</section></section>
-
-
-
-<section class="py-4"><section class="py-4">
-
-  <div class="container">  <div class="container">
-
-    <form method="GET" action="{{ route('promociones.index') }}" id="filter-form">    <form method="GET" action="{{ route('promociones.index') }}" id="filter-form">
-
-      <div class="row mb-3">      <div class="row mb-3">
-
-        <div class="col-12">        <div class="col-12">
-
-          <div class="input-group input-group-lg">          <div class="input-group input-group-lg">
-
-            <span class="input-group-text bg-white border-end-0">            <span class="input-group-text bg-white border-end-0">
-
-              <i class="bi bi-search"></i>              <i class="bi bi-search"></i>
-
-            </span>            </span>
-
-            <input type="text" class="form-control border-start-0 ps-0" name="search"             <input type="text" class="form-control border-start-0 ps-0" name="search" 
-
-                   value="{{ request('search') }}" placeholder="Buscar promoción...">                   value="{{ request('search') }}" placeholder="Buscar promoción...">
-
-          </div>          </div>
-
-        </div>        </div>
-
-      </div>      </div>
-
-
-
-      <div class="filter-section">      <div class="filter-section">
-
-        <h5 class="d-flex align-items-center gap-2"><i class="bi bi-funnel"></i> Filtrar Promociones</h5>        <h5 class="d-flex align-items-center gap-2"><i class="bi bi-funnel"></i> Filtrar Promociones</h5>
-
-        <div class="row g-3">        <div class="row g-3">
-
-          <div class="col-md-6">          <div class="col-md-6">
-
-            <label for="categoria_minima" class="form-label">Categoría de Cliente</label>            <label for="categoria_minima" class="form-label">Categoría de Cliente</label>
-
-            <select class="form-select" name="categoria_minima" id="categoria_minima">            <select class="form-select" name="categoria_minima" id="categoria_minima">
-
-              <option value="">Todas las categorías</option>              <option value="">Todas las categorías</option>
-
-              @foreach($categories as $category)              @foreach($categories as $category)
-
-                <option value="{{ $category }}" {{ request('categoria_minima') == $category ? 'selected' : '' }}>                <option value="{{ $category }}" {{ request('categoria_minima') == $category ? 'selected' : '' }}>
-
-                  {{ $category }}                  {{ $category }}
-
-                </option>                </option>
-
-              @endforeach              @endforeach
-
-            </select>            </select>
-
-          </div>          </div>
-
-          <div class="col-md-6">          <div class="col-md-6">
-
-            <label for="store_id" class="form-label">Local</label>            <label for="store_id" class="form-label">Local</label>
-
-            <select class="form-select" name="store_id" id="store_id">            <select class="form-select" name="store_id" id="store_id">
-
-              <option value="">Todos los locales</option>              <option value="">Todos los locales</option>
-
-              @foreach($stores as $store)              @foreach($stores as $store)
-
-                <option value="{{ $store->id }}" {{ request('store_id') == $store->id ? 'selected' : '' }}>                <option value="{{ $store->id }}" {{ request('store_id') == $store->id ? 'selected' : '' }}>
-
-                  {{ $store->nombre }}                  {{ $store->nombre }}
-
-                </option>                </option>
-
-              @endforeach              @endforeach
-
-            </select>            </select>
-
-          </div>          </div>
-
-          <div class="col-12">          <div class="col-12">
-
-            <button type="submit" class="btn btn-primary">            <button type="submit" class="btn btn-primary">
-
-              <i class="bi bi-search"></i> Buscar              <i class="bi bi-search"></i> Buscar
-
-            </button>            </button>
-
-            <a href="{{ route('promociones.index') }}" class="btn btn-outline-secondary">            <a href="{{ route('promociones.index') }}" class="btn btn-outline-secondary">
-
-              <i class="bi bi-x-circle"></i> Limpiar Filtros              <i class="bi bi-x-circle"></i> Limpiar Filtros
-
-            </a>            </a>
-
-          </div>          </div>
-
-        </div>        </div>
-
-      </div>      </div>
-
-    </form>    </form>
-
-  </div>  </div>
-
-</section></section>
-
-
-
-<section class="py-4"><section class="py-4">
-
-  <div class="container">  <div class="container">
-
-    @if($promotions->count() > 0)    @if($promotions->count() > 0)
-
-      <div class="row g-4" id="promotions-grid">      <div class="row g-4" id="promotions-grid">
-
-        @foreach($promotions as $promotion)        @foreach($promotions as $promotion)
-
-        @php        @php
-
-          $daysUntilEnd = now()->diffInDays($promotion->fecha_hasta, false);          $daysUntilEnd = now()->diffInDays($promotion->fecha_hasta, false);
-
-        @endphp        @endphp
-
-        <div class="col-md-6 col-lg-4 col-xl-3">        <div class="col-md-6 col-lg-4 col-xl-3">
-
-          <div class="card promo-card" data-category="{{ strtolower($promotion->categoria_minima) }}" data-local="{{ $promotion->store->nombre }}">          <div class="card promo-card" data-category="{{ strtolower($promotion->categoria_minima) }}" data-local="{{ $promotion->store->nombre }}">
-
-            @if($daysUntilEnd >= 0 && $daysUntilEnd <= 7)            @if($daysUntilEnd >= 0 && $daysUntilEnd <= 7)
-
-            <span class="badge bg-danger promo-badge">            <span class="badge bg-danger promo-badge">
-
-              <i class="bi bi-exclamation-triangle"></i> ¡Por vencer!              <i class="bi bi-exclamation-triangle"></i> ¡Por vencer!
-
-            </span>            </span>
-
-            @endif            @endif
-
-            <a href="{{ route('promociones.show', $promotion->id) }}">            <a href="{{ route('promociones.show', $promotion->id) }}">
-
-              <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $promotion->texto }}">              <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $promotion->texto }}">
-
-            </a>            </a>
-
-            <div class="card-body">            <div class="card-body">
-
-              <div class="mb-2">              <div class="mb-2">
-
-                <span class="badge badge-{{ strtolower($promotion->categoria_minima) }} badge-category">                <span class="badge badge-{{ strtolower($promotion->categoria_minima) }} badge-category">
-
-                  {{ $promotion->categoria_minima }}                  {{ $promotion->categoria_minima }}
-
-                </span>                </span>
-
-              </div>              </div>
-
-              <h5 class="card-title">{{ Str::limit($promotion->texto, 60) }}</h5>              <h5 class="card-title">{{ Str::limit($promotion->texto, 60) }}</h5>
-
-              <p class="promo-info mb-1">              <p class="promo-info mb-1">
-
-                <i class="bi bi-shop"></i> {{ $promotion->store->nombre }}                <i class="bi bi-shop"></i> {{ $promotion->store->nombre }}
-
-              </p>              </p>
-
-              <div class="promo-validity">              <div class="promo-validity">
-
-                <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion->fecha_hasta->format('d/m/Y') }}                <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion->fecha_hasta->format('d/m/Y') }}
-
-              </div>              </div>
-
-            </div>            </div>
-
-          </div>          </div>
-
-        </div>        </div>
-
-        @endforeach        @endforeach
-
-      </div>      </div>
-
-
-
-      {{-- Laravel Pagination with Bootstrap 5 --}}      {{-- Laravel Pagination with Bootstrap 5 --}}
-
-      <div class="d-flex justify-content-center mt-5">      <div class="d-flex justify-content-center mt-5">
-
-        {{ $promotions->links('pagination::bootstrap-5') }}        {{ $promotions->links('pagination::bootstrap-5') }}
-
-      </div>      </div>
-
-    @else    @else
-
-      <div class="alert alert-info text-center">      <div class="alert alert-info text-center">
-
-        <i class="bi bi-info-circle fs-3"></i>        <i class="bi bi-info-circle fs-3"></i>
-
-        <p class="mb-0 mt-2">No se encontraron promociones con los filtros seleccionados.</p>        <p class="mb-0 mt-2">No se encontraron promociones con los filtros seleccionados.</p>
-
-      </div>      </div>
-
-    @endif    @endif
-
-  </div>  </div>
-
-</section></section>
-
-
-
-<hr class="section-separator"><hr class="section-separator">
-
-
-
-<section class="py-5"><section class="py-5">
-
-  <div class="container">  <div class="container">
-
-    <div class="text-center mb-4">    <div class="text-center mb-4">
-
-      <h3 class="section-title">Categorías de Clientes</h3>      <h3 class="section-title">Categorías de Clientes</h3>
-
-      <p class="section-subtitle">Descubrí los beneficios de cada categoría</p>      <p class="section-subtitle">Descubrí los beneficios de cada categoría</p>
-
-    </div>    </div>
-
-    <div class="row g-4">    <div class="row g-4">
-
-      <div class="col-md-4">      <div class="col-md-4">
-
-        <div class="card text-center h-100">        <div class="card text-center h-100">
-
-          <div class="card-body">          <div class="card-body">
-
-            <span class="badge badge-inicial badge-category fs-5 mb-3">Inicial</span>            <span class="badge badge-inicial badge-category fs-5 mb-3">Inicial</span>
-
-            <h5 class="mb-3">Cliente Inicial</h5>            <h5 class="mb-3">Cliente Inicial</h5>
-
-            <p>Al registrarte obtienes acceso a promociones básicas.</p>            <p>Al registrarte obtienes acceso a promociones básicas.</p>
-
-            <ul class="list-unstyled text-start">            <ul class="list-unstyled text-start">
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Acceso a promociones Inicial</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Acceso a promociones Inicial</li>
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Newsletter semanal</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Newsletter semanal</li>
-
-            </ul>            </ul>
-
-          </div>          </div>
-
-        </div>        </div>
-
-      </div>      </div>
-
-      <div class="col-md-4">      <div class="col-md-4">
-
-        <div class="card text-center h-100">        <div class="card text-center h-100">
-
-          <div class="card-body">          <div class="card-body">
-
-            <span class="badge badge-medium badge-category fs-5 mb-3">Medium</span>            <span class="badge badge-medium badge-category fs-5 mb-3">Medium</span>
-
-            <h5 class="mb-3">Cliente Medium</h5>            <h5 class="mb-3">Cliente Medium</h5>
-
-            <p>Accedé a mejores promociones con tu historial de compras.</p>            <p>Accedé a mejores promociones con tu historial de compras.</p>
-
-            <ul class="list-unstyled text-start">            <ul class="list-unstyled text-start">
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Todas las anteriores</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Todas las anteriores</li>
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Promociones Medium</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Promociones Medium</li>
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Descuentos especiales</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Descuentos especiales</li>
-
-            </ul>            </ul>
-
-          </div>          </div>
-
-        </div>        </div>
-
-      </div>      </div>
-
-      <div class="col-md-4">      <div class="col-md-4">
-
-        <div class="card text-center h-100">        <div class="card text-center h-100">
-
-          <div class="card-body">          <div class="card-body">
-
-            <span class="badge badge-premium badge-category fs-5 mb-3">Premium</span>            <span class="badge badge-premium badge-category fs-5 mb-3">Premium</span>
-
-            <h5 class="mb-3">Cliente Premium</h5>            <h5 class="mb-3">Cliente Premium</h5>
-
-            <p>Disfrutá de beneficios exclusivos y promociones VIP.</p>            <p>Disfrutá de beneficios exclusivos y promociones VIP.</p>
-
-            <ul class="list-unstyled text-start">            <ul class="list-unstyled text-start">
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Todas las anteriores</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Todas las anteriores</li>
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Promociones Premium</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Promociones Premium</li>
-
-              <li><i class="bi bi-check-circle-fill text-success"></i> Acceso anticipado</li>              <li><i class="bi bi-check-circle-fill text-success"></i> Acceso anticipado</li>
-
-            </ul>            </ul>
-
-          </div>          </div>
-
-        </div>        </div>
-
-      </div>      </div>
-
-    </div>    </div>
-
-    <div class="text-center mt-4">    <div class="text-center mt-4">
-
-      <p class="lead">¿Querés acceder a todas las promociones?</p>      <p class="lead">¿Querés acceder a todas las promociones?</p>
-
-      <a href="{{ route('register') }}" class="btn btn-primary btn-lg">      <a href="{{ route('register') }}" class="btn btn-primary btn-lg">
-
-        <i class="bi bi-person-plus"></i> Registrate Ahora        <i class="bi bi-person-plus"></i> Registrate Ahora
-
-      </a>      </a>
-
-    </div>    </div>
-
-  </div>  </div>
-
-</section></section>
-
-@endsection@endsection
-
-
-
-@push('scripts')@push('scripts')
-
-<script><script>
-
-document.addEventListener('DOMContentLoaded', function() {document.addEventListener('DOMContentLoaded', function() {
-
-    // Auto-submit on filter change    // Auto-submit on filter change
-
-    const filterSelects = document.querySelectorAll('#categoria_minima, #store_id');    const filterSelects = document.querySelectorAll('#categoria_minima, #store_id');
-
-    filterSelects.forEach(select => {    filterSelects.forEach(select => {
-
-        select.addEventListener('change', function() {        select.addEventListener('change', function() {
-
-            document.getElementById('filter-form').submit();            document.getElementById('filter-form').submit();
-
-        });        });
-
-    });    });
-
-});});
-
-</script></script>
-
-@endpush@endpush
-
-[
-'id' => 2,
-'title' => '20% OFF en accesorios tech',
-'category' => 'Medium',
-'category_class' => 'badge-medium',
-'category_slug' => 'medium',
-'store' => 'Tech World',
-'image' => 'https://via.placeholder.com/400x300/3498db/ffffff?text=20%25+OFF',
-'valid_until' => '15/11/2025',
-'is_expiring' => false,
-],
-[
-'id' => 3,
-'title' => '2x1 en platos principales',
-'category' => 'Premium',
-'category_class' => 'badge-premium',
-'category_slug' => 'premium',
-'store' => 'Bella Italia',
-'image' => 'https://via.placeholder.com/400x300/27ae60/ffffff?text=2x1',
-'valid_until' => '30/12/2025',
-'is_expiring' => false,
-],
-[
-'id' => 4,
-'title' => '3x2 en medias deportivas',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'category_slug' => 'inicial',
-'store' => 'Sport Zone',
-'image' => 'https://via.placeholder.com/400x300/f39c12/ffffff?text=3x2',
-'valid_until' => '20/11/2025',
-'is_expiring' => false,
-],
-[
-'id' => 5,
-'title' => '25% OFF en decoración',
-'category' => 'Medium',
-'category_class' => 'badge-medium',
-'category_slug' => 'medium',
-'store' => 'Home Deco',
-'image' => 'https://via.placeholder.com/400x300/9b59b6/ffffff?text=25%25+OFF',
-'valid_until' => '10/12/2025',
-'is_expiring' => false,
-],
-[
-'id' => 6,
-'title' => 'Tratamiento VIP con descuento',
-'category' => 'Premium',
-'category_class' => 'badge-premium',
-'category_slug' => 'premium',
-'store' => 'Beauty Salon',
-'image' => 'https://via.placeholder.com/400x300/e91e63/ffffff?text=VIP',
-'valid_until' => '05/12/2025',
-'is_expiring' => false,
-],
-[
-'id' => 7,
-'title' => 'Happy Hour cafetería',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'category_slug' => 'inicial',
-'store' => 'Café Central',
-'image' => 'https://via.placeholder.com/400x300/16a085/ffffff?text=Happy+Hour',
-'valid_until' => '31/12/2025',
-'is_expiring' => false,
-],
-[
-'id' => 8,
-'title' => '40% OFF entradas miércoles',
-'category' => 'Medium',
-'category_class' => 'badge-medium',
-'category_slug' => 'medium',
-'store' => 'Cinema Max',
-'image' => 'https://via.placeholder.com/400x300/d35400/ffffff?text=40%25+OFF',
-'valid_until' => '25/12/2025',
-'is_expiring' => false,
-],
-[
-'id' => 9,
-'title' => '15% OFF primera compra',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'category_slug' => 'inicial',
-'store' => 'Urban Style',
-'image' => 'https://via.placeholder.com/400x300/c0392b/ffffff?text=15%25+OFF',
-'valid_until' => '31/12/2025',
-'is_expiring' => false,
-],
-];
-
-$categoryCards = [
-[
-'label' => 'Inicial',
-'description' => 'Al registrarte obtienes acceso a promociones básicas.',
-'benefits' => [
-'Acceso a promociones Inicial',
-'Newsletter semanal',
-],
-'badge_class' => 'badge-inicial',
-],
-[
-'label' => 'Medium',
-'description' => 'Accedé a mejores promociones con tu historial de compras.',
-'benefits' => [
-'Todas las anteriores',
-'Promociones Medium',
-'Descuentos especiales',
-],
-'badge_class' => 'badge-medium',
-],
-[
-'label' => 'Premium',
-'description' => 'Disfrutá de beneficios exclusivos y promociones VIP.',
-'benefits' => [
-'Todas las anteriores',
-'Promociones Premium',
-'Acceso anticipado',
-],
-'badge_class' => 'badge-premium',
-],
-];
-
-$detailRouteExists = Route::has('pages.promociones.show');
-$registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::has('register') ? route('register') : '#');
+@php
+  use Illuminate\Support\Str;
 @endphp
 
 @section('content')
-<x-layout.breadcrumbs :items="[['label' => 'Promociones']]" />
+<x-layout.breadcrumbs :items="[['label' => 'Promociones', 'url' => route('promociones.index')]]" />
 
 <section class="py-4">
   <div class="container text-center">
     <h1 class="display-5 fw-bold text-primary">Promociones</h1>
-    <p class="lead">Descubrí las mejores ofertas y descuentos del shopping.</p>
+    <p class="lead">Explor� los descuentos activos y eleg� los beneficios que mejor se adapten a vos.</p>
   </div>
 </section>
 
 <section class="py-4">
   <div class="container">
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="input-group input-group-lg">
-          <span class="input-group-text bg-white border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 ps-0" id="searchPromo" placeholder="Buscar Promoción">
+    <form method="GET" action="{{ route('promociones.index') }}" id="promotions-filter-form" class="card shadow-sm p-3 border-0">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-lg-5">
+          <label for="search" class="form-label">Buscar promoci�n</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" value="{{ request('search') }}" placeholder="Ingres� texto descriptivo, beneficios o palabras clave">
+          </div>
         </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <h5 class="d-flex align-items-center gap-2"><i class="bi bi-funnel"></i> Filtrar Promociones</h5>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="categoryPromo" class="form-label">Categoría de Cliente</label>
-          <select class="form-select" id="categoryPromo">
-            <option value="">Todas las categorías</option>
-            <option value="inicial">Inicial</option>
-            <option value="medium">Medium</option>
-            <option value="premium">Premium</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label for="localFilter" class="form-label">Local</label>
-          <select class="form-select" id="localFilter">
-            <option value="">Todos los locales</option>
-            @foreach(collect($promotions)->pluck('store')->unique()->sort() as $storeName)
-            <option value="{{ $storeName }}">{{ $storeName }}</option>
+        <div class="col-12 col-lg-3">
+          <label for="categoria_minima" class="form-label">Categor�a m�nima</label>
+          <select class="form-select form-select-lg" id="categoria_minima" name="categoria_minima">
+            <option value="">Todas las categor�as</option>
+            @foreach($categories as $category)
+              <option value="{{ $category }}" @selected(request('categoria_minima') === $category)>{{ $category }}</option>
             @endforeach
           </select>
         </div>
+        <div class="col-12 col-lg-3">
+          <label for="store_id" class="form-label">Local</label>
+          <select class="form-select form-select-lg" id="store_id" name="store_id">
+            <option value="">Todos los locales</option>
+            @foreach($stores as $store)
+              <option value="{{ $store->id }}" @selected((string) request('store_id') === (string) $store->id)>{{ $store->nombre }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-12 col-lg-1 d-flex gap-2">
+          <button type="submit" class="btn btn-primary w-100" title="Aplicar filtros"><i class="bi bi-filter"></i></button>
+          <a href="{{ route('promociones.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros"><i class="bi bi-x-circle"></i></a>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 </section>
 
 <section class="py-4">
   <div class="container">
-    <div class="row g-4" id="promotions-grid">
-      @foreach($promotions as $promotion)
-      @php
-      $detailUrl = $detailRouteExists ? route('pages.promociones.show', $promotion['id']) : '#';
-      @endphp
-      <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="card promo-card" data-category="{{ $promotion['category_slug'] }}" data-local="{{ $promotion['store'] }}">
-          @if($promotion['is_expiring'])
-          <span class="badge bg-danger promo-badge">
-            <i class="bi bi-exclamation-triangle"></i> ¡Por vencer!
-          </span>
-          @endif
-          <a href="{{ $detailUrl }}">
-            <img src="{{ $promotion['image'] }}" class="card-img-top" alt="{{ $promotion['title'] }}">
-          </a>
-          <div class="card-body">
-            <div class="mb-2">
-              <span class="badge {{ $promotion['category_class'] }} badge-category">{{ $promotion['category'] }}</span>
-            </div>
-            <h5 class="card-title">{{ $promotion['title'] }}</h5>
-            <p class="promo-info mb-1">
-              <i class="bi bi-shop"></i> {{ $promotion['store'] }}
-            </p>
-            <div class="promo-validity">
-              <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion['valid_until'] }}
-            </div>
+    @if($promotions->count() > 0)
+      <div class="row g-4" id="promotions-grid">
+        @foreach($promotions as $promotion)
+          @php
+            $daysToExpire = now()->diffInDays($promotion->fecha_hasta, false);
+          @endphp
+          <div class="col-sm-6 col-lg-4 col-xl-3">
+            <article class="card h-100 border-0 shadow-sm promo-card" data-category="{{ strtolower($promotion->categoria_minima) }}" data-local="{{ $promotion->store->nombre }}">
+              <div class="position-relative">
+                @if($daysToExpire >= 0 && $daysToExpire <= 5)
+                  <span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="bi bi-exclamation-triangle-fill"></i> Por vencer</span>
+                @endif
+                <a href="{{ route('promociones.show', $promotion) }}" class="ratio ratio-4x3 bg-light d-block">
+                  <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $promotion->texto }}">
+                </a>
+              </div>
+              <div class="card-body">
+                <span class="badge text-uppercase mb-2 badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span>
+                <h3 class="h5 card-title">{{ Str::limit($promotion->texto, 80) }}</h3>
+                <p class="mb-1 text-muted"><i class="bi bi-shop"></i> {{ $promotion->store->nombre }}</p>
+                <p class="small mb-0"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $promotion->fecha_hasta->format('d/m/Y') }}</p>
+              </div>
+              <div class="card-footer bg-white border-0 text-end">
+                <a href="{{ route('promociones.show', $promotion) }}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
+              </div>
+            </article>
           </div>
-        </div>
+        @endforeach
       </div>
-      @endforeach
-    </div>
 
-    <nav aria-label="Navegación de promociones" class="mt-5">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled">
-          <a class="page-link" href="#" tabindex="-1">Anterior</a>
-        </li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-          <a class="page-link" href="#">Siguiente</a>
-        </li>
-      </ul>
-    </nav>
+      @if($promotions->hasPages())
+        <div class="d-flex justify-content-center mt-5">
+          {{ $promotions->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+      @endif
+    @else
+      <div class="alert alert-info text-center" role="status">
+        <i class="bi bi-info-circle fs-3"></i>
+        <p class="mt-2 mb-0">No encontramos promociones con los filtros seleccionados. Modific� tu b�squeda e intent� nuevamente.</p>
+      </div>
+    @endif
   </div>
 </section>
 
-<hr class="section-separator">
-
-<section class="py-5">
+<section class="py-5 bg-white">
   <div class="container">
-    <div class="text-center mb-4">
-      <h3 class="section-title">Categorías de Clientes</h3>
-      <p class="section-subtitle">Descubrí los beneficios de cada categoría</p>
-    </div>
-    <div class="row g-4">
-      @foreach($categoryCards as $card)
-      <div class="col-md-4">
-        <div class="card text-center h-100">
-          <div class="card-body">
-            <span class="badge {{ $card['badge_class'] }} badge-category fs-5 mb-3">{{ $card['label'] }}</span>
-            <h5 class="mb-3">Cliente {{ $card['label'] }}</h5>
-            <p>{{ $card['description'] }}</p>
-            <ul class="list-unstyled text-start">
-              @foreach($card['benefits'] as $benefit)
-              <li><i class="bi bi-check-circle-fill text-success"></i> {{ $benefit }}</li>
-              @endforeach
-            </ul>
-          </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <h2 class="h3 fw-bold">C�mo aprovechar tus beneficios</h2>
+        <ul class="list-unstyled mt-3 mb-0">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Consult� las condiciones de vigencia y combinabilidad antes de canjear.</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Revis� tu categor�a de cliente para acceder a m�s promociones.</li>
+          <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Activ� las notificaciones para recibir novedades apenas se publican.</li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm text-center p-4 h-100">
+          <i class="bi bi-stars fs-1 text-primary mb-3"></i>
+          <h3 class="h5">�Quer�s sumar m�s beneficios?</h3>
+          <p class="text-muted">Registrate como cliente para llevar el control de tus descuentos y recibir alertas personalizadas.</p>
+          <a href="{{ route('register') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Crear cuenta gratuita
+          </a>
         </div>
       </div>
-      @endforeach
-    </div>
-    <div class="text-center mt-4">
-      <p class="lead">¿Querés acceder a todas las promociones?</p>
-      <a href="{{ $registerUrl }}" class="btn btn-primary btn-lg">
-        <i class="bi bi-person-plus"></i> Registrate Ahora
-      </a>
     </div>
   </div>
 </section>
 @endsection
 
 @push('scripts')
-@vite('resources/js/frontoffice/main.js')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterSelects = document.querySelectorAll('#categoria_minima, #store_id');
+    filterSelects.forEach(select => {
+      select.addEventListener('change', () => document.getElementById('promotions-filter-form').submit());
+    });
+  });
+</script>
 @endpush

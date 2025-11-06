@@ -38,9 +38,23 @@ class PromotionFactory extends Factory
             '25% de descuento presentando esta promoción',
         ];
 
-        // Generate date range (between now and 3 months from now)
-        $fechaDesde = fake()->dateTimeBetween('now', '+1 month');
-        $fechaHasta = fake()->dateTimeBetween($fechaDesde, '+3 months');
+        // Generate date range - mix of active, upcoming, and expiring promotions
+        // 60% active (started in past, ends in future), 30% upcoming, 10% recent
+        $random = fake()->numberBetween(1, 100);
+        
+        if ($random <= 60) {
+            // Active promotions: started 1-30 days ago, ends 1-60 days from now
+            $fechaDesde = fake()->dateTimeBetween('-30 days', 'now');
+            $fechaHasta = fake()->dateTimeBetween('now', '+60 days');
+        } elseif ($random <= 90) {
+            // Upcoming promotions: start in future
+            $fechaDesde = fake()->dateTimeBetween('+1 day', '+30 days');
+            $fechaHasta = fake()->dateTimeBetween($fechaDesde, '+90 days');
+        } else {
+            // Recently expired: ended in last 7 days
+            $fechaHasta = fake()->dateTimeBetween('-7 days', '-1 day');
+            $fechaDesde = fake()->dateTimeBetween('-60 days', $fechaHasta);
+        }
 
         // Generate random days of week (at least 1 day active)
         $diasSemana = [];

@@ -53,7 +53,7 @@ class PromotionUsage extends Model
      */
     public function promotion(): BelongsTo
     {
-        return $this->belongsTo(Promotion::class);
+        return $this->belongsTo(Promotion::class)->withTrashed();
     }
 
     // ==================== Query Scopes ====================

@@ -6,6 +6,7 @@ use App\Models\Promotion;
 use App\Models\Store;
 use App\Services\PromotionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Public controller for unregistered users.
@@ -94,7 +95,17 @@ class PublicController extends Controller
             abort(404);
         }
 
-        $promotion->load('store');
+        $promotion->load(['store.owner']);
+
+        $clientEligibility = null;
+        $hasRequested = false;
+
+        if (Auth::check() && Auth::user()->isClient()) {
+            $clientEligibility = $this->promotionService->checkEligibility($promotion, Auth::user());
+            $hasRequested = $promotion->usages()
+                ->where('client_id', Auth::id())
+                ->exists();
+        }
 
         // Show similar promotions from same store
         $similarPromotions = Promotion::approved()
@@ -104,7 +115,7 @@ class PublicController extends Controller
             ->limit(3)
             ->get();
 
-        return view('pages.promociones.show', compact('promotion', 'similarPromotions'));
+        return view('pages.promociones.show', compact('promotion', 'similarPromotions', 'clientEligibility', 'hasRequested'));
     }
 
     /**

@@ -29,20 +29,48 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        $tipoUsuario = $request->input('tipo_usuario');
+        $isStoreOwner = $tipoUsuario === 'dueño de local';
+
+        $rules = [
             'tipo_usuario' => ['required', 'in:cliente,dueño de local'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ];
+
+        if ($isStoreOwner) {
+            $rules = array_merge($rules, [
+                'owner_name' => ['required', 'string', 'max:255'],
+                'owner_lastname' => ['required', 'string', 'max:255'],
+                'owner_email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email'],
+            ]);
+        } else {
+            $rules = array_merge($rules, [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            ]);
+        }
+
+        $validated = $request->validate($rules, [], [
+            'owner_name' => 'nombre',
+            'owner_lastname' => 'apellido',
+            'owner_email' => 'correo electrónico',
         ]);
 
+        $name = $isStoreOwner
+            ? trim($validated['owner_name'].' '.$validated['owner_lastname'])
+            : $validated['name'];
+
+        $email = $isStoreOwner
+            ? $validated['owner_email']
+            : $validated['email'];
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'tipo_usuario' => $request->tipo_usuario,
-            'categoria_cliente' => $request->tipo_usuario === 'cliente' ? 'Inicial' : null,
-            'approved_at' => $request->tipo_usuario === 'cliente' ? now() : null,
+            'name' => $name,
+            'email' => $email,
+            'password' => Hash::make($validated['password']),
+            'tipo_usuario' => $tipoUsuario,
+            'categoria_cliente' => $tipoUsuario === 'cliente' ? 'Inicial' : null,
+            'approved_at' => $tipoUsuario === 'cliente' ? now() : null,
         ]);
 
         event(new Registered($user));

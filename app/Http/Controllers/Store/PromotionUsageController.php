@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PromotionUsage;
 use App\Services\PromotionUsageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Store owner controller for managing promotion usage requests from clients.
@@ -19,24 +20,24 @@ class PromotionUsageController extends Controller
     }
 
     /**
-     * Display a listing of pending usage requests for the store.
-     */
-    public function index(Request $request)
-    {
-        $store = auth()->user()->stores()->firstOrFail();
-
-        $usageRequests = $this->promotionUsageService
-            ->getPendingRequestsForStore($store->id);
-
-        return view('store.usage-requests.index', compact('usageRequests', 'store'));
-    }
-
-    /**
      * Accept a usage request.
      */
     public function accept(PromotionUsage $usage)
     {
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->stores()->first();
+
+        if (!$store) {
+            abort(403, 'No tiene un local asignado.');
+        }
+
+        $usage->loadMissing('promotion.store');
+
+        if (!$usage->promotion || !$usage->promotion->store) {
+            return redirect()
+                ->route('store.dashboard', ['section' => 'solicitudes'])
+                ->with('error', 'La promoción asociada ya no está disponible.');
+        }
 
         // Verify the usage request belongs to this store
         if ($usage->promotion->store_id !== $store->id) {
@@ -47,7 +48,7 @@ class PromotionUsageController extends Controller
 
         if ($success) {
             return redirect()
-                ->route('store.usage-requests.index')
+                ->route('store.dashboard', ['section' => 'solicitudes'])
                 ->with('success', 'Solicitud aceptada. Se notificó al cliente.');
         }
 
@@ -61,7 +62,20 @@ class PromotionUsageController extends Controller
      */
     public function reject(Request $request, PromotionUsage $usage)
     {
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->stores()->first();
+
+        if (!$store) {
+            abort(403, 'No tiene un local asignado.');
+        }
+
+        $usage->loadMissing('promotion.store');
+
+        if (!$usage->promotion || !$usage->promotion->store) {
+            return redirect()
+                ->route('store.dashboard', ['section' => 'solicitudes'])
+                ->with('error', 'La promoción asociada ya no está disponible.');
+        }
 
         // Verify the usage request belongs to this store
         if ($usage->promotion->store_id !== $store->id) {
@@ -78,44 +92,12 @@ class PromotionUsageController extends Controller
 
         if ($success) {
             return redirect()
-                ->route('store.usage-requests.index')
+                ->route('store.dashboard', ['section' => 'solicitudes'])
                 ->with('success', 'Solicitud rechazada. Se notificó al cliente.');
         }
 
         return redirect()
             ->back()
             ->with('error', 'Error al rechazar la solicitud.');
-    }
-
-    /**
-     * Display usage history for store promotions.
-     */
-    public function history(Request $request)
-    {
-        $store = auth()->user()->stores()->firstOrFail();
-
-        $query = PromotionUsage::whereHas('promotion', function ($q) use ($store) {
-            $q->where('store_id', $store->id);
-        })->with(['promotion', 'client']);
-
-        // Filter by estado
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-
-        // Filter by date range
-        if ($request->filled('fecha_desde')) {
-            $query->where('fecha_uso', '>=', $request->fecha_desde);
-        }
-
-        if ($request->filled('fecha_hasta')) {
-            $query->where('fecha_uso', '<=', $request->fecha_hasta);
-        }
-
-        $query->orderBy('fecha_uso', 'desc');
-
-        $usageHistory = $query->paginate(20);
-
-        return view('store.usage-requests.history', compact('usageHistory', 'store'));
     }
 }

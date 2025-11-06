@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PromotionApprovalController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserApprovalController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Store\PromotionController as StorePromotionController;
 use App\Http\Controllers\Store\PromotionUsageController as StorePromotionUsageController;
 use App\Http\Controllers\Store\DashboardController as StoreDashboardController;
@@ -59,9 +60,7 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
     // Stores Management
     Route::resource('stores', StoreController::class);
@@ -116,8 +115,6 @@ Route::middleware(['auth', 'store.owner'])->prefix('store')->name('store.')->gro
     
     // Promotion Usage Requests
     Route::prefix('promotion-usages')->name('promotion-usages.')->group(function () {
-        Route::get('/', [StorePromotionUsageController::class, 'index'])->name('index');
-        Route::get('/pending', [StorePromotionUsageController::class, 'pending'])->name('pending');
         Route::post('/{promotionUsage}/accept', [StorePromotionUsageController::class, 'accept'])->name('accept');
         Route::post('/{promotionUsage}/reject', [StorePromotionUsageController::class, 'reject'])->name('reject');
     });

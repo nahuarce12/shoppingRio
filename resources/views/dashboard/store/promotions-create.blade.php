@@ -22,7 +22,7 @@
                         @csrf
 
                         {{-- Store Selection (hidden if user has only one store) --}}
-                        <input type="hidden" name="store_id" value="{{ auth()->user()->stores->first()->id ?? '' }}">
+                        <input type="hidden" name="store_id" value="{{ $store->id }}">
 
                         {{-- Promotion Description --}}
                         <div class="mb-3">
@@ -97,10 +97,11 @@
                                 @foreach($dias as $index => $dia)
                                 <div class="col-6 col-md-3">
                                     <div class="form-check">
+                                        <input type="hidden" name="dias_semana[{{ $index }}]" value="0">
                                         <input 
                                             class="form-check-input day-checkbox @error('dias_semana') is-invalid @enderror" 
                                             type="checkbox" 
-                                            name="dias_semana[]" 
+                                            name="dias_semana[{{ $index }}]" 
                                             value="1"
                                             id="dia_{{ $index }}"
                                             {{ ($oldDias[$index] ?? 0) ? 'checked' : '' }}>
@@ -238,25 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Convert unchecked checkboxes to 0 before submit
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Remove existing hidden inputs
-            form.querySelectorAll('input[name="dias_semana[]"][type="hidden"]').forEach(el => el.remove());
-            
-            // Add hidden input for each day (0 or 1)
-            dayCheckboxes.forEach((cb, index) => {
-                const hidden = document.createElement('input');
-                hidden.type = 'hidden';
-                hidden.name = 'dias_semana[]';
-                hidden.value = cb.checked ? '1' : '0';
-                form.appendChild(hidden);
-                
-                // Disable the checkbox so it doesn't submit
-                cb.disabled = true;
-            });
-        });
-    }
 });
 </script>
 @endpush

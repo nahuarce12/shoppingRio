@@ -8,7 +8,7 @@
 
 @php
 $clientRegisterAction = Route::has('register') ? route('register') : '#';
-$ownerRegisterAction = Route::has('store.register') ? route('store.register') : '#';
+$ownerRegisterAction = $clientRegisterAction;
 $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login') ? route('login') : '#');
 @endphp
 
@@ -74,8 +74,9 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
               <p class="text-muted">Completá tus datos para crear tu cuenta</p>
             </div>
 
-            <form method="POST" action="{{ $clientRegisterAction }}" id="clientForm" novalidate>
+            <form method="POST" action="{{ $clientRegisterAction }}" id="clientForm" novalidate">
               @csrf
+              <input type="hidden" name="tipo_usuario" value="cliente">
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="client-name" class="form-label">Nombre *</label>
@@ -305,8 +306,9 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
               <p class="text-muted">Completá los datos de tu local para solicitar acceso</p>
             </div>
 
-            <form method="POST" action="{{ $ownerRegisterAction }}" id="ownerForm" novalidate>
+            <form method="POST" action="{{ $ownerRegisterAction }}" id="ownerForm" novalidate">
               @csrf
+              <input type="hidden" name="tipo_usuario" value="dueño de local">
               <h2 class="h5 mb-3"><i class="bi bi-building"></i> Datos del Local</h2>
 
               <div class="mb-3">

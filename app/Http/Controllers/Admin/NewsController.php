@@ -27,8 +27,8 @@ class NewsController extends Controller
         $query = News::query();
 
         // Filter by category
-        if ($request->filled('categoria_cliente')) {
-            $query->where('categoria_cliente', $request->categoria_cliente);
+        if ($request->filled('categoria_destino')) {
+            $query->where('categoria_destino', $request->categoria_destino);
         }
 
         // Filter by status (active/expired)
@@ -42,7 +42,7 @@ class NewsController extends Controller
 
         // Search in text
         if ($request->filled('search')) {
-            $query->where('texto_novedad', 'like', "%{$request->search}%");
+            $query->where('texto', 'like', "%{$request->search}%");
         }
 
         // Order by creation date (newest first)
@@ -96,7 +96,7 @@ class NewsController extends Controller
     public function show(News $news)
     {
         // Calculate who can see this news based on category hierarchy
-        $visibleTo = match($news->categoria_cliente) {
+        $visibleTo = match($news->categoria_destino) {
             'Inicial' => ['Inicial', 'Medium', 'Premium'],
             'Medium' => ['Medium', 'Premium'],
             'Premium' => ['Premium'],

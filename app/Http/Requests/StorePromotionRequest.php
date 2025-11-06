@@ -171,6 +171,16 @@ class StorePromotionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        if (!$this->filled('store_id')) {
+            $user = Auth::user();
+            if ($user && $user->isStoreOwner()) {
+                $storeId = $user->stores()->value('id');
+                if ($storeId) {
+                    $this->merge(['store_id' => $storeId]);
+                }
+            }
+        }
+
         // Convert dias_semana values to boolean if they come as strings or integers
         if ($this->has('dias_semana') && is_array($this->dias_semana)) {
             $diasSemana = [];

@@ -15,9 +15,9 @@
             <div class="mb-3">
               <i class="bi bi-person-circle" style="font-size: 5rem; color: var(--primary-color);"></i>
             </div>
-            <h2 class="h5">Juan Pérez</h2>
-            <p class="text-muted mb-2">juan.perez@email.com</p>
-            <span class="badge badge-medium badge-category fs-6">Cliente Medium</span>
+            <h2 class="h5">{{ $client->nombre }} {{ $client->apellido }}</h2>
+            <p class="text-muted mb-2">{{ $client->email }}</p>
+            <span class="badge badge-{{ strtolower($client->categoria_cliente) }} badge-category fs-6">Cliente {{ $client->categoria_cliente }}</span>
 
             <hr>
 
@@ -49,27 +49,27 @@
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <strong>Nombre Completo:</strong>
-                  <p class="mb-0">Juan Pérez</p>
+                  <p class="mb-0">{{ $client->nombre }} {{ $client->apellido }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Email:</strong>
-                  <p class="mb-0">juan.perez@email.com</p>
+                  <p class="mb-0">{{ $client->email }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Teléfono:</strong>
-                  <p class="mb-0">+54 9 341 123-4567</p>
+                  <p class="mb-0">{{ $client->telefono ?? 'No especificado' }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Fecha de Nacimiento:</strong>
-                  <p class="mb-0">15/05/1990</p>
+                  <p class="mb-0">{{ $client->fecha_nacimiento ? $client->fecha_nacimiento->format('d/m/Y') : 'No especificada' }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Categoría:</strong>
-                  <p class="mb-0"><span class="badge badge-medium badge-category">Medium</span></p>
+                  <p class="mb-0"><span class="badge badge-{{ strtolower($client->categoria_cliente) }} badge-category">{{ $client->categoria_cliente }}</span></p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Miembro desde:</strong>
-                  <p class="mb-0">Enero 2024</p>
+                  <p class="mb-0">{{ $client->created_at->format('F Y') }}</p>
                 </div>
               </div>
             </div>
@@ -85,29 +85,59 @@
               <div class="row text-center mb-4">
                 <div class="col-md-4">
                   <div class="p-3 border rounded">
-                    <h3 class="text-primary">12</h3>
+                    <h3 class="text-primary">{{ $usageStats['aceptada'] }}</h3>
                     <p class="mb-0">Promociones Utilizadas</p>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="p-3 border rounded">
-                    <h3 class="text-success">$15,000</h3>
-                    <p class="mb-0">Ahorro Total</p>
+                    <h3 class="text-info">{{ $usageStats['enviada'] }}</h3>
+                    <p class="mb-0">Solicitudes Pendientes</p>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="p-3 border rounded">
-                    <h3 class="text-warning">3</h3>
-                    <p class="mb-0">Para Premium</p>
+                    <h3 class="text-success">{{ $availablePromotionsCount }}</h3>
+                    <p class="mb-0">Promociones Disponibles</p>
                   </div>
                 </div>
               </div>
 
-              <h3 class="h6">Progreso a Categoría Premium</h3>
+              <h3 class="h6">Progreso de Categoría</h3>
+              @php
+                $currentCategory = $client->categoria_cliente;
+                $totalUsed = $usageStats['aceptada'];
+                $mediumThreshold = config('shopping.category_thresholds.medium', 10);
+                $premiumThreshold = config('shopping.category_thresholds.premium', 25);
+                
+                if ($currentCategory === 'Inicial') {
+                  $nextThreshold = $mediumThreshold;
+                  $nextCategory = 'Medium';
+                } elseif ($currentCategory === 'Medium') {
+                  $nextThreshold = $premiumThreshold;
+                  $nextCategory = 'Premium';
+                } else {
+                  $nextThreshold = $premiumThreshold;
+                  $nextCategory = 'Premium (¡Ya alcanzado!)';
+                }
+                
+                $percentage = ($totalUsed / $nextThreshold) * 100;
+                $remaining = max(0, $nextThreshold - $totalUsed);
+              @endphp
+              
+              @if($currentCategory !== 'Premium')
               <div class="progress" style="height: 25px;">
-                <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">12 de 15 promociones</div>
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ min(100, $percentage) }}%;" 
+                     aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100">
+                  {{ $totalUsed }} de {{ $nextThreshold }} promociones
+                </div>
               </div>
-              <p class="text-muted mt-2">Te faltan 3 promociones para alcanzar la categoría Premium.</p>
+              <p class="text-muted mt-2">Te faltan {{ $remaining }} promociones para alcanzar la categoría {{ $nextCategory }}.</p>
+              @else
+              <div class="alert alert-success">
+                <i class="bi bi-trophy-fill"></i> ¡Felicitaciones! Ya alcanzaste la categoría máxima: <strong>Premium</strong>
+              </div>
+              @endif
             </div>
           </div>
         </div>
@@ -118,6 +148,7 @@
               <h2 class="h5 mb-0"><i class="bi bi-tag-fill"></i> Mis Promociones Reclamadas</h2>
             </div>
             <div class="card-body">
+              @if($recentUsages->count() > 0)
               <div class="table-responsive">
                 <table class="table table-hover">
                   <thead>
@@ -129,23 +160,31 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ([
-                    ['fecha' => '20/10/2025', 'local' => 'Fashion Store', 'promo' => '50% OFF segunda unidad', 'estado' => ['label' => 'Usada', 'class' => 'success']],
-                    ['fecha' => '18/10/2025', 'local' => 'Tech World', 'promo' => '20% OFF accesorios', 'estado' => ['label' => 'Usada', 'class' => 'success']],
-                    ['fecha' => '15/10/2025', 'local' => 'Bella Italia', 'promo' => '2x1 platos principales', 'estado' => ['label' => 'Pendiente', 'class' => 'info']],
-                    ['fecha' => '12/10/2025', 'local' => 'Sport Zone', 'promo' => '3x2 medias deportivas', 'estado' => ['label' => 'Usada', 'class' => 'success']],
-                    ['fecha' => '10/10/2025', 'local' => 'Home Deco', 'promo' => '25% OFF decoración', 'estado' => ['label' => 'Usada', 'class' => 'success']],
-                    ] as $uso)
+                    @foreach ($recentUsages as $usage)
+                    @php
+                      $estadoLabels = [
+                        'enviada' => ['label' => 'Pendiente', 'class' => 'warning'],
+                        'aceptada' => ['label' => 'Aceptada', 'class' => 'success'],
+                        'rechazada' => ['label' => 'Rechazada', 'class' => 'danger'],
+                      ];
+                      $estado = $estadoLabels[$usage->estado] ?? ['label' => ucfirst($usage->estado), 'class' => 'secondary'];
+                    @endphp
                     <tr>
-                      <td>{{ $uso['fecha'] }}</td>
-                      <td><i class="bi bi-shop"></i> {{ $uso['local'] }}</td>
-                      <td>{{ $uso['promo'] }}</td>
-                      <td><span class="badge bg-{{ $uso['estado']['class'] }}">{{ $uso['estado']['label'] }}</span></td>
+                      <td>{{ $usage->fecha_uso->format('d/m/Y') }}</td>
+                      <td><i class="bi bi-shop"></i> {{ $usage->promotion->store->nombre }}</td>
+                      <td>{{ Str::limit($usage->promotion->texto, 40) }}</td>
+                      <td><span class="badge bg-{{ $estado['class'] }}">{{ $estado['label'] }}</span></td>
                     </tr>
                     @endforeach
                   </tbody>
                 </table>
               </div>
+              @else
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Aún no has solicitado ninguna promoción. 
+                <a href="{{ route('promociones.index') }}" class="alert-link">¡Explorá las ofertas disponibles!</a>
+              </div>
+              @endif
             </div>
           </div>
         </div>
@@ -160,27 +199,27 @@
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre</label>
-                    <input type="text" class="form-control" value="Juan">
+                    <input type="text" class="form-control" value="{{ $client->nombre }}">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Apellido</label>
-                    <input type="text" class="form-control" value="Pérez">
+                    <input type="text" class="form-control" value="{{ $client->apellido }}">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" value="juan.perez@email.com">
+                    <input type="email" class="form-control" value="{{ $client->email }}">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Teléfono</label>
-                    <input type="tel" class="form-control" value="+54 9 341 123-4567">
+                    <input type="tel" class="form-control" value="{{ $client->telefono ?? '' }}" placeholder="+54 9 341 123-4567">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Fecha de Nacimiento</label>
-                    <input type="date" class="form-control" value="1990-05-15">
+                    <input type="date" class="form-control" value="{{ $client->fecha_nacimiento ? $client->fecha_nacimiento->format('Y-m-d') : '' }}">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Ciudad</label>
-                    <input type="text" class="form-control" value="Rosario">
+                    <input type="text" class="form-control" value="{{ $client->ciudad ?? '' }}" placeholder="Rosario">
                   </div>
                 </div>
 

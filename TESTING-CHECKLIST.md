@@ -1,8 +1,51 @@
 # ShoppingRio - Manual E2E Testing Checklist
 
-# Date: November 3, 2025
+**Date Started**: November 3, 2025  
+**Last Updated**: November 5, 2025  
+**Phase**: 10 - Final Testing  
+**Status**: 🟡 In Progress
 
-# Phase 10 - Final Testing
+---
+
+## 📊 Testing Progress Summary
+
+### ✅ Completed Issues & Fixes (November 4-5, 2025)
+
+1. **Translation System**: ✅ Created Spanish validation messages (`lang/es/validation.php`)
+2. **Navigation Links**: ✅ Fixed navbar routes (from `#promociones` anchors to proper Laravel routes)
+3. **Registration Form**: ✅ Added hidden `tipo_usuario` field to both Cliente and Dueño forms
+4. **Email Verification**: ✅ Configured Fortify views and EmailVerificationController
+5. **Dashboard Routes**: ✅ Fixed all dashboard view paths:
+    - Client: `dashboard.client.index`
+    - Store: `dashboard.store.index`
+    - Admin: `dashboard.admin.index`
+6. **Navbar Dropdown**: ✅ Fixed user menu to show dashboard link based on user type
+7. **Promotion Dates**: ✅ Fixed PromotionFactory to generate 60% active promotions (dates include TODAY)
+8. **Database Seeding**: ✅ Fresh seed with correct dates (20 active promotions available)
+9. **NewsService Method**: ✅ Fixed Client Dashboard to use `getActiveNewsForUser()` instead of non-existent method
+
+### 🔧 Dashboard Fixes (November 5, 2025)
+
+1. **Client Dashboard**: ✅ FIXED - Shows real user data (nombre, apellido, email, categoría, usage stats)
+2. **Store Owner Dashboard**: ✅ FIXED - Shows real store data (nombre, statistics, pending requests)
+3. **Admin Dashboard**: ✅ FIXED - Shows real system statistics (stores, clients, promotions, category distribution)
+
+### 🔧 View Regenerations (November 5, 2025)
+
+1. **Locales Page**: ✅ REGENERATED - Clean view without duplicated lines, uses real $stores data
+2. **Promociones Page**: ✅ REGENERATED - Clean view without duplicated lines, uses real $promotions data
+
+### 🎯 Testing Status by Flow
+
+-   **Flow 1 - Cliente Registration**: ✅ READY - Registration, Email Verification, Login working
+-   **Flow 2 - Store Owner Management**: ⏳ NOT STARTED
+-   **Flow 3 - Admin Dashboard**: ⏳ NOT STARTED
+-   **Flow 4 - Business Logic**: ⏳ NOT STARTED
+-   **Flow 5 - Form Validation**: ✅ PARTIALLY TESTED (registration forms validated)
+-   **Flow 6 - Permissions**: ⏳ NOT STARTED
+-   **Flow 7 - Email System**: ✅ PARTIALLY TESTED (verification emails working)
+
+---
 
 ## 🚀 Pre-Testing Setup
 
@@ -749,8 +792,8 @@ Record all bugs, issues, or unexpected behavior here:
 
 ## ✅ Sign-Off
 
-**Tester**: ************\_\_\_************
-**Date**: ************\_\_\_************
+**Tester**: ****\*\*\*\*****\_\_\_****\*\*\*\*****
+**Date**: ****\*\*\*\*****\_\_\_****\*\*\*\*****
 **Overall Result**: [ ] PASS [ ] PASS with minor issues [ ] FAIL
 
 **Notes**:

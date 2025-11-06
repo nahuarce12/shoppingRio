@@ -24,21 +24,38 @@ class EmailVerificationController extends Controller
      */
     public function verify(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('client.dashboard').'?verified=1');
+        $user = $request->user();
+        
+        if ($user->hasVerifiedEmail()) {
+            // Redirect based on user type
+            return $this->redirectByUserType($user);
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
         }
 
-        return redirect()->intended(route('client.dashboard').'?verified=1');
+        // Redirect based on user type after verification
+        return $this->redirectByUserType($user)->with('verified', true);
+    }
+    
+    /**
+     * Redirect user based on their type after email verification.
+     */
+    protected function redirectByUserType($user): RedirectResponse
+    {
+        return match($user->tipo_usuario) {
+            'administrador' => redirect()->route('admin.dashboard')->with('success', '¡Email verificado exitosamente!'),
+            'dueño de local' => redirect()->route('store.dashboard')->with('success', '¡Email verificado exitosamente!'),
+            'cliente' => redirect()->route('client.dashboard')->with('success', '¡Email verificado exitosamente!'),
+            default => redirect()->route('home')->with('success', '¡Email verificado exitosamente!')
+        };
     }
 
     /**
      * Resend the email verification notification.
      */
-    public function resend(Request $request): RedirectResponse
+    public function send(Request $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(route('client.dashboard'));

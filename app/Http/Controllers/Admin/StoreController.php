@@ -43,7 +43,7 @@ class StoreController extends Controller
         }
 
         // Order by store code
-        $query->orderBy('codigo_local');
+    $query->orderBy('codigo');
 
         $stores = $query->paginate(15);
 
@@ -85,7 +85,7 @@ class StoreController extends Controller
 
             Log::info('Store created by admin', [
                 'store_id' => $store->id,
-                'store_code' => $store->codigo_local,
+                'store_code' => $store->codigo,
                 'store_name' => $store->nombre,
                 'owner_id' => $store->owner_id,
                 'admin_id' => auth()->id()
@@ -93,7 +93,7 @@ class StoreController extends Controller
 
             return redirect()
                 ->route('admin.stores.show', $store)
-                ->with('success', "Local '{$store->nombre}' creado exitosamente con código {$store->codigo_local}.");
+                ->with('success', "Local '{$store->nombre}' creado exitosamente con código {$store->codigo}.");
         } catch (\Exception $e) {
             Log::error('Failed to create store', [
                 'error' => $e->getMessage(),
@@ -155,7 +155,7 @@ class StoreController extends Controller
 
             Log::info('Store updated by admin', [
                 'store_id' => $store->id,
-                'store_code' => $store->codigo_local,
+                'store_code' => $store->codigo,
                 'changes' => array_diff_assoc($request->validated(), $oldData),
                 'admin_id' => auth()->id()
             ]);
@@ -185,7 +185,7 @@ class StoreController extends Controller
     {
         try {
             $storeName = $store->nombre;
-            $storeCode = $store->codigo_local;
+            $storeCode = $store->codigo;
 
             // Check if store has active promotions
             $activePromotions = $store->promotions()

@@ -4,42 +4,37 @@ use Illuminate\Support\Facades\Route;
 $navLinks = [
 [
 'label' => 'Inicio',
-'route' => 'home.index',
+'route' => 'home',
 'fallback' => url('/')
 ],
 [
 'label' => 'Locales',
-'route' => 'pages.locales',
-'fallback' => url('#locales')
+'route' => 'locales.index',
+'fallback' => url('/locales')
 ],
 [
 'label' => 'Promociones',
-'route' => 'pages.promociones',
-'fallback' => url('#promociones')
-],
-[
-'label' => 'Novedades',
-'route' => 'pages.novedades',
-'fallback' => url('#novedades')
+'route' => 'promociones.index',
+'fallback' => url('/promociones')
 ],
 [
 'label' => 'Quiénes Somos',
-'route' => 'pages.about',
-'fallback' => url('#quienes-somos')
+'route' => 'about',
+'fallback' => url('/quienes-somos')
 ],
 [
 'label' => 'Contacto',
-'route' => 'pages.contact',
-'fallback' => url('#contacto')
+'route' => 'contact',
+'fallback' => url('/contacto')
 ],
 ];
 
-$brandUrl = Route::has('home.index') ? route('home.index') : url('/');
+$brandUrl = Route::has('home') ? route('home') : url('/');
 @endphp
 
 @php
 // Apply navbar-overlay class only on home page for transparent effect over hero carousel
-$isHomePage = request()->routeIs('home.index') || request()->is('/');
+$isHomePage = request()->routeIs('home') || request()->is('/');
 $navbarClasses = $isHomePage ? 'navbar navbar-expand-lg navbar-light navbar-overlay' : 'navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm';
 @endphp
 
@@ -69,8 +64,8 @@ $navbarClasses = $isHomePage ? 'navbar navbar-expand-lg navbar-light navbar-over
 
         @guest
         @php
-        $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login') ? route('login') : url('#login'));
-        $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::has('register') ? route('register') : url('#register'));
+        $loginUrl = Route::has('login') ? route('login') : url('/login');
+        $registerUrl = Route::has('register') ? route('register') : url('/register');
         @endphp
         <li class="nav-item ms-lg-2">
           <a class="btn btn-outline-primary btn-sm" href="{{ $loginUrl }}">
@@ -88,22 +83,33 @@ $navbarClasses = $isHomePage ? 'navbar navbar-expand-lg navbar-light navbar-over
             <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu">
-            @if(Route::has('admin.dashboard') && Auth::user()->can('viewAdminDashboard'))
-            <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Panel Administrador</a></li>
+            @if(Auth::user()->tipo_usuario === 'administrador')
+            <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+              <i class="bi bi-speedometer2"></i> Panel Administrador
+            </a></li>
             @endif
-            @if(Route::has('store.dashboard') && Auth::user()->can('viewStoreDashboard'))
-            <li><a class="dropdown-item" href="{{ route('store.dashboard') }}">Panel de Local</a></li>
+            
+            @if(Auth::user()->tipo_usuario === 'dueño de local')
+            <li><a class="dropdown-item" href="{{ route('store.dashboard') }}">
+              <i class="bi bi-shop"></i> Panel de Local
+            </a></li>
             @endif
-            @if(Route::has('client.dashboard') && Auth::user()->can('viewClientDashboard'))
-            <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">Mi Cuenta</a></li>
+            
+            @if(Auth::user()->tipo_usuario === 'cliente')
+            <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
+              <i class="bi bi-person-badge"></i> Mi Cuenta
+            </a></li>
             @endif
+            
             <li>
               <hr class="dropdown-divider">
             </li>
             <li>
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                <button type="submit" class="dropdown-item">
+                  <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
               </form>
             </li>
           </ul>

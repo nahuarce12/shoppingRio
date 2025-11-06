@@ -28,6 +28,19 @@ export function showSection(sectionId) {
         section.style.display = 'block';
     }
 
+    // Update URL to persist active section
+    try {
+        const url = new URL(window.location.href);
+        if (sectionId) {
+            url.searchParams.set('section', sectionId);
+        } else {
+            url.searchParams.delete('section');
+        }
+        window.history.replaceState({}, '', url.toString());
+    } catch (error) {
+        // Ignore URL errors (older browsers)
+    }
+
     // Reset all sidebar buttons to their original outline state
     const sidebarButtons = document.querySelectorAll('.col-lg-3 .btn');
     sidebarButtons.forEach((btn) => {
@@ -45,7 +58,10 @@ export function showSection(sectionId) {
 
     // Highlight active button with section-specific color
     const evt = window.event;
-    const activeButton = evt ? evt.target.closest('button') : null;
+    let activeButton = evt ? evt.target.closest('button') : null;
+    if (!activeButton && sectionId) {
+        activeButton = document.querySelector(`.col-lg-3 .btn[data-section="${sectionId}"]`);
+    }
     if (activeButton) {
         activeButton.classList.remove('btn-outline-primary', 'btn-outline-warning', 'btn-outline-success', 'btn-outline-secondary');
         
@@ -65,7 +81,7 @@ function initStoreOwnerDashboard() {
     if (misPromociones) misPromociones.style.display = 'block';
 
     // Highlight the default active button (My Promotions)
-    const defaultButton = document.querySelector("button[onclick*='mis-promociones']");
+    const defaultButton = document.querySelector('.col-lg-3 .btn[data-section="mis-promociones"]');
     if (defaultButton) {
         defaultButton.classList.remove('btn-outline-primary');
         defaultButton.classList.add('btn-primary');

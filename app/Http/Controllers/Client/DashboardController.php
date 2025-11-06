@@ -43,7 +43,7 @@ class DashboardController extends Controller
             ->get();
 
         // Active news for this client category
-        $news = $this->newsService->getActiveNewsForCategory($client->categoria_cliente);
+        $news = $this->newsService->getActiveNewsForUser($client);
 
         // Available promotions count
         $availablePromotionsCount = \App\Models\Promotion::approved()
@@ -55,7 +55,7 @@ class DashboardController extends Controller
             })
             ->count();
 
-        return view('client.dashboard', compact(
+        return view('dashboard.client.index', compact(
             'client',
             'categoryInfo',
             'usageStats',
