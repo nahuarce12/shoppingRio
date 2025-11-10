@@ -110,8 +110,7 @@ class StorePromotionRequest extends FormRequest
 
                     // Store owners can only create promotions for their own stores
                     if ($user->isStoreOwner()) {
-                        $store = \App\Models\Store::find($value);
-                        if (!$store || $store->owner_id !== $user->id) {
+                        if ($user->store_id !== $value) {
                             $fail('You can only create promotions for your own store.');
                         }
                     } else {
@@ -173,11 +172,8 @@ class StorePromotionRequest extends FormRequest
     {
         if (!$this->filled('store_id')) {
             $user = Auth::user();
-            if ($user && $user->isStoreOwner()) {
-                $storeId = $user->stores()->value('id');
-                if ($storeId) {
-                    $this->merge(['store_id' => $storeId]);
-                }
+            if ($user && $user->isStoreOwner() && $user->store_id) {
+                $this->merge(['store_id' => $user->store_id]);
             }
         }
 

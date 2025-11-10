@@ -306,162 +306,60 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
               <p class="text-muted">Completá los datos de tu local para solicitar acceso</p>
             </div>
 
-            <form method="POST" action="{{ $ownerRegisterAction }}" id="ownerForm" novalidate">
+            <form method="POST" action="{{ $ownerRegisterAction }}" id="ownerForm" novalidate>
               @csrf
               <input type="hidden" name="tipo_usuario" value="dueño de local">
-              <h2 class="h5 mb-3"><i class="bi bi-building"></i> Datos del Local</h2>
+              
+              <h2 class="h5 mb-3"><i class="bi bi-building"></i> Seleccionar Local</h2>
 
-              <div class="mb-3">
-                <label for="store-name" class="form-label">Nombre del Local *</label>
-                <input type="text" 
-                       class="form-control @error('store_name') is-invalid @enderror" 
-                       id="store-name" 
-                       name="store_name" 
-                       value="{{ old('store_name') }}"
-                       required
-                       minlength="3"
-                       maxlength="100"
-                       placeholder="Ej: Tienda de Moda">
-                @error('store_name')
+              <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill"></i>
+                <strong>Importante:</strong> Seleccioná el local del shopping que vas a administrar. Los locales son creados por el administrador del shopping.
+              </div>
+
+              <div class="mb-4">
+                <label for="store-select" class="form-label">Local *</label>
+                <select class="form-select @error('store_id') is-invalid @enderror" 
+                        id="store-select" 
+                        name="store_id" 
+                        required>
+                  <option value="">Seleccioná tu local</option>
+                  @foreach($stores as $store)
+                    <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>
+                      {{ $store->nombre }} - {{ $store->ubicacion }} ({{ ucfirst($store->rubro) }})
+                    </option>
+                  @endforeach
+                </select>
+                @error('store_id')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                <div class="invalid-feedback">El nombre debe tener entre 3 y 100 caracteres.</div>
+                <div class="invalid-feedback">Por favor seleccioná tu local.</div>
                 @enderror
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="store-category" class="form-label">Categoría *</label>
-                  <select class="form-select @error('store_category') is-invalid @enderror" 
-                          id="store-category" 
-                          name="store_category" 
-                          required>
-                    <option value="">Seleccioná una categoría</option>
-                    <option value="moda" {{ old('store_category') == 'moda' ? 'selected' : '' }}>Moda y Accesorios</option>
-                    <option value="tecnologia" {{ old('store_category') == 'tecnologia' ? 'selected' : '' }}>Tecnología</option>
-                    <option value="gastronomia" {{ old('store_category') == 'gastronomia' ? 'selected' : '' }}>Gastronomía</option>
-                    <option value="deportes" {{ old('store_category') == 'deportes' ? 'selected' : '' }}>Deportes</option>
-                    <option value="hogar" {{ old('store_category') == 'hogar' ? 'selected' : '' }}>Hogar y Decoración</option>
-                    <option value="otro" {{ old('store_category') == 'otro' ? 'selected' : '' }}>Otro</option>
-                  </select>
-                  @error('store_category')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                  @else
-                  <div class="invalid-feedback">Por favor seleccioná una categoría.</div>
-                  @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="store-phone" class="form-label">Teléfono del Local *</label>
-                  <input type="tel" 
-                         class="form-control @error('store_phone') is-invalid @enderror" 
-                         id="store-phone" 
-                         name="store_phone" 
-                         value="{{ old('store_phone') }}"
-                         required
-                         pattern="[0-9\s\-\+\(\)]+"
-                         placeholder="Ej: 0341-4567890">
-                  @error('store_phone')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                  @else
-                  <div class="invalid-feedback">Por favor ingresá un teléfono válido.</div>
-                  @enderror
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="store-description" class="form-label">Descripción del Local *</label>
-                <textarea class="form-control @error('store_description') is-invalid @enderror" 
-                          id="store-description" 
-                          name="store_description" 
-                          rows="3" 
-                          required
-                          minlength="20"
-                          maxlength="500"
-                          placeholder="Describí tu local y los productos o servicios que ofrece...">{{ old('store_description') }}</textarea>
                 <div class="form-text">
-                  <span id="storeDescCounter">0</span>/500 caracteres
+                  <small>Si tu local no aparece en la lista, contactá al administrador del shopping.</small>
                 </div>
-                @error('store_description')
-                <div class="invalid-feedback">{{ $message }}</div>
-                @else
-                <div class="invalid-feedback">La descripción debe tener entre 20 y 500 caracteres.</div>
-                @enderror
               </div>
 
               <hr class="my-4">
 
-              <h2 class="h5 mb-3"><i class="bi bi-person"></i> Datos del Responsable</h2>
+              <h2 class="h5 mb-3"><i class="bi bi-person"></i> Tus Datos</h2>
 
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="owner-name" class="form-label">Nombre *</label>
+                <div class="col-md-12 mb-3">
+                  <label for="owner-name" class="form-label">Nombre Completo *</label>
                   <input type="text" 
-                         class="form-control @error('owner_name') is-invalid @enderror" 
+                         class="form-control @error('name') is-invalid @enderror" 
                          id="owner-name" 
-                         name="owner_name" 
-                         value="{{ old('owner_name') }}"
+                         name="name" 
+                         value="{{ old('name') }}"
                          required
-                         minlength="2"
-                         maxlength="50"
-                         pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
-                         placeholder="Tu nombre">
-                  @error('owner_name')
+                         minlength="3"
+                         maxlength="255"
+                         placeholder="Tu nombre completo">
+                  @error('name')
                   <div class="invalid-feedback">{{ $message }}</div>
                   @else
-                  <div class="invalid-feedback">Solo letras, entre 2 y 50 caracteres.</div>
-                  @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="owner-lastname" class="form-label">Apellido *</label>
-                  <input type="text" 
-                         class="form-control @error('owner_lastname') is-invalid @enderror" 
-                         id="owner-lastname" 
-                         name="owner_lastname" 
-                         value="{{ old('owner_lastname') }}"
-                         required
-                         minlength="2"
-                         maxlength="50"
-                         pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
-                         placeholder="Tu apellido">
-                  @error('owner_lastname')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                  @else
-                  <div class="invalid-feedback">Solo letras, entre 2 y 50 caracteres.</div>
-                  @enderror
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="owner-dni" class="form-label">DNI *</label>
-                  <input type="text" 
-                         class="form-control @error('owner_dni') is-invalid @enderror" 
-                         id="owner-dni" 
-                         name="owner_dni" 
-                         value="{{ old('owner_dni') }}"
-                         required
-                         pattern="[0-9]{7,8}"
-                         placeholder="12345678">
-                  @error('owner_dni')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                  @else
-                  <div class="invalid-feedback">DNI de 7 u 8 dígitos.</div>
-                  @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="store-cuit" class="form-label">CUIT del Local *</label>
-                  <input type="text" 
-                         class="form-control @error('store_cuit') is-invalid @enderror" 
-                         id="store-cuit" 
-                         name="store_cuit" 
-                         value="{{ old('store_cuit') }}"
-                         required
-                         pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}"
-                         placeholder="20-12345678-9">
-                  @error('store_cuit')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                  @else
-                  <div class="invalid-feedback">CUIT formato: 20-12345678-9</div>
+                  <div class="invalid-feedback">Ingresá tu nombre completo (mínimo 3 caracteres).</div>
                   @enderror
                 </div>
               </div>
@@ -469,14 +367,14 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
               <div class="mb-3">
                 <label for="owner-email" class="form-label">Email *</label>
                 <input type="email" 
-                       class="form-control @error('owner_email') is-invalid @enderror" 
+                       class="form-control @error('email') is-invalid @enderror" 
                        id="owner-email" 
-                       name="owner_email" 
-                       value="{{ old('owner_email') }}"
+                       name="email" 
+                       value="{{ old('email') }}"
                        required
                        placeholder="tu@email.com">
                 <div class="form-text">Este será tu usuario para ingresar al panel del local.</div>
-                @error('owner_email')
+                @error('email')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @else
                 <div class="invalid-feedback">Por favor ingresá un email válido.</div>
@@ -522,34 +420,17 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
                 </div>
               </div>
 
-              <div class="mb-3">
-                <label for="owner-phone" class="form-label">Teléfono Personal *</label>
-                <input type="tel" 
-                       class="form-control @error('owner_phone') is-invalid @enderror" 
-                       id="owner-phone" 
-                       name="owner_phone" 
-                       value="{{ old('owner_phone') }}"
-                       required
-                       pattern="[0-9\s\-\+\(\)]+"
-                       placeholder="Ej: 341-1234567">
-                @error('owner_phone')
-                <div class="invalid-feedback">{{ $message }}</div>
-                @else
-                <div class="invalid-feedback">Por favor ingresá un teléfono válido.</div>
-                @enderror
-              </div>
-
               <div class="mb-3 form-check">
                 <input type="checkbox" 
-                       class="form-check-input @error('owner_terms') is-invalid @enderror" 
+                       class="form-check-input @error('terms') is-invalid @enderror" 
                        id="owner-terms" 
-                       name="owner_terms" 
+                       name="terms" 
                        required
-                       {{ old('owner_terms') ? 'checked' : '' }}>
+                       {{ old('terms') ? 'checked' : '' }}>
                 <label class="form-check-label" for="owner-terms">
                   Acepto los <a href="#" target="_blank">términos y condiciones</a> para dueños de locales *
                 </label>
-                @error('owner_terms')
+                @error('terms')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @else
                 <div class="invalid-feedback">Debes aceptar los términos y condiciones.</div>

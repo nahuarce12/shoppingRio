@@ -47,12 +47,13 @@ class PromotionUsageService
         try {
             DB::beginTransaction();
 
-            // Create usage request with 'enviada' status
+            // Create usage request with 'enviada' status and unique QR code
             $usage = PromotionUsage::create([
                 'client_id' => $client->id,
                 'promotion_id' => $promotion->id,
                 'fecha_uso' => Carbon::today(),
-                'estado' => 'enviada'
+                'estado' => 'enviada',
+                'codigo_qr' => PromotionUsage::generateUniqueQrCode()
             ]);
 
             // Send notification email to store owner

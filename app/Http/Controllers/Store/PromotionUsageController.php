@@ -25,7 +25,7 @@ class PromotionUsageController extends Controller
     public function accept(PromotionUsage $usage)
     {
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             abort(403, 'No tiene un local asignado.');
@@ -63,7 +63,7 @@ class PromotionUsageController extends Controller
     public function reject(Request $request, PromotionUsage $usage)
     {
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             abort(403, 'No tiene un local asignado.');

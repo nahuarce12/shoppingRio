@@ -30,6 +30,7 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
             'tipo_usuario' => ['required', 'string', Rule::in(['cliente', 'dueño de local'])],
+            'store_id' => ['required_if:tipo_usuario,dueño de local', 'nullable', 'exists:stores,id'],
         ])->validate();
 
         // Determine categoria_cliente - only for 'cliente' tipo_usuario
@@ -45,6 +46,7 @@ class CreateNewUser implements CreatesNewUsers
             'tipo_usuario' => $input['tipo_usuario'],
             'categoria_cliente' => $categoria,
             'approved_at' => $approved_at,
+            'store_id' => $input['store_id'] ?? null,
         ]);
     }
 }

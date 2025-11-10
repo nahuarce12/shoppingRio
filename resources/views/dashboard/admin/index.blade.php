@@ -121,7 +121,7 @@ use Illuminate\Support\Str;
                       <td>{{ str_pad($store->codigo, 3, '0', STR_PAD_LEFT) }}</td>
                       <td>{{ $store->nombre }}</td>
                       <td>{{ ucwords(str_replace(['-', '_'], ' ', $store->rubro)) }}</td>
-                      <td>{{ $store->owner?->name ?? 'Sin asignar' }}</td>
+                      <td>{{ $store->owner->first()?->name ?? 'Sin asignar' }}</td>
                       <td>
                         <span class="badge {{ $store->trashed() ? 'bg-secondary' : 'bg-success' }}">
                           {{ $store->trashed() ? 'Inactivo' : 'Activo' }}

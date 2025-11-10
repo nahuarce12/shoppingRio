@@ -27,7 +27,7 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $store = $user?->stores()->with(['promotions.usages'])->first();
+        $store = $user?->store()->with(['promotions.usages'])->first();
 
         if (!$store) {
             return view('dashboard.store.no-store');

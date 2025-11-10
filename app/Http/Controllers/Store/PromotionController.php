@@ -21,7 +21,7 @@ class PromotionController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             return view('dashboard.store.no-store');
@@ -76,7 +76,7 @@ class PromotionController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             return view('dashboard.store.no-store');
@@ -96,7 +96,7 @@ class PromotionController extends Controller
     {
         try {
             $user = Auth::user();
-            $store = $user?->stores()->first();
+            $store = $user?->store;
 
             if (!$store) {
                 return view('dashboard.store.no-store');
@@ -140,7 +140,7 @@ class PromotionController extends Controller
     {
         // Ensure owner can only see their own promotions
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             return view('dashboard.store.no-store');
@@ -174,7 +174,7 @@ class PromotionController extends Controller
     {
         // Ensure owner can only delete their own promotions
         $user = Auth::user();
-        $store = $user?->stores()->first();
+        $store = $user?->store;
 
         if (!$store) {
             return view('dashboard.store.no-store');

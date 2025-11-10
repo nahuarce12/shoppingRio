@@ -70,7 +70,6 @@ class DashboardController extends Controller
                 'stores.nombre',
                 'stores.ubicacion',
                 'stores.rubro',
-                'stores.owner_id',
                 'stores.created_at',
                 'stores.updated_at',
                 'stores.deleted_at'

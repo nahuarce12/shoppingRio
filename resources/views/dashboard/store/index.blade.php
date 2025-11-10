@@ -275,6 +275,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                       <th>Cliente</th>
                       <th>Promoción</th>
                       <th>Fecha Solicitud</th>
+                      <th class="text-center">Código QR</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -287,6 +288,15 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                       </td>
                       <td>{{ Str::limit($solicitud->promotion->texto, 40) }}</td>
                       <td>{{ $solicitud->fecha_uso->format('d/m/Y H:i') }}</td>
+                      <td class="text-center">
+                        @if($solicitud->codigo_qr)
+                          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#qrModalStore{{ $solicitud->id }}">
+                            <i class="bi bi-qr-code"></i>
+                          </button>
+                        @else
+                          <small class="text-muted">—</small>
+                        @endif
+                      </td>
                       <td class="d-flex gap-2">
                         <form action="{{ route('store.promotion-usages.accept', $solicitud->id) }}" method="POST" class="d-inline">
                           @csrf
@@ -302,6 +312,30 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                         </form>
                       </td>
                     </tr>
+
+                    <!-- Modal QR para dueño -->
+                    @if($solicitud->codigo_qr)
+                    <div class="modal fade" id="qrModalStore{{ $solicitud->id }}" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header bg-secondary text-white">
+                            <h5 class="modal-title"><i class="bi bi-qr-code"></i> Código QR - Solicitud</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body text-center">
+                            <div class="mb-3">
+                              <img src="{{ $solicitud->getQrCodeBase64() }}" alt="QR Code" class="img-fluid" style="max-width: 250px;">
+                            </div>
+                            <div class="alert alert-secondary mb-2">
+                              <strong>Código:</strong> <code>{{ $solicitud->codigo_qr }}</code>
+                            </div>
+                            <p class="mb-1"><strong>Cliente:</strong> {{ $solicitud->client->name }}</p>
+                            <p class="text-muted"><small>{{ $solicitud->client->email }}</small></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    @endif
                     @endforeach
                   </tbody>
                 </table>

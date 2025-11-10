@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -21,7 +22,16 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Override RegisterResponse to redirect to verification notice
+        $this->app->singleton(RegisterResponse::class, function () {
+            return new class implements RegisterResponse {
+                public function toResponse($request)
+                {
+                    // User is already logged in after registration
+                    return redirect()->route('verification.notice');
+                }
+            };
+        });
     }
 
     /**
@@ -41,7 +51,8 @@ class FortifyServiceProvider extends ServiceProvider
         });
         
         Fortify::registerView(function () {
-            return view('auth.register');
+            $stores = \App\Models\Store::orderBy('nombre')->get();
+            return view('auth.register', compact('stores'));
         });
         
         Fortify::verifyEmailView(function () {

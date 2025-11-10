@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'categoria_cliente',
         'approved_at',
         'approved_by',
+        'store_id',
     ];
 
     /**
@@ -56,11 +57,12 @@ class User extends Authenticatable implements MustVerifyEmail
     // ==================== Relationships ====================
 
     /**
-     * Get all stores owned by this user (for store owners).
+     * Get the store this user owns/works at (for store owners).
+     * A store owner belongs to one store.
      */
-    public function stores(): HasMany
+    public function store(): BelongsTo
     {
-        return $this->hasMany(Store::class, 'owner_id');
+        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

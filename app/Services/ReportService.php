@@ -349,10 +349,10 @@ class ReportService
             return [];
         }
 
-        $stores = $storeOwner->stores;
+        $store = $storeOwner->store;
         $report = [];
 
-        foreach ($stores as $store) {
+        if ($store) {
             $promotions = $store->promotions;
             
             $usagesQuery = PromotionUsage::query()

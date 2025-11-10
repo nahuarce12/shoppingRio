@@ -157,6 +157,7 @@
                       <th>Local</th>
                       <th>Promoción</th>
                       <th>Estado</th>
+                      <th class="text-center">Código QR</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -174,7 +175,54 @@
                       <td><i class="bi bi-shop"></i> {{ $usage->promotion->store->nombre }}</td>
                       <td>{{ Str::limit($usage->promotion->texto, 40) }}</td>
                       <td><span class="badge bg-{{ $estado['class'] }}">{{ $estado['label'] }}</span></td>
+                      <td class="text-center">
+                        @if($usage->codigo_qr && $usage->estado === 'aceptada')
+                          <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#qrModal{{ $usage->id }}">
+                            <i class="bi bi-qr-code"></i> Ver QR
+                          </button>
+                        @elseif($usage->estado === 'enviada')
+                          <small class="text-muted">Pendiente</small>
+                        @else
+                          <small class="text-muted">—</small>
+                        @endif
+                      </td>
                     </tr>
+
+                    <!-- Modal para mostrar QR -->
+                    @if($usage->codigo_qr && $usage->estado === 'aceptada')
+                    <div class="modal fade" id="qrModal{{ $usage->id }}" tabindex="-1" aria-labelledby="qrModalLabel{{ $usage->id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="qrModalLabel{{ $usage->id }}">
+                              <i class="bi bi-qr-code"></i> Código QR de tu Descuento
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body text-center">
+                            <div class="mb-3">
+                              <img src="{{ $usage->getQrCodeBase64() }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+                            </div>
+                            <div class="alert alert-info">
+                              <strong>Código:</strong> {{ $usage->codigo_qr }}
+                            </div>
+                            <p class="text-muted mb-2">
+                              <strong>Local:</strong> {{ $usage->promotion->store->nombre }}
+                            </p>
+                            <p class="text-muted mb-2">
+                              <strong>Promoción:</strong> {{ $usage->promotion->texto }}
+                            </p>
+                            <p class="text-muted mb-0">
+                              <small>Mostrá este código en el local para usar tu descuento</small>
+                            </p>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    @endif
                     @endforeach
                   </tbody>
                 </table>

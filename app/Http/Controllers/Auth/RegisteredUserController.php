@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $stores = Store::orderBy('nombre')->get();
+        return view('auth.register', compact('stores'));
     }
 
     /**
@@ -34,43 +36,29 @@ class RegisteredUserController extends Controller
 
         $rules = [
             'tipo_usuario' => ['required', 'in:cliente,dueño de local'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
 
         if ($isStoreOwner) {
-            $rules = array_merge($rules, [
-                'owner_name' => ['required', 'string', 'max:255'],
-                'owner_lastname' => ['required', 'string', 'max:255'],
-                'owner_email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email'],
-            ]);
-        } else {
-            $rules = array_merge($rules, [
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            ]);
+            $rules['store_id'] = ['required', 'exists:stores,id'];
         }
 
         $validated = $request->validate($rules, [], [
-            'owner_name' => 'nombre',
-            'owner_lastname' => 'apellido',
-            'owner_email' => 'correo electrónico',
+            'name' => 'nombre',
+            'email' => 'correo electrónico',
+            'store_id' => 'local',
         ]);
 
-        $name = $isStoreOwner
-            ? trim($validated['owner_name'].' '.$validated['owner_lastname'])
-            : $validated['name'];
-
-        $email = $isStoreOwner
-            ? $validated['owner_email']
-            : $validated['email'];
-
         $user = User::create([
-            'name' => $name,
-            'email' => $email,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'tipo_usuario' => $tipoUsuario,
             'categoria_cliente' => $tipoUsuario === 'cliente' ? 'Inicial' : null,
             'approved_at' => $tipoUsuario === 'cliente' ? now() : null,
+            'store_id' => $isStoreOwner ? $validated['store_id'] : null,
         ]);
 
         event(new Registered($user));

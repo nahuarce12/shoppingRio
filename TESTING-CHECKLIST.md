@@ -72,9 +72,9 @@ Or manually:
 
 #### 1.1 Registration
 
--   [ ] Navigate to: http://localhost/shoppingRio/public/register
--   [ ] Click "Registrarme como Cliente"
--   [ ] Fill form with test data:
+-   [x] Navigate to: http://localhost/shoppingRio/public/register
+-   [x] Click "Registrarme como Cliente"
+-   [x] Fill form with test data:
     -   Nombre: `Test Cliente`
     -   Apellido: `Manual Testing`
     -   Email: `testclient@example.com`
@@ -83,71 +83,147 @@ Or manually:
     -   Teléfono: `341-1234567`
     -   Fecha Nacimiento: (ensure 18+ years old)
     -   Accept terms & conditions
--   [ ] **Test JavaScript validations**:
+-   [x] **Test JavaScript validations**:
     -   [ ] Try submit with empty fields → validation errors shown
     -   [ ] Try wrong email format → "email inválido"
     -   [ ] Try password mismatch → "contraseñas no coinciden"
     -   [ ] Try birthdate < 18 years → "debes ser mayor de 18"
     -   [ ] All fields turn green (is-valid) when correct
--   [ ] Submit form
--   [ ] **Expected**: Redirect to email verification notice page
--   [ ] **Expected**: Flash message "successful registration"
+-   [x] Submit form
+-   [x] **Expected**: Redirect to email verification notice page
+-   [x] **Expected**: Flash message "successful registration"
 
 #### 1.2 Email Verification
 
--   [ ] Check Mailtrap inbox for verification email
--   [ ] **Expected**: Email from "Shopping Rosario" with subject "Verifica tu Email"
--   [ ] Click verification link in email
--   [ ] **Expected**: Redirect to home with "email verified" message
--   [ ] **Expected**: User can now login
+-   [x] Check Mailtrap inbox for verification email
+-   [x] **Expected**: Email from "Shopping Rosario" with subject "Verifica tu Email"
+-   [x] Click verification link in email
+-   [x] **Expected**: Redirect to home with "email verified" message
+-   [x] **Expected**: User can now login
 
 #### 1.3 Login as Cliente
 
--   [ ] Navigate to: http://localhost/shoppingRio/public/login
--   [ ] Enter credentials: `testclient@example.com` / `password123`
--   [ ] **Test JavaScript validations**:
-    -   [ ] Try submit with empty email → validation error
-    -   [ ] Try invalid email format → validation error
-    -   [ ] Toggle password visibility works (eye icon)
--   [ ] Submit form
--   [ ] **Expected**: Redirect to `/client/dashboard`
--   [ ] **Expected**: Welcome message with client name
--   [ ] **Expected**: Category badge shows "Inicial"
+-   [x] Navigate to: http://localhost/shoppingRio/public/login
+-   [x] Enter credentials: `testclient@example.com` / `password123`
+-   [x] **Test JavaScript validations**:
+    -   [x] Try submit with empty email → validation error
+    -   [x] Try invalid email format → validation error
+    -   [x] Toggle password visibility works (eye icon)
+-   [x] Submit form
+-   [x] **Expected**: Redirect to `/client/dashboard`
+-   [x] **Expected**: Welcome message with client name
+-   [x] **Expected**: Category badge shows "Inicial"
 
 #### 1.4 Browse Promotions
 
--   [ ] Navigate to: http://localhost/shoppingRio/public/promociones
--   [ ] **Expected**: See list of promotions with pagination
--   [ ] **Expected**: Can filter by:
-    -   [ ] Search text (updates on change)
-    -   [ ] Categoría Mínima (Inicial/Medium/Premium)
-    -   [ ] Store (dropdown with all stores)
--   [ ] Test filters:
-    -   [ ] Select "Medium" → only Medium and Premium promotions shown
-    -   [ ] Select a specific store → only that store's promotions shown
-    -   [ ] Clear filters → all promotions shown again
+-   [x] Navigate to: http://localhost/shoppingRio/public/promociones
+-   [x] **Expected**: See list of promotions with pagination
+-   [x] **Expected**: Can filter by:
+    -   [x] Search text (updates on change)
+    -   [x] Categoría Mínima (Inicial/Medium/Premium)
+    -   [x] Store (dropdown with all stores)
+-   [x] Test filters:
+    -   [x] Select "Medium" → only Medium and Premium promotions shown
+    -   [x] Select a specific store → only that store's promotions shown
+    -   [x] Clear filters → all promotions shown again
 
 #### 1.5 Request Promotion Usage
 
--   [ ] Click on a promotion card to view details
--   [ ] **Expected**: See promotion details page
--   [ ] **Expected**: "Solicitar Descuento" button visible (if eligible)
--   [ ] Click "Solicitar Descuento"
--   [ ] **Expected**: Modal opens with promotion details
--   [ ] **Expected**: If NOT eligible, see reason (date, day, category, already used)
--   [ ] If eligible, click "Confirmar Solicitud"
--   [ ] **Expected**: Modal closes, redirect with success message
--   [ ] **Expected**: Usage request status is "enviada"
--   [ ] Navigate to `/client/usages`
--   [ ] **Expected**: See request in "Solicitudes Pendientes" section
+-   [x] Click on a promotion card to view details
+-   [x] **Expected**: See promotion details page
+-   [x] **Expected**: "Solicitar Descuento" button visible (if eligible)
+-   [x] Click "Solicitar Descuento"
+-   [x] **Expected**: Modal opens with promotion details
+-   [x] **Expected**: If NOT eligible, see reason (date, day, category, already used)
+-   [x] If eligible, click "Confirmar Solicitud"
+-   [x] **Expected**: Modal closes, redirect with success message
+-   [x] **Expected**: Usage request status is "enviada"
+-   [x] Navigate to `/client/usages`
+-   [x] **Expected**: See request in "Solicitudes Pendientes" section
 
 #### 1.6 Check Email Notification
 
--   [ ] Check Mailtrap inbox
--   [ ] **Expected**: Email to store owner with subject "Nueva Solicitud de Descuento"
--   [ ] **Expected**: Email contains client name and promotion details
+-   [x] Check Mailtrap inbox
+-   [x] **Expected**: Email to store owner with subject "Nueva Solicitud de Descuento"
+-   [x] **Expected**: Email contains client name and promotion details
 
 **✅ FLOW 1 COMPLETE - Record any issues found**
+
+## 🐛 Issues Found & Fixed During Testing
+
+### FLOW 1: Cliente Registration & Usage
+
+#### **Issue #1: Error 500 después del registro**
+
+-   **Flow**: Flow 1 - Step 1.1 (Registration)
+-   **Description**: Después de registrarse exitosamente, al redirigir a `/email/verify` aparecía error 500 Server Error
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Completar formulario de registro como cliente
+    2. Submit form
+    3. Error 500 en página de verificación de email
+-   **Root Cause**: Missing APP_KEY - La clave de encriptación de Laravel no estaba configurada correctamente o estaba cacheada
+-   **Fix Applied**:
+    -   Ejecutado `php artisan key:generate`
+    -   Ejecutado `php artisan config:clear`
+    -   Reiniciado Apache para aplicar cambios
+-   **Status**: ✅ FIXED
+
+#### **Issue #2: Error 403 Unauthorized al verificar email**
+
+-   **Flow**: Flow 1 - Step 1.2 (Email Verification)
+-   **Description**: Al hacer clic en el enlace de verificación del email, aparecía "403 This action is unauthorized"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Registrarse como cliente
+    2. Recibir email de verificación
+    3. Hacer clic en el enlace del email
+    4. Error 403 Unauthorized
+-   **Root Cause**: Después del registro, Fortify no mantenía al usuario autenticado (logged in), por lo que al intentar verificar el email, el middleware rechazaba la solicitud
+-   **Fix Applied**:
+    -   Implementado custom `RegisterResponse` en `FortifyServiceProvider`
+    -   Ahora después del registro, el usuario queda automáticamente autenticado
+    -   Redirige a `verification.notice` con sesión activa
+-   **Status**: ✅ FIXED
+
+#### **Issue #3: Error al solicitar promoción - columna codigo_qr no existe**
+
+-   **Flow**: Flow 1 - Step 1.5 (Request Promotion Usage)
+-   **Description**: Al solicitar un descuento, aparecía error "No pudimos registrar la solicitud"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Login como cliente
+    2. Navegar a promociones
+    3. Intentar solicitar un descuento
+    4. Error: "No pudimos registrar la solicitud"
+-   **Root Cause**:
+    -   Laravel estaba conectado a la base de datos `shopping_rio` en lugar de `shoppingrio2`
+    -   La migración de `codigo_qr` se ejecutó después del seed inicial
+    -   Configuración de BD cacheada incorrectamente
+-   **Fix Applied**:
+    -   Cambiado `.env` para usar `shopping_rio` (puerto 3306)
+    -   Ejecutado `php artisan migrate:fresh --seed`
+    -   Todas las tablas recreadas con la columna `codigo_qr` incluida desde el inicio
+    -   Los 83 registros de `promotion_usage` seeded con QR generados automáticamente
+-   **Status**: ✅ FIXED
+
+#### **Issue #4: Sistema de QR no estaba implementado**
+
+-   **Flow**: Flow 1 - Feature Request
+-   **Description**: Los descuentos no tenían códigos QR únicos para validación en el local
+-   **Severity**: **High** (Enhancement/Feature)
+-   **Enhancement Implemented**:
+    -   ✅ Instalada librería `chillerlan/php-qrcode`
+    -   ✅ Agregado campo `codigo_qr` (32 chars, unique) a tabla `promotion_usage`
+    -   ✅ Implementados métodos en modelo `PromotionUsage`:
+        -   `generateUniqueQrCode()`: Genera código alfanumérico único de 16 caracteres
+        -   `getQrCodeSvg()`: Retorna QR como SVG
+        -   `getQrCodeBase64()`: Retorna QR como imagen PNG en base64
+    -   ✅ Modificado `PromotionUsageService` para generar QR automáticamente
+    -   ✅ Actualizada vista del dashboard cliente para mostrar QR en modal
+    -   ✅ Actualizada vista del dashboard dueño para ver QR de solicitudes
+    -   ✅ Creado comando artisan `php artisan qr:generate-existing` para registros legacy
+-   **Status**: ✅ IMPLEMENTED
 
 ---
 
@@ -155,10 +231,10 @@ Or manually:
 
 #### 2.1 Registration as Store Owner
 
--   [ ] Logout current user
--   [ ] Navigate to: http://localhost/shoppingRio/public/register
--   [ ] Click "Registrarme como Dueño"
--   [ ] Fill form with test data:
+-   [x] Logout current user
+-   [x] Navigate to: http://localhost/shoppingRio/public/register
+-   [x] Click "Registrarme como Dueño"
+-   [x] Fill form with test data:
     -   **Store Data**:
         -   Nombre Local: `Test Store Manual`
         -   Categoría: `tecnologia`
@@ -174,50 +250,50 @@ Or manually:
         -   Confirmar Password: `password123`
         -   Teléfono Personal: `341-5555555`
     -   Accept terms
--   [ ] **Test JavaScript validations**:
-    -   [ ] Store description character counter updates (X/500)
-    -   [ ] DNI only accepts digits, max 8
-    -   [ ] CUIT auto-formats with hyphens as you type
-    -   [ ] Password match validation in real-time
-    -   [ ] Try submit with description < 20 chars → error
-    -   [ ] All fields validate and turn green when correct
--   [ ] Submit form
--   [ ] **Expected**: Success message "Solicitud enviada al administrador"
--   [ ] **Expected**: Warning shown "Tu cuenta será revisada"
+-   x ] **Test JavaScript validations**:
+    -   [x] Store description character counter updates (X/500)
+    -   [x] DNI only accepts digits, max 8
+    -   [x] CUIT auto-formats with hyphens as you type
+    -   [x] Password match validation in real-time
+    -   [x] Try submit with description < 20 chars → error
+    -   [x] All fields validate and turn green when correct
+-   [x] Submit form
+-   [x] **Expected**: Success message "Solicitud enviada al administrador"
+-   [x] **Expected**: Warning shown "Tu cuenta será revisada"
 
 #### 2.2 Check Pending Approval Email
 
--   [ ] Check Mailtrap inbox
--   [ ] **Expected**: Email to `testowner@example.com` with subject "Solicitud en Revisión"
--   [ ] **Expected**: Email says account is pending admin approval
+-   [x] Check Mailtrap inbox
+-   [x] **Expected**: Email to `testowner@example.com` with subject "Solicitud en Revisión"
+-   [x] **Expected**: Email says account is pending admin approval
 
 #### 2.3 Admin Approves Store Owner
 
--   [ ] Login as admin: `admin@shoppingrio.com` / `password`
--   [ ] **Expected**: Redirect to `/admin/dashboard`
--   [ ] Navigate to: `/admin/user-approvals`
--   [ ] **Expected**: See "Test Owner" in pending approvals list
--   [ ] **Expected**: Store details visible (Test Store Manual, tecnologia)
--   [ ] Click "Aprobar" button
--   [ ] **Expected**: Confirmation dialog appears
--   [ ] Confirm approval
--   [ ] **Expected**: Success message "Usuario aprobado"
--   [ ] **Expected**: User disappears from pending list
+-   [x] Login as admin: `admin@shoppingrio.com` / `password`
+-   [x] **Expected**: Redirect to `/admin/dashboard`
+-   [x] Navigate to: `/admin/user-approvals`
+-   [x] **Expected**: See "Test Owner" in pending approvals list
+-   [x] **Expected**: Store details visible (Test Store Manual, tecnologia)
+-   [x] Click "Aprobar" button
+-   [x] **Expected**: Confirmation dialog appears
+-   [x] Confirm approval
+-   [x] **Expected**: Success message "Usuario aprobado"
+-   [x] **Expected**: User disappears from pending list
 
 #### 2.4 Check Approval Email
 
--   [ ] Check Mailtrap inbox
--   [ ] **Expected**: Email to `testowner@example.com` with subject "Cuenta Aprobada"
--   [ ] **Expected**: Email contains login instructions
+-   [x] Check Mailtrap inbox
+-   [x] **Expected**: Email to `testowner@example.com` with subject "Cuenta Aprobada"
+-   [x] **Expected**: Email contains login instructions
 
 #### 2.5 Login as Store Owner
 
--   [ ] Logout admin
--   [ ] Navigate to: http://localhost/shoppingRio/public/login
--   [ ] Login with: `testowner@example.com` / `password123`
--   [ ] **Expected**: Redirect to `/store/dashboard`
--   [ ] **Expected**: Welcome message with store name "Test Store Manual"
--   [ ] **Expected**: Dashboard shows store statistics
+-   [x] Logout admin
+-   [x] Navigate to: http://localhost/shoppingRio/public/login
+-   [x] Login with: `testowner@example.com` / `password123`
+-   [x] **Expected**: Redirect to `/store/dashboard`
+-   [x] **Expected**: Welcome message with store name "Test Store Manual"
+-   [x] **Expected**: Dashboard shows store statistics
 
 #### 2.6 Create Promotion
 
@@ -755,7 +831,7 @@ For each email type, verify:
 
 ### Completion Checklist:
 
--   [ ] Flow 1: Cliente Registration & Usage (10 min)
+-   [✅] Flow 1: Cliente Registration & Usage (10 min) - **COMPLETED November 7, 2025**
 -   [ ] Flow 2: Store Owner Registration & Management (15 min)
 -   [ ] Flow 3: Admin Dashboard & Reports (10 min)
 -   [ ] Flow 4: Business Logic Validation (15 min)
@@ -765,35 +841,96 @@ For each email type, verify:
 
 **Total Estimated Time**: ~80 minutes
 
-### Issues Found:
+---
 
-Record all bugs, issues, or unexpected behavior here:
+## 🐛 Issues Found & Fixed During Testing
 
-1. **Issue #1**:
+### FLOW 1: Cliente Registration & Usage
 
-    - Flow:
-    - Description:
-    - Severity: (Critical/High/Medium/Low)
-    - Steps to Reproduce:
-    - Expected:
-    - Actual:
+#### **Issue #1: Error 500 después del registro**
 
-2. **Issue #2**:
-    - Flow:
-    - Description:
-    - Severity:
-    - Steps to Reproduce:
-    - Expected:
-    - Actual:
+-   **Flow**: Flow 1 - Step 1.1 (Registration)
+-   **Description**: Después de registrarse exitosamente, al redirigir a `/email/verify` aparecía error 500 Server Error
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Completar formulario de registro como cliente
+    2. Submit form
+    3. Error 500 en página de verificación de email
+-   **Root Cause**: Missing APP_KEY - La clave de encriptación de Laravel no estaba configurada correctamente o estaba cacheada
+-   **Fix Applied**:
+    -   Ejecutado `php artisan key:generate`
+    -   Ejecutado `php artisan config:clear`
+    -   Reiniciado Apache para aplicar cambios
+-   **Status**: ✅ FIXED
 
-(Add more as needed)
+#### **Issue #2: Error 403 Unauthorized al verificar email**
+
+-   **Flow**: Flow 1 - Step 1.2 (Email Verification)
+-   **Description**: Al hacer clic en el enlace de verificación del email, aparecía "403 This action is unauthorized"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Registrarse como cliente
+    2. Recibir email de verificación
+    3. Hacer clic en el enlace del email
+    4. Error 403 Unauthorized
+-   **Root Cause**: Después del registro, Fortify no mantenía al usuario autenticado (logged in), por lo que al intentar verificar el email, el middleware rechazaba la solicitud
+-   **Fix Applied**:
+    -   Implementado custom `RegisterResponse` en `FortifyServiceProvider`
+    -   Ahora después del registro, el usuario queda automáticamente autenticado
+    -   Redirige a `verification.notice` con sesión activa
+-   **Status**: ✅ FIXED
+
+#### **Issue #3: Error al solicitar promoción - columna codigo_qr no existe**
+
+-   **Flow**: Flow 1 - Step 1.5 (Request Promotion Usage)
+-   **Description**: Al solicitar un descuento, aparecía error "No pudimos registrar la solicitud"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Login como cliente
+    2. Navegar a promociones
+    3. Intentar solicitar un descuento
+    4. Error: "No pudimos registrar la solicitud"
+-   **Root Cause**:
+    -   Laravel estaba conectado a la base de datos `shopping_rio` en lugar de `shoppingrio2`
+    -   La migración de `codigo_qr` se ejecutó después del seed inicial
+    -   Configuración de BD cacheada incorrectamente
+-   **Fix Applied**:
+    -   Cambiado `.env` para usar `shopping_rio` (puerto 3306)
+    -   Ejecutado `php artisan migrate:fresh --seed`
+    -   Todas las tablas recreadas con la columna `codigo_qr` incluida desde el inicio
+    -   Los 83 registros de `promotion_usage` seeded con QR generados automáticamente
+-   **Status**: ✅ FIXED
+
+#### **Issue #4: Sistema de QR no estaba implementado**
+
+-   **Flow**: Flow 1 - Feature Request
+-   **Description**: Los descuentos no tenían códigos QR únicos para validación en el local
+-   **Severity**: **High** (Enhancement/Feature)
+-   **Enhancement Implemented**:
+    -   ✅ Instalada librería `chillerlan/php-qrcode`
+    -   ✅ Agregado campo `codigo_qr` (32 chars, unique) a tabla `promotion_usage`
+    -   ✅ Implementados métodos en modelo `PromotionUsage`:
+        -   `generateUniqueQrCode()`: Genera código alfanumérico único de 16 caracteres
+        -   `getQrCodeSvg()`: Retorna QR como SVG
+        -   `getQrCodeBase64()`: Retorna QR como imagen PNG en base64
+    -   ✅ Modificado `PromotionUsageService` para generar QR automáticamente
+    -   ✅ Actualizada vista del dashboard cliente para mostrar QR en modal
+    -   ✅ Actualizada vista del dashboard dueño para ver QR de solicitudes
+    -   ✅ Creado comando artisan `php artisan qr:generate-existing` para registros legacy
+-   **Status**: ✅ IMPLEMENTED
+
+---
+
+### Issues Pending (Not Found Yet):
+
+(Will be updated as testing progresses through other flows)
 
 ---
 
 ## ✅ Sign-Off
 
-**Tester**: ****\*\*\*\*****\_\_\_****\*\*\*\*****
-**Date**: ****\*\*\*\*****\_\_\_****\*\*\*\*****
+**Tester**: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
+**Date**: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
 **Overall Result**: [ ] PASS [ ] PASS with minor issues [ ] FAIL
 
 **Notes**:
