@@ -8,6 +8,7 @@ use App\Models\Store;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Admin controller for managing stores in the shopping center.
@@ -21,12 +22,7 @@ class StoreController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Store::with('owner');
-
-        // Filter by owner
-        if ($request->filled('owner_id')) {
-            $query->where('owner_id', $request->owner_id);
-        }
+        $query = Store::with('owners');
 
         // Filter by rubro
         if ($request->filled('rubro')) {
@@ -43,20 +39,14 @@ class StoreController extends Controller
         }
 
         // Order by store code
-    $query->orderBy('codigo');
+        $query->orderBy('codigo');
 
         $stores = $query->paginate(15);
-
-        // Get approved store owners for filter dropdown
-        $owners = User::where('tipo_usuario', 'dueño de local')
-            ->whereNotNull('approved_at')
-            ->orderBy('name')
-            ->get();
 
         // Get available rubros from config
         $rubros = config('shopping.store_rubros', []);
 
-        return view('admin.stores.index', compact('stores', 'owners', 'rubros'));
+        return redirect()->route('admin.dashboard', ['section' => 'locales']);
     }
 
     /**
@@ -81,18 +71,26 @@ class StoreController extends Controller
     public function store(StoreStoreRequest $request)
     {
         try {
-            $store = Store::create($request->validated());
+            $data = $request->validated();
+            
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('stores/logos', 'public');
+                $data['logo'] = $logoPath;
+            }
+            
+            $store = Store::create($data);
 
             Log::info('Store created by admin', [
                 'store_id' => $store->id,
                 'store_code' => $store->codigo,
                 'store_name' => $store->nombre,
-                'owner_id' => $store->owner_id,
+                'owners_count' => $store->owners()->count(),
                 'admin_id' => auth()->id()
             ]);
 
             return redirect()
-                ->route('admin.stores.show', $store)
+                ->route('admin.dashboard', ['section' => 'locales'])
                 ->with('success', "Local '{$store->nombre}' creado exitosamente con código {$store->codigo}.");
         } catch (\Exception $e) {
             Log::error('Failed to create store', [
@@ -112,7 +110,7 @@ class StoreController extends Controller
      */
     public function show(Store $store)
     {
-        $store->load(['owner', 'promotions' => function ($query) {
+        $store->load(['owners', 'promotions' => function ($query) {
             $query->orderBy('created_at', 'desc');
         }]);
 
@@ -150,18 +148,29 @@ class StoreController extends Controller
     {
         try {
             $oldData = $store->toArray();
+            $data = $request->validated();
             
-            $store->update($request->validated());
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                // Delete old logo if exists
+                if ($store->logo) {
+                    Storage::disk('public')->delete($store->logo);
+                }
+                $logoPath = $request->file('logo')->store('stores/logos', 'public');
+                $data['logo'] = $logoPath;
+            }
+            
+            $store->update($data);
 
             Log::info('Store updated by admin', [
                 'store_id' => $store->id,
                 'store_code' => $store->codigo,
-                'changes' => array_diff_assoc($request->validated(), $oldData),
+                'changes' => array_diff_assoc($data, $oldData),
                 'admin_id' => auth()->id()
             ]);
 
             return redirect()
-                ->route('admin.stores.show', $store)
+                ->route('admin.dashboard', ['section' => 'locales'])
                 ->with('success', "Local '{$store->nombre}' actualizado exitosamente.");
         } catch (\Exception $e) {
             Log::error('Failed to update store', [
@@ -209,7 +218,7 @@ class StoreController extends Controller
             ]);
 
             return redirect()
-                ->route('admin.stores.index')
+                ->route('admin.dashboard', ['section' => 'locales'])
                 ->with('success', "Local '{$storeName}' (Código: {$storeCode}) eliminado exitosamente.");
         } catch (\Exception $e) {
             Log::error('Failed to delete store', [

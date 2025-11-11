@@ -102,13 +102,21 @@ class PromotionController extends Controller
                 return view('dashboard.store.no-store');
             }
 
-            $promotion = Promotion::create(array_merge(
+            $data = array_merge(
                 $request->validated(),
                 [
                     'store_id' => $store->id,
                     'estado' => 'pendiente' // Requires admin approval
                 ]
-            ));
+            );
+
+            // Handle image upload
+            if ($request->hasFile('imagen')) {
+                $imagePath = $request->file('imagen')->store('promotions/images', 'public');
+                $data['imagen'] = $imagePath;
+            }
+
+            $promotion = Promotion::create($data);
 
             Log::info('Promotion created by store owner', [
                 'promotion_id' => $promotion->id,

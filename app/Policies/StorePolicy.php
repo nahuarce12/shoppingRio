@@ -28,7 +28,7 @@ class StorePolicy
         }
 
         if ($user->isStoreOwner() && $user->isApproved()) {
-            return $store->owner_id === $user->id;
+            return $user->store_id === $store->id;
         }
 
         return false;
@@ -90,7 +90,7 @@ class StorePolicy
         }
 
         if ($user->isStoreOwner() && $user->isApproved()) {
-            return $store->owner_id === $user->id;
+            return $user->store_id === $store->id;
         }
 
         return false;

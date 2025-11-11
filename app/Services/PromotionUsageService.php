@@ -56,9 +56,9 @@ class PromotionUsageService
                 'codigo_qr' => PromotionUsage::generateUniqueQrCode()
             ]);
 
-            // Send notification email to store owner
-            if ($promotion->store?->owner?->email) {
-                Mail::to($promotion->store->owner->email)
+            // Send notification email to all store owners
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
                     ->send(new PromotionUsageRequestMail($usage));
             }
 

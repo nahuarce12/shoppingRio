@@ -40,8 +40,15 @@ $localesIndexRoute = route('locales.index');
 
           <div class="info-item mb-2"><i class="bi bi-geo-alt-fill"></i> <strong>Ubicación:</strong> <span class="ms-1">{{ $store->ubicacion }}</span></div>
 
-          @if($owner)
-            <div class="info-item mb-2"><i class="bi bi-person-circle"></i> <strong>Contacto:</strong> <span class="ms-1">{{ $owner->name }} ({{ $owner->email }})</span></div>
+          @if($store->owners->count() > 0)
+            <div class="info-item mb-2">
+              <i class="bi bi-person-circle"></i> <strong>Contacto:</strong>
+              <span class="ms-1">
+                @foreach($store->owners as $owner)
+                  {{ $owner->name }}@if(!$loop->last), @endif
+                @endforeach
+              </span>
+            </div>
           @endif
 
           <div class="alert alert-light border mt-4" role="status">

@@ -171,9 +171,11 @@ class PromotionService
             $promotion->estado = 'aprobada';
             $promotion->save();
 
-            // Send approval email to store owner
-            Mail::to($promotion->store->owner->email)
-                ->send(new PromotionApprovedMail($promotion));
+            // Send approval email to all store owners
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
+                    ->send(new PromotionApprovedMail($promotion));
+            }
 
             DB::commit();
             return true;
@@ -204,9 +206,11 @@ class PromotionService
             $promotion->estado = 'denegada';
             $promotion->save();
 
-            // Send denial email to store owner with reason
-            Mail::to($promotion->store->owner->email)
-                ->send(new PromotionDeniedMail($promotion, $reason));
+            // Send denial email to all store owners with reason
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
+                    ->send(new PromotionDeniedMail($promotion, $reason));
+            }
 
             DB::commit();
             return true;

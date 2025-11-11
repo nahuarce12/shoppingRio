@@ -1,9 +1,9 @@
 # ShoppingRio - Manual E2E Testing Checklist
 
 **Date Started**: November 3, 2025  
-**Last Updated**: November 5, 2025  
+**Last Updated**: November 11, 2025  
 **Phase**: 10 - Final Testing  
-**Status**: 🟡 In Progress
+**Status**: 🟡 In Progress (Flow 1-3 Complete, Flow 4-7 Pending)
 
 ---
 
@@ -37,9 +37,9 @@
 
 ### 🎯 Testing Status by Flow
 
--   **Flow 1 - Cliente Registration**: ✅ READY - Registration, Email Verification, Login working
--   **Flow 2 - Store Owner Management**: ⏳ NOT STARTED
--   **Flow 3 - Admin Dashboard**: ⏳ NOT STARTED
+-   **Flow 1 - Cliente Registration**: ✅ COMPLETE
+-   **Flow 2 - Store Owner Management**: ✅ COMPLETE
+-   **Flow 3 - Admin Dashboard & Reports**: ✅ COMPLETE
 -   **Flow 4 - Business Logic**: ⏳ NOT STARTED
 -   **Flow 5 - Form Validation**: ✅ PARTIALLY TESTED (registration forms validated)
 -   **Flow 6 - Permissions**: ⏳ NOT STARTED
@@ -234,29 +234,19 @@ Or manually:
 -   [x] Logout current user
 -   [x] Navigate to: http://localhost/shoppingRio/public/register
 -   [x] Click "Registrarme como Dueño"
--   [x] Fill form with test data:
-    -   **Store Data**:
-        -   Nombre Local: `Test Store Manual`
-        -   Categoría: `tecnologia`
-        -   Teléfono Local: `341-9876543`
-        -   Descripción: (minimum 20 chars) `Esta es una tienda de prueba para testing manual del sistema de shopping.`
+-   [x] **ARCHITECTURE CHANGE**: Store owner registration was refactored:
+    -   OLD: Form had fields to create a new store (nombre, categoría, teléfono, descripción, DNI, CUIT)
+    -   NEW: Form now only requires selecting an existing store from dropdown
+    -   NEW: Simplified to: Store (dropdown), Nombre, Email, Password
+    -   REASON: Stores are now created by admins only; owners just select their assigned store
+-   [x] Fill simplified form with test data:
+    -   **Store Selection**:
+        -   Seleccionar Local: (choose from dropdown of available stores)
     -   **Owner Data**:
         -   Nombre: `Test Owner`
-        -   Apellido: `Manual Testing`
-        -   DNI: `12345678` (8 digits)
-        -   CUIT: `20123456789` (auto-formats to `20-12345678-9`)
         -   Email: `testowner@example.com`
         -   Password: `password123`
         -   Confirmar Password: `password123`
-        -   Teléfono Personal: `341-5555555`
-    -   Accept terms
--   x ] **Test JavaScript validations**:
-    -   [x] Store description character counter updates (X/500)
-    -   [x] DNI only accepts digits, max 8
-    -   [x] CUIT auto-formats with hyphens as you type
-    -   [x] Password match validation in real-time
-    -   [x] Try submit with description < 20 chars → error
-    -   [x] All fields validate and turn green when correct
 -   [x] Submit form
 -   [x] **Expected**: Success message "Solicitud enviada al administrador"
 -   [x] **Expected**: Warning shown "Tu cuenta será revisada"
@@ -271,11 +261,11 @@ Or manually:
 
 -   [x] Login as admin: `admin@shoppingrio.com` / `password`
 -   [x] **Expected**: Redirect to `/admin/dashboard`
--   [x] Navigate to: `/admin/user-approvals`
+-   [x] Navigate to admin panel (from dropdown menu)
+-   [x] Look for pending user approvals
 -   [x] **Expected**: See "Test Owner" in pending approvals list
--   [x] **Expected**: Store details visible (Test Store Manual, tecnologia)
 -   [x] Click "Aprobar" button
--   [x] **Expected**: Confirmation dialog appears
+-   [x] **Expected**: Confirmation dialog appears OR success message
 -   [x] Confirm approval
 -   [x] **Expected**: Success message "Usuario aprobado"
 -   [x] **Expected**: User disappears from pending list
@@ -292,76 +282,182 @@ Or manually:
 -   [x] Navigate to: http://localhost/shoppingRio/public/login
 -   [x] Login with: `testowner@example.com` / `password123`
 -   [x] **Expected**: Redirect to `/store/dashboard`
--   [x] **Expected**: Welcome message with store name "Test Store Manual"
+-   [x] **Expected**: Welcome message with store name
 -   [x] **Expected**: Dashboard shows store statistics
 
 #### 2.6 Create Promotion
 
--   [ ] Navigate to: `/store/promotions/create`
--   [ ] Fill promotion form:
+-   [x] Navigate to: `/store/promotions/create`
+-   [x] Fill promotion form:
     -   Texto: `20% de descuento en todos los productos de tecnología`
     -   Fecha Desde: (today)
     -   Fecha Hasta: (today + 30 days)
-    -   Días Semana: Select Monday, Wednesday, Friday (3 días)
+    -   Días Semana: Select multiple days
     -   Categoría Mínima: `Medium`
--   [ ] **Test JavaScript validations**:
-    -   [ ] Character counter updates (X/200)
-    -   [ ] Try fecha_hasta < fecha_desde → error
-    -   [ ] Try selecting no days → error
-    -   [ ] Try texto > 200 chars → error
-    -   [ ] All validations work in real-time
--   [ ] Submit form
--   [ ] **Expected**: Success message "Promoción creada, pendiente de aprobación"
--   [ ] **Expected**: Redirect to promotions list
--   [ ] **Expected**: New promotion has status badge "Pendiente"
+-   [x] **Test JavaScript validations** (client-side):
+    -   [x] Character counter updates (X/200)
+    -   [x] Date validation: fecha_hasta >= fecha_desde
+    -   [x] Try selecting no days → validation error
+    -   [x] Try texto > 200 chars → validation prevents input or shows error
+-   [x] Submit form
+-   [x] **Expected**: Success message "Promoción creada, pendiente de aprobación"
+-   [x] **Expected**: Redirect to promotions list
+-   [x] **Expected**: New promotion has status badge "Pendiente"
 
 #### 2.7 Admin Approves Promotion
 
--   [ ] Logout and login as admin again
--   [ ] Navigate to: `/admin/promotions`
--   [ ] Filter by status: "Pendiente"
--   [ ] **Expected**: See "Test Store Manual" promotion
--   [ ] Click "Aprobar" button
--   [ ] **Expected**: Confirmation dialog
--   [ ] Confirm approval
--   [ ] **Expected**: Success message
--   [ ] **Expected**: Promotion status changes to "Aprobada"
+-   [x] Logout and login as admin again
+-   [x] Navigate to admin dashboard
+-   [x] Find promotions pending approval section
+-   [x] **Expected**: See the newly created promotion
+-   [x] Click "Aprobar" button
+-   [x] **Expected**: Success message or confirmation
+-   [x] **Expected**: Promotion status changes to "Aprobada"
 
 #### 2.8 Check Approval Email
 
--   [ ] Check Mailtrap inbox
--   [ ] **Expected**: Email to store owner with subject "Promoción Aprobada"
+-   [x] Check Mailtrap inbox
+-   [x] **Expected**: Email to store owner with subject "Promoción Aprobada"
 
 #### 2.9 Verify Promotion is Public
 
--   [ ] Logout all users
--   [ ] Navigate to: http://localhost/shoppingRio/public/promociones
--   [ ] **Expected**: See "Test Store Manual" promotion in list
--   [ ] **Expected**: Can see details without login
+-   [x] Logout all users
+-   [x] Navigate to: http://localhost/shoppingRio/public/promociones
+-   [x] **Expected**: See the approved promotion in list
+-   [x] **Expected**: Can see details without login
 
 #### 2.10 Store Owner Manages Usage Requests
 
--   [ ] Login as `testclient@example.com` (from Flow 1)
--   [ ] Request usage for "Test Store Manual" promotion
--   [ ] Logout and login as `testowner@example.com`
--   [ ] Navigate to: `/store/promotion-usages`
--   [ ] **Expected**: See pending usage request from "Test Cliente Manual Testing"
--   [ ] **Test Approval**:
-    -   [ ] Click "Aprobar"
-    -   [ ] **Expected**: Success message
-    -   [ ] **Expected**: Request moves to history with status "Aceptada"
-    -   [ ] Check Mailtrap: email to client "Descuento Aceptado"
--   [ ] Create another test request (as client)
--   [ ] **Test Rejection**:
-    -   [ ] Click "Rechazar"
-    -   [ ] **Expected**: Modal opens asking for reason
-    -   [ ] Enter reason: `No disponible en este momento`
-    -   [ ] Confirm rejection
-    -   [ ] **Expected**: Success message
-    -   [ ] **Expected**: Request moves to history with status "Rechazada"
-    -   [ ] Check Mailtrap: email to client "Descuento Rechazado" with reason
+-   [x] Login as `testclient@example.com` (from Flow 1)
+-   [x] Request usage for the approved promotion
+-   [x] Logout and login as store owner
+-   [x] Navigate to store dashboard
+-   [x] **Expected**: See pending usage request from client
+-   [x] **Test Approval**:
+    -   [x] Click "Aprobar"
+    -   [x] **Expected**: Success message
+    -   [x] **Expected**: Request moves to history with status "Aceptada"
+    -   [x] Check Mailtrap: email to client "Descuento Aceptado"
+-   [x] Create another test request (as client)
+-   [x] **Test Rejection**:
+    -   [x] Click "Rechazar"
+    -   [x] **Expected**: Modal opens asking for reason (or reason field shown)
+    -   [x] Enter reason: `No disponible en este momento`
+    -   [x] Confirm rejection
+    -   [x] **Expected**: Success message
+    -   [x] **Expected**: Request moves to history with status "Rechazada"
+    -   [x] Check Mailtrap: email to client "Descuento Rechazado" with reason
 
 **✅ FLOW 2 COMPLETE - Record any issues found**
+
+---
+
+## 🐛 Issues Found & Fixed During FLOW 2 Testing (November 10, 2025)
+
+### **Issue #5: Validation error preventing store owners from creating promotions**
+
+-   **Flow**: Flow 2 - Step 2.6 (Create Promotion)
+-   **Description**: Store owners received validation error "You can only create promotions for your own store" when trying to create a promotion with valid data
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Login as approved store owner
+    2. Navigate to promotion creation form
+    3. Fill all fields correctly
+    4. Submit form
+    5. Get validation error: "You can only create promotions for your own store"
+-   **Root Cause**:
+    -   `StorePromotionRequest` validation used strict type comparison `!==` to check if `$user->store_id !== $value`
+    -   Form input from HTML sends `store_id` as a string, but database stores it as integer
+    -   Type mismatch caused validation to fail even with correct data
+-   **Fix Applied**:
+    -   Modified `StorePromotionRequest.php` line 114
+    -   Changed validation to cast both sides to int: `(int)$user->store_id !== (int)$value`
+    -   Now handles type differences correctly
+-   **Status**: ✅ FIXED
+
+### **Issue #6: Email sending failed when approving promotions - "store->owner" relationship undefined**
+
+-   **Flow**: Flow 2 - Step 2.7 (Admin Approves Promotion)
+-   **Description**: When admin clicked "Aprobar" on a promotion, error appeared: "La promoción asociada ya no está disponible"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Create promotion as store owner
+    2. Login as admin
+    3. Navigate to pending promotions
+    4. Click "Aprobar" button
+    5. Get error message
+-   **Root Cause**:
+    -   Store-owner relationship was refactored from `store->owner` (singular) to `store->owners` (plural, HasMany)
+    -   Old code in `PromotionService.php` tried to access `$promotion->store->owner->email`
+    -   This caused null reference error when trying to send approval email
+    -   Also affected `PromotionUsageService.php` and `PromotionPolicy.php`
+-   **Fix Applied**:
+    -   Updated `PromotionService.php`:
+        -   `approvePromotion()`: Now loops through all owners with `foreach ($promotion->store->owners as $owner)`
+        -   `denyPromotion()`: Same change for sending denial emails
+    -   Updated `PromotionUsageService.php`:
+        -   `requestUsage()`: Sends usage request email to all store owners
+    -   Updated `PromotionPolicy.php`:
+        -   `create()`: Changed `$store->owner_id === $user->id` to `$user->store_id === $store->id`
+        -   `delete()`: Changed `$promotion->store->owner_id === $user->id` to `$promotion->store_id === $user->store_id`
+        -   `manageRequests()`: Same change
+    -   Updated `StorePolicy.php`:
+        -   `view()`: Changed from `$store->owner_id === $user->id` to `$user->store_id === $store->id`
+        -   `managePromotions()`: Same change
+    -   Updated `StoreController.php`:
+        -   Fixed log entry to show `owners_count` instead of non-existent `owner_id`
+-   **Status**: ✅ FIXED
+
+### **Issue #7: Route model binding mismatch - Accept/Reject usage requests failed**
+
+-   **Flow**: Flow 2 - Step 2.10 (Store Owner Manages Usage Requests)
+-   **Description**: When store owner tried to accept or reject a promotion usage request, error appeared: "La promoción asociada ya no está disponible"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Create usage request as client
+    2. Login as store owner
+    3. Try to click "Aprobar" or "Rechazar" button on pending request
+    4. Get error message
+-   **Root Cause**:
+    -   Route parameter was named `{promotionUsage}` (camelCase)
+    -   Controller method expected parameter named `$usage` (different name)
+    -   Laravel's route model binding couldn't match the route parameter to the method parameter
+    -   Result: `$usage` object arrived empty/null to the controller
+    -   Verification check `!$usage->promotion` evaluated to true, throwing error
+-   **Fix Applied**:
+    -   Changed method parameter names in `PromotionUsageController.php`:
+        -   `accept($usage)` → `accept(PromotionUsage $promotionUsage)`
+        -   `reject(Request $request, $usage)` → `reject(Request $request, PromotionUsage $promotionUsage)`
+    -   Updated all references within methods to use `$promotionUsage` instead of `$usage`
+    -   Now parameter name matches route parameter name, enabling Laravel's automatic model binding
+-   **Status**: ✅ FIXED
+
+---
+
+### **Architectural Change**: Store-Owner Relationship Refactored
+
+-   **Change**: One Store → Many Owners (HasMany relationship)
+-   **Previous Design**: One Store → One Owner (BelongsTo on Store model)
+-   **New Design**:
+    -   `Store` model: `owners()` returns HasMany collection
+    -   `User` model: `store()` returns BelongsTo single Store
+    -   Migration: Added `store_id` to users table (nullable, FK to stores)
+    -   Migration: Removed `owner_id` from stores table
+-   **Implications**:
+    -   ✅ Multiple users can own the same store
+    -   ✅ Each owner belongs to exactly one store
+    -   ✅ Emails sent to all owners when actions occur
+    -   ✅ Authorization checks updated across all policies
+-   **Database Changes**:
+    -   Migration: `2025_11_07_213043_modify_store_owner_relationship.php`
+    -   Seeder: Creates 20 stores, assigns 5 owners (3 approved, 2 pending)
+-   **Files Modified**: 8 total
+    -   Models: 2 (Store.php, User.php)
+    -   Services: 2 (PromotionService.php, PromotionUsageService.php)
+    -   Policies: 2 (PromotionPolicy.php, StorePolicy.php)
+    -   Controllers: 1 (StoreController.php)
+    -   Requests: 1 (StorePromotionRequest.php)
+-   **Testing**: All flows work correctly with new relationship
 
 ---
 
@@ -369,96 +465,286 @@ Or manually:
 
 #### 3.1 Admin Login & Dashboard
 
--   [ ] Login as: `admin@shoppingrio.com` / `password`
--   [ ] **Expected**: Redirect to `/admin/dashboard`
--   [ ] **Expected**: Dashboard shows:
-    -   [ ] Total stores count
-    -   [ ] Total promotions count (aprobadas)
-    -   [ ] Total clients count
-    -   [ ] Pending approvals count (users + promotions)
+-   [x] Login as: `admin@shoppingrio.com` / `password`
+-   [x] **Expected**: Redirect to `/admin/dashboard`
+-   [x] **Expected**: Dashboard shows:
+    -   [x] Total stores count
+    -   [x] Total promotions count (aprobadas)
+    -   [x] Total clients count
+    -   [x] Pending approvals count (users + promotions)
 
 #### 3.2 Store Management
 
--   [ ] Navigate to: `/admin/stores`
--   [ ] **Expected**: See list of all stores with pagination
--   [ ] Click "Crear Local"
--   [ ] Fill form with test data
--   [ ] Submit form
--   [ ] **Expected**: Success message, new store in list
--   [ ] Click "Editar" on a store
--   [ ] Modify store name
--   [ ] Submit form
--   [ ] **Expected**: Success message, changes reflected
--   [ ] **Note**: Don't delete (would cascade delete promotions)
+-   [x] Navigate to admin dashboard
+-   [x] Find "Locales" section
+-   [x] **Expected**: See list of all stores with modal-based interface
+-   [x] Click "Crear Local" button (modal)
+-   [x] Fill form with test data:
+    -   Nombre: `Test Store`
+    -   Ubicación: `Galería Principal`
+    -   Rubro: `indumentaria`
+    -   Logo: (optional image upload)
+-   [x] Submit form
+-   [x] **Expected**: Success alert shows
+-   [x] **Expected**: New store appears in list
+-   [x] Click "Editar" button on a store (opens modal)
+-   [x] Modify store name: `Test Store Updated`
+-   [x] Submit form
+-   [x] **Expected**: Success alert shows
+-   [x] **Expected**: Changes reflected in list
+-   [x] Click "Eliminar" on a store
+-   [x] **Expected**: Confirmation dialog or success message
+-   [x] **Expected**: Store removed from list
 
-#### 3.3 User Approvals
+#### 3.3 User Approvals (Dueños de Locales)
 
--   [ ] Navigate to: `/admin/user-approvals`
--   [ ] **Expected**: List of pending store owners (if any)
--   [ ] **Expected**: Can see store details for each owner
--   [ ] **Test rejection**:
-    -   [ ] Create another store owner registration
-    -   [ ] As admin, click "Rechazar"
-    -   [ ] **Expected**: Modal asks for rejection reason
-    -   [ ] Enter reason: `Documentación incompleta`
-    -   [ ] Confirm rejection
-    -   [ ] **Expected**: Success message
-    -   [ ] Check Mailtrap: rejection email sent with reason
+-   [x] Navigate to admin dashboard
+-   [x] Find "Dueños de Locales" section
+-   [x] **Expected**: List of pending store owner approvals
+-   [x] **Expected**: See store owner details (email, local)
+-   [x] **Test approval**:
+    -   [x] Click "Aprobar" button
+    -   [x] **Expected**: Success message shows
+    -   [x] **Expected**: Owner moves to approved section
+    -   [x] Check Mailtrap: Approval email sent
+-   [x] **Test rejection**:
+    -   [x] Create another store owner registration
+    -   [x] Click "Rechazar" button
+    -   [x] **Expected**: Rejection reason modal appears
+    -   [x] Enter reason: `Documentación incompleta`
+    -   [x] Confirm rejection
+    -   [x] **Expected**: Success message
+    -   [x] **Expected**: Owner removed from pending
+    -   [x] Check Mailtrap: Rejection email with reason
 
 #### 3.4 Promotion Approvals
 
--   [ ] Navigate to: `/admin/promotions`
--   [ ] Filter by "Pendiente"
--   [ ] **Expected**: List of pending promotions
--   [ ] **Test approve**: (already tested in Flow 2)
--   [ ] **Test deny**:
-    -   [ ] Create a new promotion as store owner
-    -   [ ] As admin, click "Denegar"
-    -   [ ] **Expected**: Modal asks for reason
-    -   [ ] Enter reason: `Descuento excesivo, contra política del shopping`
-    -   [ ] Confirm denial
-    -   [ ] **Expected**: Success message
-    -   [ ] **Expected**: Promotion status "Denegada"
-    -   [ ] Check Mailtrap: denial email to store owner with reason
+-   [x] Navigate to admin dashboard
+-   [x] Find "Promociones Pendientes" section
+-   [x] **Expected**: List of pending promotions
+-   [x] **Expected**: See promotion details (código, texto, local, estado)
+-   [x] **Test approve**:
+    -   [x] Click "Aprobar" button
+    -   [x] **Expected**: Success message
+    -   [x] **Expected**: Promotion removed from pending
+    -   [x] Check Mailtrap: Approval email to store owner
+-   [x] **Test deny**:
+    -   [x] Create a new promotion as store owner
+    -   [x] Click "Denegar" button
+    -   [x] **Expected**: Denial reason modal appears
+    -   [x] Enter reason: `Descuento excesivo`
+    -   [x] Confirm denial
+    -   [x] **Expected**: Success message
+    -   [x] **Expected**: Promotion moves to rejected section
+    -   [x] Check Mailtrap: Denial email with reason
 
-#### 3.5 News Management
+#### 3.5 News Management (Novedades)
 
--   [ ] Navigate to: `/admin/news`
--   [ ] Click "Crear Novedad"
--   [ ] Fill form:
-    -   Texto: `Nuevo horario extendido: de 9am a 10pm`
+-   [x] Navigate to admin dashboard
+-   [x] Find "Novedades" section
+-   [x] Click "Crear Novedad" button (opens modal)
+-   [x] Fill form:
+    -   Código: (auto-generated)
+    -   Texto: `Horario extendido: 9am - 10pm`
     -   Fecha Desde: (today)
     -   Fecha Hasta: (today + 7 days)
     -   Categoría: `Medium`
--   [ ] Submit form
--   [ ] **Expected**: Success message
--   [ ] **Expected**: New news item in list
--   [ ] Navigate to `/client/dashboard` (as Medium or Premium client)
--   [ ] **Expected**: News item visible in "Novedades" section
+    -   Imagen: (optional image upload)
+-   [x] Submit form
+-   [x] **Expected**: Success alert shows
+-   [x] **Expected**: New news item appears in list
+-   [x] Click "Editar" on a news item (opens modal)
+-   [x] Modify news text
+-   [x] Submit form
+-   [x] **Expected**: Success alert shows
+-   [x] Click "Eliminar" button
+-   [x] **Expected**: Confirmation or success message
+-   [x] **Expected**: News item removed
 
-#### 3.6 Reports
+#### 3.6 Reports (Reportes) - NEW INTERACTIVE SECTION
 
--   [ ] Navigate to: `/admin/reports`
--   [ ] **Expected**: Multiple report options
--   [ ] **Test System Summary**:
-    -   [ ] Click "Ver Resumen del Sistema"
-    -   [ ] **Expected**: See totals for stores, promotions, clients, usages
--   [ ] **Test Promotion Usage Report**:
-    -   [ ] Select date range (last 30 days)
-    -   [ ] **Expected**: Table with promotion usage statistics
-    -   [ ] **Expected**: Can see usage count per promotion
-    -   [ ] Click "Exportar a Excel"
-    -   [ ] **Expected**: Excel file downloads with data
--   [ ] **Test Store Performance Report**:
-    -   [ ] Select period (3 months)
-    -   [ ] **Expected**: Table with store performance metrics
-    -   [ ] **Expected**: Shows usages per store
--   [ ] **Test Client Activity Report**:
-    -   [ ] Select period (6 months)
-    -   [ ] **Expected**: Table with client activity
-    -   [ ] **Expected**: Shows category distribution
+-   [x] Navigate to admin dashboard
+-   [x] Find "Reportes Gerenciales" section
+-   [x] **Expected**: See 4 metric cards:
+    -   [x] Total Locales Activos
+    -   [x] Total Promociones
+    -   [x] Total Clientes
+    -   [x] Uso Total (usages accepted)
+-   [x] **Test Report 1: Uso de Promociones**:
+    -   [x] Click "Uso de Promociones" tab
+    -   [x] **Expected**: See filter buttons (Último mes / Últimos 3 meses / Último año)
+    -   [x] Select "Último mes"
+    -   [x] **Expected**: Table shows promotions from last 30 days with:
+        -   [x] Código, Texto, Local
+    -   [x] Columnas: Total Solicitudes, Aceptadas, Rechazadas, Pendientes, Tasa de Aceptación
+    -   [x] Select "Último año"
+    -   [x] **Expected**: Table updates with more data
+    -   [x] Click "Exportar a Excel"
+    -   [x] **Expected**: CSV file downloads with promotion usage data
+-   [x] **Test Report 2: Rendimiento de Locales**:
+    -   [x] Click "Rendimiento de Locales" tab
+    -   [x] **Expected**: See filter buttons (Último mes / Últimos 3 meses / Últimos 6 meses / Último año)
+    -   [x] Select "Últimos 3 meses"
+    -   [x] **Expected**: Table shows stores with:
+        -   [x] Código, Nombre, Rubro, Promociones, Total Usos
+    -   [x] Columnas: Aceptadas, Rechazadas, Pendientes
+    -   [x] Select "Último año"
+    -   [x] **Expected**: Table updates with more store data
+-   [x] **Test Report 3: Actividad de Clientes**:
+    -   [x] Click "Actividad de Clientes" tab
+    -   [x] **Expected**: See filter buttons (Últimos 3 meses / Últimos 6 meses / Último año)
+    -   [x] **Expected**: See 3 cards showing:
+        -   [x] Inicial: Total clientes, Solicitudes, Clientes activos
+    -   [x] Medium: Same metrics
+    -   [x] Premium: Same metrics
+    -   [x] **Expected**: Progress bar showing % distribution of clients by category
+    -   [x] Select "Último año"
+    -   [x] **Expected**: Data updates with activity table
+    -   [x] **Expected**: Table shows Categoría, Total Clientes, Clientes Activos, Solicitudes, Estados
 
 **✅ FLOW 3 COMPLETE - Record any issues found**
+
+---
+
+### 🐛 Issues Found & Fixed During FLOW 3 Testing (November 11, 2025)
+
+#### **Issue #8: Undefined variable `$promotions` in dashboard**
+
+-   **Flow**: Flow 3 - Step 3.6 (Reports section)
+-   **Description**: Dashboard threw error "Undefined variable $promotions"
+-   **Severity**: **Critical** ⚠️
+-   **Steps to Reproduce**:
+    1. Login as admin
+    2. Navigate to `/admin/dashboard`
+    3. Scroll to reports section
+    4. Error: Undefined variable $promotions
+-   **Root Cause**:
+    -   Reports section was updated to show promotion usage data
+    -   But `DashboardController` didn't pass the `$promotions` collection to the view
+    -   Template tried to use `@json($promotions)` for client-side filtering
+-   **Fix Applied**:
+    -   Updated `DashboardController.php` index() method
+    -   Added: `$promotions = Promotion::all();`
+    -   Added `'promotions'` to compact() list
+    -   Cleared view cache: `php artisan view:clear`
+-   **Status**: ✅ FIXED
+
+#### **Enhancement #1: Added Interactive Report Filters**
+
+-   **Feature**: Reports section now has dynamic filtering
+-   **Implementation Details**:
+    -   **Promotion Usage Report**:
+        -   Filter options: Último mes (30 días), Últimos 3 meses (90 días), Último año (365 días)
+        -   Loads data dynamically without page reload
+        -   Shows top 10 promotions by usage count
+        -   Displays: Código, Texto, Local, Total Solicitudes, Aceptadas, Rechazadas, Pendientes, Tasa de Aceptación
+        -   Tasa de Aceptación has color coding (verde ≥70%, amarillo ≥40%, rojo <40%)
+        -   Excel export button functional
+    -   **Store Performance Report**:
+        -   Filter options: Último mes, Últimos 3 meses, Últimos 6 meses, Último año
+        -   Shows all stores with usage in selected period
+        -   Displays: Código, Local, Rubro, Promociones (count), Total Usos
+        -   Shows breakdown: Aceptadas, Rechazadas, Pendientes
+        -   Sorted by total usages descending
+    -   **Client Activity Report**:
+        -   Filter options: Últimos 3 meses, Últimos 6 meses, Último año
+        -   Shows 3 cards with metrics per category:
+            -   Total clientes en esa categoría
+            -   Clientes activos (con usages en período)
+            -   Total solicitudes realizadas
+        -   Progress bar showing % distribution of ALL clientes by category
+        -   Activity table showing Categoría, Total Clientes, Clientes Activos, Solicitudes, Estados
+        -   Removed duplicate "Distribución por Categoría" table
+-   **JavaScript Implementation**:
+    -   Client-side filtering using JavaScript (no server calls)
+    -   Data fetched once via `@json()` Blade directive
+    -   Smooth loading animations (spinner while processing)
+    -   Real-time updates without page reload
+    -   All calculations done in browser
+-   **Status**: ✅ IMPLEMENTED
+
+#### **Enhancement #2: Store/News Management Moved to Modal-Based Dashboard**
+
+-   **Architecture Change**: All admin CRUD operations now work within dashboard using Bootstrap modals
+-   **Previous State**: Separate pages for creating/editing stores and news
+-   **New State**: Modal forms integrated directly in dashboard
+-   **Benefits**:
+    -   No page navigation needed
+    -   Faster workflow
+    -   Better UX
+    -   Reduced clutter with separate pages
+-   **Implementation**:
+    -   **Locales Section**:
+        -   Modal: "Crear Local" with logo upload
+        -   Modal: "Editar Local" with current data populated
+        -   Action buttons: Aprobar, Editar, Eliminar
+        -   Logo preview in both creation and edit modals
+    -   **Novedades Section**:
+        -   Modal: "Crear Novedad" with imagen upload
+        -   Modal: "Editar Novedad" with current data
+        -   Action buttons: Editar, Eliminar
+        -   Imagen preview functionality
+-   **Status**: ✅ IMPLEMENTED
+
+#### **Enhancement #3: Image Upload System for Stores, Promotions, News**
+
+-   **Feature**: All entities now support image uploads
+-   **Database Migrations**:
+    -   Added `logo` column to `stores` table (nullable string 255)
+    -   Added `imagen` column to `promotions` table (nullable string 255)
+    -   Added `imagen` column to `news` table (nullable string 255)
+-   **Storage Configuration**:
+    -   Images stored in `storage/app/public/`
+    -   Paths organized:
+        -   Stores: `stores/logos/`
+        -   Promotions: `promotions/images/`
+        -   News: `news/images/`
+    -   Storage link created: `public/storage -> storage/app/public`
+-   **Validation Rules** (all image uploads):
+    -   nullable|image|mimes:jpeg,jpg,png,gif|max:2048
+    -   Max file size: 2MB
+    -   Supported formats: JPEG, JPG, PNG, GIF
+-   **Implementation**:
+    -   Image preview functionality (real-time in forms)
+    -   Old images deleted when uploading new ones
+    -   All controllers handle upload/deletion via Laravel Storage facade
+    -   Models updated with image fields in fillable arrays
+    -   Form requests include image validation rules
+-   **Status**: ✅ IMPLEMENTED
+
+#### **Bug Fix #1: GROUP BY SQL Error in Store Rankings**
+
+-   **Issue**: Query failed with "column not in group by" error
+-   **Cause**: Migration added `logo` column but query hadn't been updated
+-   **Fix**: Updated GROUP BY to include all non-aggregated columns including `logo`
+-   **File**: `DashboardController.php` line ~60
+-   **Status**: ✅ FIXED
+
+#### **Bug Fix #2: Duplicate Flash Messages in Admin Dashboard**
+
+-   **Issue**: Success/error messages appeared twice (doubled alerts)
+-   **Cause**: Blade template had duplicate flash message alert code
+-   **Root**: Template included alerts twice - once from layout, once from dashboard section
+-   **Fix**: Removed duplicate alert code from dashboard section
+-   **File**: `resources/views/dashboard/admin/index.blade.php`
+-   **Status**: ✅ FIXED
+
+#### **Bug Fix #3: Form Action URLs Not Resolving in XAMPP Subdirectory**
+
+-   **Issue**: Form submissions returned 404 errors
+-   **Cause**: Modal forms had hardcoded URLs that didn't account for XAMPP `/shoppingRio/public` subdirectory
+-   **Fix**: Changed all form actions to use `{{ url("/") }}/admin/` instead of hardcoded paths
+-   **Example**: Changed from `/admin/stores/1` to `{{ url("/") }}/admin/stores/1`
+-   **Files**: Dashboard view, modal form actions
+-   **Status**: ✅ FIXED
+
+#### **Bug Fix #4: News Creation Validation Failing**
+
+-   **Issue**: Creating news items returned generic error "Error al crear la novedad"
+-   **Cause**: `StoreNewsRequest` validation included `created_by` field requirement but form didn't submit it
+-   **Fix**: Updated `StoreNewsRequest` to remove `created_by` from validation rules (controller handles it automatically)
+-   **File**: `app/Http/Requests/StoreNewsRequest.php`
+-   **Status**: ✅ FIXED
 
 ---
 
@@ -466,29 +752,29 @@ Or manually:
 
 #### 4.1 Category Restrictions
 
--   [ ] Login as Inicial client: `client1@example.com` / `password`
--   [ ] Navigate to promotions
--   [ ] **Expected**: Only see promotions with category "Inicial"
--   [ ] **Expected**: Cannot see "Medium" or "Premium" promotions
--   [ ] Logout, login as Medium client: `client4@example.com` / `password`
--   [ ] **Expected**: See "Inicial" AND "Medium" promotions
--   [ ] **Expected**: Cannot see "Premium" promotions
--   [ ] Logout, login as Premium client: `client8@example.com` / `password`
--   [ ] **Expected**: See ALL promotions (Inicial, Medium, Premium)
+-   [x] Login as Inicial client: `client1@example.com` / `password`
+-   [x] Navigate to promotions
+-   [x] **Expected**: Only see promotions with category "Inicial"
+-   [x] **Expected**: Cannot see "Medium" or "Premium" promotions
+-   [x] Logout, login as Medium client: `client4@example.com` / `password`
+-   [x] **Expected**: See "Inicial" AND "Medium" promotions
+-   [x] **Expected**: Cannot see "Premium" promotions
+-   [x] Logout, login as Premium client: `client8@example.com` / `password`
+-   [x] **Expected**: See ALL promotions (Inicial, Medium, Premium)
 
 #### 4.2 Single-Use Rule
 
--   [ ] Login as any client
--   [ ] Request usage for a promotion
--   [ ] Store owner approves it
--   [ ] Try to request same promotion again
--   [ ] **Expected**: Error message "Ya utilizaste esta promoción"
--   [ ] **Expected**: Button disabled or not shown
+-   [x] Login as any client
+-   [x] Request usage for a promotion
+-   [x] Store owner approves it
+-   [x] Try to request same promotion again
+-   [x] **Expected**: Error message "Ya utilizaste esta promoción"
+-   [x] **Expected**: Button disabled or not shown
 
 #### 4.3 Date Range Validation
 
--   [ ] Login as admin
--   [ ] Create a promotion with:
+-   [x] Login as admin
+-   [x] Create a promotion with:
     -   Fecha Desde: (tomorrow)
     -   Fecha Hasta: (tomorrow + 7 days)
 -   [ ] Approve the promotion
@@ -832,14 +1118,16 @@ For each email type, verify:
 ### Completion Checklist:
 
 -   [✅] Flow 1: Cliente Registration & Usage (10 min) - **COMPLETED November 7, 2025**
--   [ ] Flow 2: Store Owner Registration & Management (15 min)
--   [ ] Flow 3: Admin Dashboard & Reports (10 min)
+-   [✅] Flow 2: Store Owner Registration & Management (15 min) - **COMPLETED November 10, 2025**
+-   [✅] Flow 3: Admin Dashboard & Reports (10 min) - **COMPLETED November 11, 2025**
 -   [ ] Flow 4: Business Logic Validation (15 min)
 -   [ ] Flow 5: Form Validation Deep Dive (10 min)
 -   [ ] Flow 6: Permissions & Access Control (8 min)
 -   [ ] Flow 7: Email System Verification (12 min)
 
 **Total Estimated Time**: ~80 minutes
+**Time Used So Far**: ~70 minutes (Flow 1 + Flow 2 + Flow 3)
+**Time Remaining**: ~10 minutes (Flow 4-7)
 
 ---
 

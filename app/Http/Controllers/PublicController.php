@@ -153,7 +153,7 @@ class PublicController extends Controller
      */
     public function storeShow(Store $store)
     {
-        $store->load(['owner', 'promotions' => function ($query) {
+        $store->load(['owners', 'promotions' => function ($query) {
             $query->approved()->active()->orderBy('created_at', 'desc');
         }]);
 

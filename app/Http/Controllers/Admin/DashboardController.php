@@ -70,6 +70,7 @@ class DashboardController extends Controller
                 'stores.nombre',
                 'stores.ubicacion',
                 'stores.rubro',
+                'stores.logo',
                 'stores.created_at',
                 'stores.updated_at',
                 'stores.deleted_at'
@@ -105,6 +106,9 @@ class DashboardController extends Controller
             ->limit(15)
             ->get();
 
+        // All promotions for reports
+        $promotions = Promotion::all();
+
         return view('dashboard.admin.index', compact(
             'stats',
             'categoryDistribution',
@@ -114,6 +118,7 @@ class DashboardController extends Controller
             'pendingOwners',
             'pendingPromotions',
             'latestNews',
+            'promotions',
             'activeSection'
         ));
     }

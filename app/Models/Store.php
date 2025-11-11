@@ -22,6 +22,7 @@ class Store extends Model
         'nombre',
         'ubicacion',
         'rubro',
+        'logo',
     ];
 
     /**

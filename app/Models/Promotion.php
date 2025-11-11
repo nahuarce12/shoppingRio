@@ -27,6 +27,7 @@ class Promotion extends Model
         'categoria_minima',
         'estado',
         'store_id',
+        'imagen',
     ];
 
     /**

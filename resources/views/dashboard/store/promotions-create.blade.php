@@ -18,7 +18,7 @@
                         <strong>Importante:</strong> Una vez creada, la promoción no podrá ser editada. Asegurate de revisar toda la información antes de enviar. La promoción quedará pendiente de aprobación por un administrador.
                     </div>
 
-                    <form method="POST" action="{{ route('store.promotions.store') }}" id="promotion-form" novalidate>
+                    <form method="POST" action="{{ route('store.promotions.store') }}" id="promotion-form" enctype="multipart/form-data" novalidate>
                         @csrf
 
                         {{-- Store Selection (hidden if user has only one store) --}}
@@ -149,6 +149,28 @@
                             @enderror
                         </div>
 
+                        {{-- Promotion Image --}}
+                        <div class="mb-3">
+                            <label for="imagen" class="form-label">
+                                Imagen de la Promoción <span class="text-muted">(Opcional)</span>
+                            </label>
+                            <input 
+                                type="file" 
+                                class="form-control @error('imagen') is-invalid @enderror" 
+                                id="imagen" 
+                                name="imagen"
+                                accept="image/*">
+                            <div class="form-text">
+                                Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 2MB
+                            </div>
+                            @error('imagen')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div id="imagen-preview" class="mt-2" style="display: none;">
+                                <img src="" alt="Vista previa" class="img-thumbnail" style="max-width: 300px;">
+                            </div>
+                        </div>
+
                         {{-- Submit Buttons --}}
                         <div class="d-flex gap-2 justify-content-end mt-4">
                             <a href="{{ route('store.dashboard') }}" class="btn btn-outline-secondary">
@@ -236,6 +258,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             form.classList.add('was-validated');
+        });
+    }
+
+    // Image preview
+    const imagenInput = document.getElementById('imagen');
+    if (imagenInput) {
+        imagenInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagen-preview');
+            const previewImg = preview.querySelector('img');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                previewImg.src = '';
+            }
         });
     }
 
