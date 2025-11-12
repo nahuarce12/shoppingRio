@@ -161,10 +161,11 @@ Los siguientes archivos y carpetas fueron eliminados por estar obsoletos o no se
 -   **doc/task-008-summary.md** - Documentación temporal de tasks
 -   **doc/MOCKUP-ARCHIVE-README.md** - Documentación obsoleta del mockup
 
-**Total eliminado**: 
-- **7 carpetas** (2 con contenido, 5 vacías)
-- **12 archivos** (5 controladores obsoletos, 1 vista, 2 scripts temporales, 4 documentos)
-- **Espacio liberado**: ~15-20 MB
+**Total eliminado**:
+
+-   **7 carpetas** (2 con contenido, 5 vacías)
+-   **12 archivos** (5 controladores obsoletos, 1 vista, 2 scripts temporales, 4 documentos)
+-   **Espacio liberado**: ~15-20 MB
 
 ## 📋 Archivos Reorganizados
 
