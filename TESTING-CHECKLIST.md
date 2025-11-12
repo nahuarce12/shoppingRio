@@ -1,9 +1,9 @@
 # ShoppingRio - Manual E2E Testing Checklist
 
 **Date Started**: November 3, 2025  
-**Last Updated**: November 11, 2025  
+**Last Updated**: November 11, 2025 (18:30)  
 **Phase**: 10 - Final Testing  
-**Status**: 🟡 In Progress (Flow 1-3 Complete, Flow 4-7 Pending)
+**Status**: 🟡 In Progress (Flow 1-4 Complete, Flow 5-7 Pending)
 
 ---
 
@@ -40,8 +40,8 @@
 -   **Flow 1 - Cliente Registration**: ✅ COMPLETE
 -   **Flow 2 - Store Owner Management**: ✅ COMPLETE
 -   **Flow 3 - Admin Dashboard & Reports**: ✅ COMPLETE
--   **Flow 4 - Business Logic**: ⏳ NOT STARTED
--   **Flow 5 - Form Validation**: ✅ PARTIALLY TESTED (registration forms validated)
+-   **Flow 4 - Business Logic**: ✅ COMPLETE
+-   **Flow 5 - Form Validation**: ⏳ NOT STARTED
 -   **Flow 6 - Permissions**: ⏳ NOT STARTED
 -   **Flow 7 - Email System**: ✅ PARTIALLY TESTED (verification emails working)
 
@@ -777,73 +777,148 @@ Or manually:
 -   [x] Create a promotion with:
     -   Fecha Desde: (tomorrow)
     -   Fecha Hasta: (tomorrow + 7 days)
--   [ ] Approve the promotion
--   [ ] As client, try to view/request this promotion TODAY
--   [ ] **Expected**: Not eligible, reason: "Promoción no vigente"
--   [ ] OR **Expected**: Promotion not shown in available list
+-   [x] Approve the promotion
+-   [x] As client, try to view/request this promotion TODAY
+-   [x] **Expected**: Not eligible, reason: "Promoción no vigente"
+-   [x] OR **Expected**: Promotion not shown in available list
 
 #### 4.4 Day of Week Validation
 
--   [ ] Create a promotion valid only for "Monday, Wednesday, Friday"
--   [ ] **On a Tuesday** (or any non-valid day):
-    -   [ ] Try to request usage
-    -   [ ] **Expected**: Not eligible, reason: "No válida para el día de hoy"
--   [ ] **On a Monday** (valid day):
-    -   [ ] Try to request usage
-    -   [ ] **Expected**: Request successful
+-   [x] Create a promotion valid only for "Monday, Wednesday, Friday"
+-   [x] **On a Tuesday** (or any non-valid day):
+    -   [x] Try to request usage
+    -   [x] **Expected**: Not eligible, reason: "No válida para el día de hoy"
+-   [x] **On a Monday** (valid day):
+    -   [x] Try to request usage
+    -   [x] **Expected**: Request successful
 
 #### 4.5 Category Auto-Upgrade: Inicial → Medium
 
--   [ ] Create a NEW client (not used before)
--   [ ] **Expected**: Initial category is "Inicial"
--   [ ] Create 5 different approved promotions
--   [ ] As client, request usage for all 5
--   [ ] As store owners, ACCEPT all 5 requests
--   [ ] **Expected**: Client now has 5 "aceptada" usages
--   [ ] Run category evaluation:
+-   [x] Create a NEW client (not used before)
+-   [x] **Expected**: Initial category is "Inicial"
+-   [x] Create 5 different approved promotions
+-   [x] As client, request usage for all 5
+-   [x] As store owners, ACCEPT all 5 requests
+-   [x] **Expected**: Client now has 5 "aceptada" usages
+-   [x] Run category evaluation:
     ```powershell
     php artisan app:evaluate-client-categories
     ```
--   [ ] Refresh client profile
--   [ ] **Expected**: Category changed to "Medium"
--   [ ] Check Mailtrap: email "¡Subiste de Categoría!" from Inicial to Medium
+-   [x] Refresh client profile
+-   [x] **Expected**: Category changed to "Medium"
+-   [x] Check Mailtrap: email "¡Subiste de Categoría!" from Inicial to Medium
 
 #### 4.6 Category Auto-Upgrade: Medium → Premium
 
--   [ ] Use a Medium client (or the one from 4.5)
--   [ ] Create 10 MORE approved promotions (total 15)
--   [ ] As client, request usage for all 10
--   [ ] As store owners, ACCEPT all 10 requests
--   [ ] Run category evaluation again:
+-   [x] Use a Medium client (or the one from 4.5)
+-   [x] Create 10 MORE approved promotions (total 15)
+-   [x] As client, request usage for all 10
+-   [x] As store owners, ACCEPT all 10 requests
+-   [x] Run category evaluation again:
     ```powershell
     php artisan app:evaluate-client-categories
     ```
--   [ ] **Expected**: Category changed to "Premium"
--   [ ] Check Mailtrap: email "¡Subiste de Categoría!" from Medium to Premium
+-   [x] **Expected**: Category changed to "Premium"
+-   [x] Check Mailtrap: email "¡Subiste de Categoría!" from Medium to Premium
 
 #### 4.7 Only Recent Usages Count (6 months window)
 
--   [ ] Manually update database:
+-   [x] Manually update database:
     ```sql
     UPDATE promotion_usages
     SET fecha_uso = DATE_SUB(NOW(), INTERVAL 7 MONTH)
     WHERE client_id = X LIMIT 3;
     ```
--   [ ] Run category evaluation
--   [ ] **Expected**: Old usages (>6 months) NOT counted
--   [ ] **Expected**: Client category based only on recent usages
+-   [x] Run category evaluation
+-   [x] **Expected**: Old usages (>6 months) NOT counted
+-   [x] **Expected**: Client category based only on recent usages
+-   [x] **Result**: ✅ PASSED - Old usages correctly excluded from calculation
 
 #### 4.8 Only Accepted Usages Count
 
--   [ ] Create a client with:
+-   [x] Create a client with:
     -   10 "aceptada" usages
     -   5 "rechazada" usages
     -   3 "enviada" (pending) usages
--   [ ] Run category evaluation
--   [ ] **Expected**: Only "aceptada" usages count (10)
--   [ ] **Expected**: Category based on 10, not 18
+-   [x] Run category evaluation
+-   [x] **Expected**: Only "aceptada" usages count (10)
+-   [x] **Expected**: Category based on 10, not 18
+-   [x] **Result**: ✅ PASSED - Only accepted usages counted correctly
 
-**✅ FLOW 4 COMPLETE - Record any issues found**
+**✅ FLOW 4 COMPLETE - All tests passed**
+
+---
+
+### 🐛 Issues Found & Fixed During FLOW 4 Testing (November 11, 2025)
+
+#### **Issue #9: Category upgrade not reflected immediately on client dashboard**
+
+-   **Flow**: Flow 4 - Step 4.5 & 4.6 (Category Auto-Upgrade)
+-   **Description**: After running `php artisan app:evaluate-categories`, the client's category was upgraded in the database and email was sent, but the dashboard still showed the old category until manual page refresh
+-   **Severity**: **Medium** ⚠️
+-   **Steps to Reproduce**:
+    1. Create a new client with Inicial category
+    2. Get client to 5 accepted promotions
+    3. Run `php artisan app:evaluate-categories`
+    4. Check client dashboard
+    5. Category still shows "Inicial" instead of "Medium"
+    6. Refresh page manually → now shows "Medium"
+-   **Root Cause**:
+    -   Client dashboard was displaying cached user data from session/auth
+    -   Upgrade happened in database but session data wasn't refreshed
+    -   Dashboard didn't automatically re-evaluate client category on page load
+-   **Fix Applied**:
+    -   Updated `Client\DashboardController.php`
+    -   Added import: `use App\Services\CategoryUpgradeService;`
+    -   Added dependency injection: `private CategoryUpgradeService $categoryUpgradeService`
+    -   In `index()` method, added automatic evaluation:
+        ```php
+        // Evaluate and update client category if needed (checks every dashboard access)
+        $this->categoryUpgradeService->evaluateClient($client);
+        $client->refresh();  // Refresh data from database
+        ```
+    -   Now every time client accesses dashboard:
+        - System checks if they qualify for upgrade
+        - If yes, auto-upgrades and sends email
+        - Shows updated category immediately
+-   **Testing Result**: ✅ FIXED
+    - Client now sees updated category immediately on dashboard
+    - No manual page refresh needed
+    - Auto-evaluation happens seamlessly on each dashboard access
+
+#### **Enhancement #4: Automatic Category Evaluation on Dashboard Access**
+
+-   **Feature**: Dashboard now automatically evaluates client category on every access
+-   **Implementation Details**:
+    -   CategoryUpgradeService method: `evaluateClient()` runs synchronously
+    -   Checks 6-month window for accepted promotions
+    -   Compares to configurable thresholds (5 for Medium, 15 for Premium)
+    -   If upgrade qualifies, automatically:
+        - Updates categoria_cliente in database
+        - Sends CategoryUpgradeNotificationMail
+        - Logs the upgrade event
+    -   Client sees updated category and progress bar immediately
+    -   Email arrives to client's inbox instantly
+-   **Benefits**:
+    - No scheduled job needed for real-time upgrades
+    - Immediate feedback for users
+    - Responsive UI experience
+-   **Status**: ✅ IMPLEMENTED
+
+#### **Test Results Summary for Flow 4**
+
+| Test Case | Result | Notes |
+|-----------|--------|-------|
+| 4.1 - Category Restrictions | ✅ PASS | Filters work correctly by categoria_minima |
+| 4.2 - Single-Use Rule | ✅ PASS | Clients can't use same promotion twice |
+| 4.3 - Date Range Validation | ✅ PASS | Promotions outside date range not available |
+| 4.4 - Day of Week Validation | ✅ PASS | Day restrictions properly enforced |
+| 4.5 - Inicial → Medium Upgrade | ✅ PASS | Triggers at 5+ accepted usages |
+| 4.6 - Medium → Premium Upgrade | ✅ PASS | Triggers at 15+ accepted usages |
+| 4.7 - 6 Month Window | ✅ PASS | Old usages (>6 months) not counted |
+| 4.8 - Only Accepted Count | ✅ PASS | Rejected & pending usages ignored |
+
+**Overall Flow 4 Status**: ✅ **PASSED** (8/8 test cases passed)
 
 ---
 
@@ -1119,15 +1194,15 @@ For each email type, verify:
 
 -   [✅] Flow 1: Cliente Registration & Usage (10 min) - **COMPLETED November 7, 2025**
 -   [✅] Flow 2: Store Owner Registration & Management (15 min) - **COMPLETED November 10, 2025**
--   [✅] Flow 3: Admin Dashboard & Reports (10 min) - **COMPLETED November 11, 2025**
--   [ ] Flow 4: Business Logic Validation (15 min)
+-   [✅] Flow 3: Admin Dashboard & Reports (10 min) - **COMPLETED November 11, 2025 (14:00)**
+-   [✅] Flow 4: Business Logic Validation (15 min) - **COMPLETED November 11, 2025 (18:30)**
 -   [ ] Flow 5: Form Validation Deep Dive (10 min)
 -   [ ] Flow 6: Permissions & Access Control (8 min)
 -   [ ] Flow 7: Email System Verification (12 min)
 
 **Total Estimated Time**: ~80 minutes
-**Time Used So Far**: ~70 minutes (Flow 1 + Flow 2 + Flow 3)
-**Time Remaining**: ~10 minutes (Flow 4-7)
+**Time Used So Far**: ~85 minutes (Flow 1 + Flow 2 + Flow 3 + Flow 4)
+**Time Remaining**: ~5-10 minutes (Flow 5-7)
 
 ---
 
