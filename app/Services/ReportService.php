@@ -6,8 +6,8 @@ use App\Models\Promotion;
 use App\Models\PromotionUsage;
 use App\Models\Store;
 use App\Models\User;
+use App\Models\News;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for generating reports and statistics.
@@ -16,55 +16,290 @@ use Illuminate\Support\Facades\DB;
 class ReportService
 {
     /**
-     * Generate promotion usage statistics by store (admin report).
-     *
-     * @param array $filters ['date_from' => string, 'date_to' => string, 'store_id' => int]
-     * @return array
+     * Provide summary metrics for admin reports overview.
      */
-    public function getPromotionUsageByStore(array $filters = []): array
+    public function getSystemSummary(): array
     {
-        $query = Store::query()->with('promotions.usages');
+        return $this->getAdminDashboardStats();
+    }
 
-        // Filter by specific store if provided
-        if (!empty($filters['store_id'])) {
-            $query->where('id', $filters['store_id']);
+    public function getPromotionUsageReport(?string $startDate = null, ?string $endDate = null, ?int $storeId = null, ?string $estado = null): array
+    {
+        $usageQuery = PromotionUsage::with(['promotion.store']);
+
+        if ($startDate) {
+            $start = Carbon::parse($startDate)->startOfDay()->toDateString();
+            $usageQuery->whereDate('fecha_uso', '>=', $start);
         }
 
-        $stores = $query->get();
-        $report = [];
+        if ($endDate) {
+            $end = Carbon::parse($endDate)->endOfDay()->toDateString();
+            $usageQuery->whereDate('fecha_uso', '<=', $end);
+        }
 
-        foreach ($stores as $store) {
-            $usages = PromotionUsage::query()
-                ->whereHas('promotion', function ($q) use ($store) {
-                    $q->where('store_id', $store->id);
-                });
+        if ($storeId) {
+            $usageQuery->whereHas('promotion', function ($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            });
+        }
 
-            // Apply date filters
-            if (!empty($filters['date_from'])) {
-                $usages->where('fecha_uso', '>=', $filters['date_from']);
-            }
-            if (!empty($filters['date_to'])) {
-                $usages->where('fecha_uso', '<=', $filters['date_to']);
-            }
+        if ($estado) {
+            $usageQuery->where('estado', $estado);
+        }
 
-            $usagesData = $usages->get();
+        $usages = $usageQuery->get();
 
-            $report[] = [
+        $totalRequests = $usages->count();
+        $accepted = $usages->where('estado', 'aceptada')->count();
+        $rejected = $usages->where('estado', 'rechazada')->count();
+        $pending = $usages->where('estado', 'enviada')->count();
+
+        $byStore = $usages
+            ->filter(fn ($usage) => $usage->promotion && $usage->promotion->store)
+            ->groupBy(fn ($usage) => $usage->promotion->store->id)
+            ->map(function ($group) {
+                $store = $group->first()->promotion->store;
+                $total = $group->count();
+                $accepted = $group->where('estado', 'aceptada')->count();
+                $rejected = $group->where('estado', 'rechazada')->count();
+                $pending = $group->where('estado', 'enviada')->count();
+
+                return (object) [
+                    'store_id' => $store->id,
+                    'store_codigo' => $store->codigo,
+                    'store_name' => $store->nombre,
+                    'store_rubro' => $store->rubro,
+                    'total_requests' => $total,
+                    'accepted_count' => $accepted,
+                    'rejected_count' => $rejected,
+                    'pending_count' => $pending,
+                    'acceptance_rate' => $total > 0 ? round(($accepted / $total) * 100, 2) : 0,
+                    'unique_clients' => $group->pluck('client_id')->filter()->unique()->count(),
+                ];
+            })
+            ->values();
+
+        $byPromotion = $usages
+            ->filter(fn ($usage) => $usage->promotion && $usage->promotion->store)
+            ->groupBy('promotion_id')
+            ->map(function ($group) {
+                $promotion = $group->first()->promotion;
+                $store = $promotion->store;
+                $total = $group->count();
+                $accepted = $group->where('estado', 'aceptada')->count();
+                $rejected = $group->where('estado', 'rechazada')->count();
+                $pending = $group->where('estado', 'enviada')->count();
+
+                return (object) [
+                    'promotion_id' => $promotion->id,
+                    'codigo_promocion' => $promotion->codigo,
+                    'texto_promocion' => $promotion->texto,
+                    'categoria_minima' => $promotion->categoria_minima,
+                    'store' => $store,
+                    'total_requests' => $total,
+                    'accepted_count' => $accepted,
+                    'rejected_count' => $rejected,
+                    'pending_count' => $pending,
+                    'acceptance_rate' => $total > 0 ? round(($accepted / $total) * 100, 2) : 0,
+                ];
+            })
+            ->values();
+
+        return [
+            'summary' => [
+                'total_requests' => $totalRequests,
+                'accepted' => $accepted,
+                'rejected' => $rejected,
+                'pending' => $pending,
+                'acceptance_rate' => $totalRequests > 0 ? round(($accepted / $totalRequests) * 100, 2) : 0,
+            ],
+            'by_store' => $byStore->all(),
+            'by_promotion' => $byPromotion->all(),
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'store_id' => $storeId,
+                'estado' => $estado,
+            ],
+        ];
+    }
+
+    public function getPromotionUsageByStore(array $filters = []): array
+    {
+        $report = $this->getPromotionUsageReport(
+            $filters['date_from'] ?? null,
+            $filters['date_to'] ?? null,
+            $filters['store_id'] ?? null,
+            $filters['estado'] ?? null
+        );
+
+        return $report['by_store'];
+    }
+
+    public function getStorePerformanceReport(int $periodMonths = 3): array
+    {
+        $startDate = Carbon::now()->subMonths($periodMonths)->startOfMonth();
+
+        $stores = Store::with(['promotions' => function ($query) use ($startDate) {
+            $query->with(['usages' => function ($usageQuery) use ($startDate) {
+                $usageQuery->whereDate('fecha_uso', '>=', $startDate);
+            }]);
+        }])->get();
+
+        return $stores->map(function ($store) use ($startDate) {
+            $promotions = $store->promotions;
+            $usages = $promotions->flatMap(fn ($promotion) => $promotion->usages);
+
+            $totalPromotions = $promotions->count();
+            $approvedPromotions = $promotions->where('estado', 'aprobada')->count();
+            $pendingPromotions = $promotions->where('estado', 'pendiente')->count();
+            $deniedPromotions = $promotions->where('estado', 'denegada')->count();
+
+            $totalRequests = $usages->count();
+            $accepted = $usages->where('estado', 'aceptada')->count();
+            $rejected = $usages->where('estado', 'rechazada')->count();
+            $pending = $usages->where('estado', 'enviada')->count();
+
+            $activePromotions = $promotions->filter(fn ($promotion) => $promotion->isActive())->count();
+
+            return (object) [
                 'store_id' => $store->id,
                 'store_codigo' => $store->codigo,
                 'store_name' => $store->nombre,
                 'store_rubro' => $store->rubro,
-                'total_promotions' => $store->promotions->count(),
-                'approved_promotions' => $store->promotions->where('estado', 'aprobada')->count(),
-                'total_requests' => $usagesData->count(),
-                'pending_requests' => $usagesData->where('estado', 'enviada')->count(),
-                'accepted_requests' => $usagesData->where('estado', 'aceptada')->count(),
-                'rejected_requests' => $usagesData->where('estado', 'rechazada')->count(),
-                'unique_clients' => $usagesData->pluck('client_id')->unique()->count(),
+                'total_promotions' => $totalPromotions,
+                'approved_promotions' => $approvedPromotions,
+                'pending_promotions' => $pendingPromotions,
+                'denied_promotions' => $deniedPromotions,
+                'active_promotions' => $activePromotions,
+                'total_requests' => $totalRequests,
+                'accepted_requests' => $accepted,
+                'rejected_requests' => $rejected,
+                'pending_requests' => $pending,
+                'acceptance_rate' => $totalRequests > 0 ? round(($accepted / $totalRequests) * 100, 2) : 0,
+                'start_date' => $startDate->toDateString(),
+            ];
+        })->all();
+    }
+
+    public function getMostPopularPromotions(int $limit = 10, int $periodMonths = 1): array
+    {
+        $startDate = Carbon::now()->subMonths($periodMonths)->startOfMonth();
+
+        $usages = PromotionUsage::with(['promotion.store'])
+            ->where('estado', 'aceptada')
+            ->whereDate('fecha_uso', '>=', $startDate)
+            ->get();
+
+        $popular = $usages
+            ->filter(fn ($usage) => $usage->promotion && $usage->promotion->store)
+            ->groupBy('promotion_id')
+            ->map(function ($group) {
+                $promotion = $group->first()->promotion;
+                $store = $promotion->store;
+                $accepted = $group->where('estado', 'aceptada')->count();
+                $total = $group->count();
+
+                return (object) [
+                    'promotion_id' => $promotion->id,
+                    'codigo_promocion' => $promotion->codigo,
+                    'texto_promocion' => $promotion->texto,
+                    'store' => $store,
+                    'accepted_count' => $accepted,
+                    'total_requests' => $total,
+                    'acceptance_rate' => $total > 0 ? round(($accepted / $total) * 100, 2) : 0,
+                ];
+            })
+            ->sortByDesc('accepted_count')
+            ->take($limit)
+            ->values();
+
+    return $popular->all();
+    }
+
+    public function getClientActivityReport(int $periodMonths = 3): array
+    {
+        $startDate = Carbon::now()->subMonths($periodMonths)->startOfMonth();
+
+        $usages = PromotionUsage::with('client')
+            ->whereDate('fecha_uso', '>=', $startDate)
+            ->get();
+
+        $totalRequests = $usages->count();
+        $accepted = $usages->where('estado', 'aceptada')->count();
+        $rejected = $usages->where('estado', 'rechazada')->count();
+        $pending = $usages->where('estado', 'enviada')->count();
+
+        $topClients = $usages
+            ->filter(fn ($usage) => $usage->client)
+            ->groupBy('client_id')
+            ->map(function ($group) {
+                $client = $group->first()->client;
+                $total = $group->count();
+                $accepted = $group->where('estado', 'aceptada')->count();
+                $rejected = $group->where('estado', 'rechazada')->count();
+                $pending = $group->where('estado', 'enviada')->count();
+
+                return (object) [
+                    'client_id' => $client->id,
+                    'client_name' => $client->name,
+                    'client_email' => $client->email,
+                    'categoria_cliente' => $client->categoria_cliente,
+                    'total_requests' => $total,
+                    'accepted_count' => $accepted,
+                    'rejected_count' => $rejected,
+                    'pending_count' => $pending,
+                    'acceptance_rate' => $total > 0 ? round(($accepted / $total) * 100, 2) : 0,
+                ];
+            })
+            ->sortByDesc('accepted_count')
+            ->values();
+
+        $categoryBreakdown = $usages
+            ->filter(fn ($usage) => $usage->client)
+            ->groupBy(fn ($usage) => $usage->client->categoria_cliente)
+            ->map(fn ($group) => $group->count())
+            ->all();
+
+        $monthlyTrend = [];
+        for ($i = $periodMonths - 1; $i >= 0; $i--) {
+            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+
+            $monthlyUsages = $usages->filter(function ($usage) use ($monthStart, $monthEnd) {
+                return $usage->fecha_uso >= $monthStart && $usage->fecha_uso <= $monthEnd;
+            });
+
+            $monthlyTrend[] = [
+                'month' => $monthStart->format('Y-m'),
+                'total_requests' => $monthlyUsages->count(),
+                'accepted' => $monthlyUsages->where('estado', 'aceptada')->count(),
+                'rejected' => $monthlyUsages->where('estado', 'rechazada')->count(),
+                'pending' => $monthlyUsages->where('estado', 'enviada')->count(),
             ];
         }
 
-        return $report;
+        return [
+            'summary' => [
+                'total_requests' => $totalRequests,
+                'accepted' => $accepted,
+                'rejected' => $rejected,
+                'pending' => $pending,
+                'acceptance_rate' => $totalRequests > 0 ? round(($accepted / $totalRequests) * 100, 2) : 0,
+            ],
+            'top_clients' => $topClients->all(),
+            'category_breakdown' => $categoryBreakdown,
+            'monthly_trend' => $monthlyTrend,
+        ];
+    }
+
+    public function getPendingApprovalsCount(): array
+    {
+        return [
+            'pending_promotions' => Promotion::pending()->count(),
+            'pending_store_owners' => User::pending()->count(),
+            'expired_news' => News::expired()->count(),
+        ];
     }
 
     /**
@@ -114,10 +349,10 @@ class ReportService
             return [];
         }
 
-        $stores = $storeOwner->stores;
+        $store = $storeOwner->store;
         $report = [];
 
-        foreach ($stores as $store) {
+        if ($store) {
             $promotions = $store->promotions;
             
             $usagesQuery = PromotionUsage::query()

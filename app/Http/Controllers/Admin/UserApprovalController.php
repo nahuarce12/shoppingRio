@@ -29,8 +29,8 @@ class UserApprovalController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nombreUsuario', 'like', "%{$search}%");
+                                $q->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -99,15 +99,22 @@ class UserApprovalController extends Controller
             $user->approved_at = now();
             $user->save();
 
-            // Send approval email
-            Mail::to($user->nombreUsuario)->send(new StoreOwnerApproved($user));
-
             Log::info('Store owner approved by admin', [
                 'user_id' => $user->id,
-                'user_email' => $user->nombreUsuario,
+                'user_email' => $user->email,
                 'admin_id' => auth()->id(),
                 'approved_at' => $user->approved_at
             ]);
+
+            // Send approval email (in separate try-catch to not fail the whole operation)
+            try {
+                Mail::to($user->email)->send(new StoreOwnerApproved($user));
+            } catch (\Exception $mailException) {
+                Log::warning('Failed to send approval email', [
+                    'user_id' => $user->id,
+                    'error' => $mailException->getMessage()
+                ]);
+            }
 
             return redirect()
                 ->route('admin.users.approval.index')
@@ -146,11 +153,11 @@ class UserApprovalController extends Controller
 
         try {
             // Send rejection email before deleting
-            Mail::to($user->nombreUsuario)->send(new StoreOwnerRejected($user, $reason));
+            Mail::to($user->email)->send(new StoreOwnerRejected($user, $reason));
 
             Log::info('Store owner rejected by admin', [
                 'user_id' => $user->id,
-                'user_email' => $user->nombreUsuario,
+                'user_email' => $user->email,
                 'reason' => $reason,
                 'admin_id' => auth()->id()
             ]);
@@ -195,8 +202,8 @@ class UserApprovalController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nombreUsuario', 'like', "%{$search}%");
+                                $q->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 

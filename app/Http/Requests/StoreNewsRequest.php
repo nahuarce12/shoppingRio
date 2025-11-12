@@ -33,6 +33,12 @@ class StoreNewsRequest extends FormRequest
                 'string',
                 'max:200'
             ],
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,gif',
+                'max:2048' // 2MB max
+            ],
             'fecha_desde' => [
                 'required',
                 'date',
@@ -67,6 +73,11 @@ class StoreNewsRequest extends FormRequest
                 'required',
                 'string',
                 'in:Inicial,Medium,Premium'
+            ],
+            'created_by' => [
+                'required',
+                'integer',
+                'exists:users,id'
             ]
         ];
     }
@@ -81,6 +92,9 @@ class StoreNewsRequest extends FormRequest
         return [
             'texto.required' => 'The news text is required.',
             'texto.max' => 'The news text must not exceed 200 characters.',
+            'imagen.image' => 'The image must be an image file.',
+            'imagen.mimes' => 'The image must be a JPEG, PNG, or GIF file.',
+            'imagen.max' => 'The image file size must not exceed 2MB.',
             'fecha_desde.required' => 'The start date is required.',
             'fecha_desde.date' => 'The start date must be a valid date.',
             'fecha_desde.after_or_equal' => 'The start date must be today or a future date.',
@@ -101,6 +115,7 @@ class StoreNewsRequest extends FormRequest
     {
         return [
             'texto' => 'news text',
+            'imagen' => 'news image',
             'fecha_desde' => 'start date',
             'fecha_hasta' => 'end date',
             'categoria_destino' => 'target category'

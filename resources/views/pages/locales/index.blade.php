@@ -1,95 +1,117 @@
 @extends('layouts.app')
 
 @section('title', 'Locales - Shopping Rosario')
-@section('meta_description', 'Descubre todos los locales disponibles en Shopping Rosario y encontrá tu tienda favorita.')
+@section('meta_description', 'Recorr� todos los locales del Shopping Rosario y descubr� sus ubicaciones y rubros disponibles.')
 
 @section('content')
-<x-layout.breadcrumbs :items="[['label' => 'Locales']]" />
+<x-layout.breadcrumbs :items="[['label' => 'Locales', 'url' => route('locales.index')]]" />
 
 <section class="py-4">
   <div class="container text-center">
     <h1 class="display-5 fw-bold text-primary">Locales</h1>
-    <p class="lead">Explorá todos los locales disponibles en nuestro shopping.</p>
+    <p class="lead">Busc� por nombre, rubro o ubicaci�n y planific� tu visita al shopping.</p>
   </div>
 </section>
 
 <section class="py-4">
   <div class="container">
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="input-group input-group-lg">
-          <span class="input-group-text bg-white border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 ps-0" id="searchLocal" placeholder="Buscar Local">
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <h5 class="d-flex align-items-center gap-2"><i class="bi bi-funnel"></i> Filtrar Locales</h5>
-      <select class="form-select" id="categoryFilter">
-        <option value="">Todas las categorías</option>
-        <option value="moda">Moda y Accesorios</option>
-        <option value="tecnologia">Tecnología</option>
-        <option value="gastronomia">Gastronomía</option>
-        <option value="deportes">Deportes</option>
-        <option value="hogar">Hogar y Decoración</option>
-        <option value="entretenimiento">Entretenimiento</option>
-        <option value="salud">Salud y Belleza</option>
-      </select>
-    </div>
-  </div>
-</section>
-
-<section class="py-4">
-  <div class="container">
-    <div class="row g-4" id="stores-grid">
-      @foreach([
-      ['id' => 1, 'title' => 'Fashion Store', 'category' => 'moda', 'category_text' => 'Moda y Accesorios', 'image' => 'https://via.placeholder.com/400x300/e74c3c/ffffff?text=Fashion+Store'],
-      ['id' => 2, 'title' => 'Tech World', 'category' => 'tecnologia', 'category_text' => 'Tecnología', 'image' => 'https://via.placeholder.com/400x300/3498db/ffffff?text=Tech+World'],
-      ['id' => 3, 'title' => 'Bella Italia', 'category' => 'gastronomia', 'category_text' => 'Gastronomía', 'image' => 'https://via.placeholder.com/400x300/27ae60/ffffff?text=Bella+Italia'],
-      ['id' => 4, 'title' => 'Sport Zone', 'category' => 'deportes', 'category_text' => 'Deportes', 'image' => 'https://via.placeholder.com/400x300/f39c12/ffffff?text=Sport+Zone'],
-      ['id' => 5, 'title' => 'Home Deco', 'category' => 'hogar', 'category_text' => 'Hogar y Decoración', 'image' => 'https://via.placeholder.com/400x300/9b59b6/ffffff?text=Home+Deco'],
-      ['id' => 6, 'title' => 'Beauty Salon', 'category' => 'salud', 'category_text' => 'Salud y Belleza', 'image' => 'https://via.placeholder.com/400x300/e91e63/ffffff?text=Beauty+Salon'],
-      ['id' => 7, 'title' => 'Café Central', 'category' => 'gastronomia', 'category_text' => 'Gastronomía', 'image' => 'https://via.placeholder.com/400x300/16a085/ffffff?text=Cafe+Central'],
-      ['id' => 8, 'title' => 'Cinema Max', 'category' => 'entretenimiento', 'category_text' => 'Entretenimiento', 'image' => 'https://via.placeholder.com/400x300/d35400/ffffff?text=Cinema+Max'],
-      ['id' => 9, 'title' => 'Urban Style', 'category' => 'moda', 'category_text' => 'Moda y Accesorios', 'image' => 'https://via.placeholder.com/400x300/c0392b/ffffff?text=Urban+Style'],
-      ] as $store)
-      @php
-      $detailUrl = Route::has('pages.locales.show') ? route('pages.locales.show', $store['id']) : '#';
-      @endphp
-      <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="card local-card" data-category="{{ $store['category'] }}">
-          <a href="{{ $detailUrl }}">
-            <img src="{{ $store['image'] }}" class="card-img-top" alt="{{ $store['title'] }}">
-          </a>
-          <div class="card-body">
-            <h5 class="card-title">{{ $store['title'] }}</h5>
-            <p class="category-text">{{ $store['category_text'] }}</p>
+    <form method="GET" action="{{ route('locales.index') }}" id="stores-filter-form" class="card shadow-sm p-3 border-0">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-lg-6">
+          <label for="search" class="form-label">Buscar local</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" value="{{ request('search') }}" placeholder="Ingres� el nombre o la ubicaci�n del local">
           </div>
         </div>
+        <div class="col-12 col-lg-4">
+          <label for="rubro" class="form-label">Rubro</label>
+          <select class="form-select form-select-lg" id="rubro" name="rubro">
+            <option value="">Todos los rubros</option>
+            @foreach($rubros as $rubro)
+              <option value="{{ $rubro }}" @selected(request('rubro') === $rubro)>{{ $rubro }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary w-100" title="Aplicar filtros"><i class="bi bi-filter"></i></button>
+          <a href="{{ route('locales.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros"><i class="bi bi-x-circle"></i></a>
+        </div>
       </div>
-      @endforeach
-    </div>
+    </form>
+  </div>
+</section>
 
-    <nav aria-label="Navegación de locales" class="mt-5">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled">
-          <a class="page-link" href="#" tabindex="-1">Anterior</a>
-        </li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-          <a class="page-link" href="#">Siguiente</a>
-        </li>
-      </ul>
-    </nav>
+<section class="py-4">
+  <div class="container">
+    @if($stores->count() > 0)
+      <div class="row g-4" id="stores-grid">
+        @foreach($stores as $store)
+          <div class="col-sm-6 col-lg-4 col-xl-3">
+            <article class="card h-100 border-0 shadow-sm local-card" data-rubro="{{ strtolower($store->rubro) }}">
+              <a href="{{ route('locales.show', $store) }}" class="ratio ratio-4x3 bg-light d-block">
+                <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $store->nombre }}">
+              </a>
+              <div class="card-body">
+                <h3 class="h5 card-title mb-1">{{ $store->nombre }}</h3>
+                <p class="mb-1 text-muted"><i class="bi bi-tag"></i> {{ $store->rubro }}</p>
+                <p class="small text-muted mb-0"><i class="bi bi-geo-alt"></i> {{ $store->ubicacion }}</p>
+              </div>
+              <div class="card-footer bg-white border-0 text-end">
+                <a href="{{ route('locales.show', $store) }}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
+              </div>
+            </article>
+          </div>
+        @endforeach
+      </div>
+
+      @if($stores->hasPages())
+        <div class="d-flex justify-content-center mt-5">
+          {{ $stores->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+      @endif
+    @else
+      <div class="alert alert-info text-center" role="status">
+        <i class="bi bi-info-circle fs-3"></i>
+        <p class="mt-2 mb-0">No encontramos locales con los filtros seleccionados. Modific� tu b�squeda e intent� nuevamente.</p>
+      </div>
+    @endif
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <h2 class="h3 fw-bold">Consejos para aprovechar tu visita</h2>
+        <ul class="list-unstyled mt-3 mb-0">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Consult� la ubicaci�n de cada local antes de llegar para optimizar tu recorrido.</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Revis� las promociones activas del local para combinarlas con tus beneficios.</li>
+          <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Guard� tus locales favoritos para visitarlos en tu pr�xima salida.</li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm text-center p-4 h-100">
+          <i class="bi bi-chat-dots fs-1 text-primary mb-3"></i>
+          <h3 class="h5">�Ten�s un local y quer�s sumarte?</h3>
+          <p class="text-muted">Registrate como due�o de local para gestionar tus promociones y recibir solicitudes de clientes.</p>
+          <a href="{{ route('register') }}" class="btn btn-primary">
+            <i class="bi bi-person-workspace"></i> Crear cuenta de due�o
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 @endsection
 
 @push('scripts')
-@vite('resources/js/frontoffice/main.js')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const rubroSelect = document.getElementById('rubro');
+    if (rubroSelect) {
+      rubroSelect.addEventListener('change', () => document.getElementById('stores-filter-form').submit());
+    }
+  });
+</script>
 @endpush

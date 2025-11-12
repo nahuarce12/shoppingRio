@@ -43,7 +43,7 @@ class StoreOwnerApproved extends Mailable
             with: [
                 'userName' => $this->user->name,
                 'userEmail' => $this->user->email,
-                'loginUrl' => route('login'),
+                'loginUrl' => url('/login'),
             ],
         );
     }

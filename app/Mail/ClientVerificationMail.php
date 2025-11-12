@@ -41,7 +41,7 @@ class ClientVerificationMail extends Mailable
             view: 'emails.client-verification',
             with: [
                 'clientName' => $this->client->name,
-                'clientEmail' => $this->client->nombreUsuario,
+                'clientEmail' => $this->client->email,
                 'verificationUrl' => $this->verificationUrl,
                 'expirationMinutes' => config('auth.verification.expire', 60),
                 'benefits' => [

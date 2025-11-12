@@ -22,7 +22,7 @@ class Store extends Model
         'nombre',
         'ubicacion',
         'rubro',
-        'owner_id',
+        'logo',
     ];
 
     /**
@@ -37,11 +37,22 @@ class Store extends Model
     // ==================== Relationships ====================
 
     /**
-     * Get the user who owns this store.
+     * Get all owners (users) of this store.
+     * A store can have multiple owners.
      */
-    public function owner(): BelongsTo
+    public function owners(): HasMany
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->hasMany(User::class, 'store_id')
+            ->where('tipo_usuario', 'dueño de local');
+    }
+
+    /**
+     * Get the primary owner (first user) of this store.
+     * Convenience method for singular relationships.
+     */
+    public function owner(): HasMany
+    {
+        return $this->owners();
     }
 
     /**

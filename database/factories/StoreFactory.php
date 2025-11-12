@@ -55,18 +55,7 @@ class StoreFactory extends Factory
             'nombre' => fake()->company() . ' ' . fake()->randomElement(['Store', 'Shop', 'Boutique', 'Gallery', 'Center']),
             'ubicacion' => fake()->randomElement($ubicaciones),
             'rubro' => fake()->randomElement($rubros),
-            'owner_id' => null, // Will be set by seeder or state method
         ];
-    }
-
-    /**
-     * Assign a store owner to the store.
-     */
-    public function forOwner(User $owner): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'owner_id' => $owner->id,
-        ]);
     }
 
     /**

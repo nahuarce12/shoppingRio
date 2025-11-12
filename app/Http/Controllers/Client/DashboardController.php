@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Services\NewsService;
 use App\Services\PromotionUsageService;
+use App\Services\CategoryUpgradeService;
 
 /**
  * Client dashboard controller.
@@ -14,7 +15,8 @@ class DashboardController extends Controller
 {
     public function __construct(
         private PromotionUsageService $promotionUsageService,
-        private NewsService $newsService
+        private NewsService $newsService,
+        private CategoryUpgradeService $categoryUpgradeService
     ) {
     }
 
@@ -24,6 +26,12 @@ class DashboardController extends Controller
     public function index()
     {
         $client = auth()->user();
+
+        // Evaluate and update client category if needed (checks every dashboard access)
+        $this->categoryUpgradeService->evaluateClient($client);
+        
+        // Refresh client data to get updated category
+        $client->refresh();
 
         // Client category information
         $categoryInfo = config('shopping.client_categories.' . $client->categoria_cliente, []);
@@ -43,7 +51,7 @@ class DashboardController extends Controller
             ->get();
 
         // Active news for this client category
-        $news = $this->newsService->getActiveNewsForCategory($client->categoria_cliente);
+        $news = $this->newsService->getActiveNewsForUser($client);
 
         // Available promotions count
         $availablePromotionsCount = \App\Models\Promotion::approved()
@@ -55,7 +63,7 @@ class DashboardController extends Controller
             })
             ->count();
 
-        return view('client.dashboard', compact(
+        return view('dashboard.client.index', compact(
             'client',
             'categoryInfo',
             'usageStats',

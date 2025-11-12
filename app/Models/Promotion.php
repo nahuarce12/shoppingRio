@@ -27,6 +27,7 @@ class Promotion extends Model
         'categoria_minima',
         'estado',
         'store_id',
+        'imagen',
     ];
 
     /**
@@ -48,7 +49,7 @@ class Promotion extends Model
      */
     public function store(): BelongsTo
     {
-        return $this->belongsTo(Store::class);
+        return $this->belongsTo(Store::class)->withTrashed();
     }
 
     /**

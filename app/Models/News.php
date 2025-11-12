@@ -19,6 +19,7 @@ class News extends Model
     protected $fillable = [
         'codigo',
         'texto',
+        'imagen',
         'fecha_desde',
         'fecha_hasta',
         'categoria_destino',

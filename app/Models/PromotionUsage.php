@@ -27,6 +27,7 @@ class PromotionUsage extends Model
         'promotion_id',
         'fecha_uso',
         'estado',
+        'codigo_qr',
     ];
 
     /**
@@ -53,7 +54,7 @@ class PromotionUsage extends Model
      */
     public function promotion(): BelongsTo
     {
-        return $this->belongsTo(Promotion::class);
+        return $this->belongsTo(Promotion::class)->withTrashed();
     }
 
     // ==================== Query Scopes ====================
@@ -157,5 +158,50 @@ class PromotionUsage extends Model
     {
         $this->estado = 'rechazada';
         return $this->save();
+    }
+
+    /**
+     * Generate a unique QR code for this usage request.
+     */
+    public static function generateUniqueQrCode(): string
+    {
+        do {
+            $code = strtoupper(substr(md5(uniqid(rand(), true)), 0, 16));
+        } while (self::where('codigo_qr', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Get the QR code as SVG image.
+     */
+    public function getQrCodeSvg(): string
+    {
+        if (!$this->codigo_qr) {
+            return '';
+        }
+
+        $qrcode = new \chillerlan\QRCode\QRCode();
+        return $qrcode->render($this->codigo_qr);
+    }
+
+    /**
+     * Get the QR code as base64 PNG image.
+     */
+    public function getQrCodeBase64(): string
+    {
+        if (!$this->codigo_qr) {
+            return '';
+        }
+
+        $options = new \chillerlan\QRCode\QROptions([
+            'outputType' => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG,
+            'eccLevel' => \chillerlan\QRCode\Common\EccLevel::H,
+            'scale' => 5,
+            'imageBase64' => true,
+        ]);
+
+        $qrcode = new \chillerlan\QRCode\QRCode($options);
+        return $qrcode->render($this->codigo_qr);
     }
 }

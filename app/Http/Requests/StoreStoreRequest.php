@@ -27,6 +27,8 @@ class StoreStoreRequest extends FormRequest
     public function rules(): array
     {
         $storeId = $this->route('store') ? $this->route('store')->id : null;
+        
+        $rubros = array_keys(config('shopping.store_rubros', []));
 
         return [
             'nombre' => [
@@ -44,21 +46,13 @@ class StoreStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                'in:' . implode(',', array_keys(config('shopping.store_rubros', [])))
+                'in:' . implode(',', $rubros)
             ],
-            'owner_id' => [
-                'required',
-                'integer',
-                'exists:users,id',
-                function ($attribute, $value, $fail) {
-                    $user = \App\Models\User::find($value);
-                    if (!$user || $user->tipo_usuario !== 'dueño de local') {
-                        $fail('The selected owner must be a store owner.');
-                    }
-                    if (!$user->isApproved()) {
-                        $fail('The selected owner must be approved by an administrator.');
-                    }
-                }
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,gif',
+                'max:2048' // 2MB max
             ]
         ];
     }
@@ -78,8 +72,9 @@ class StoreStoreRequest extends FormRequest
             'ubicacion.max' => 'The location must not exceed 50 characters.',
             'rubro.required' => 'The business category is required.',
             'rubro.in' => 'The selected business category is invalid.',
-            'owner_id.required' => 'A store owner must be assigned.',
-            'owner_id.exists' => 'The selected owner does not exist.',
+            'logo.image' => 'The logo must be an image file.',
+            'logo.mimes' => 'The logo must be a JPEG, PNG, or GIF file.',
+            'logo.max' => 'The logo file size must not exceed 2MB.',
         ];
     }
 
@@ -94,7 +89,7 @@ class StoreStoreRequest extends FormRequest
             'nombre' => 'store name',
             'ubicacion' => 'location',
             'rubro' => 'business category',
-            'owner_id' => 'store owner'
+            'logo' => 'store logo'
         ];
     }
 }

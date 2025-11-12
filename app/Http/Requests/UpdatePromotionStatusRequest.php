@@ -12,6 +12,24 @@ use App\Models\Promotion;
 class UpdatePromotionStatusRequest extends FormRequest
 {
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $promotion = $this->route('promotion');
+        $routeName = optional($this->route())->getName();
+
+        if ($promotion instanceof Promotion) {
+            $this->merge([
+                'promotion_id' => $promotion->getKey(),
+                'estado' => $routeName === 'admin.promotions.approve'
+                    ? 'aprobada'
+                    : ($routeName === 'admin.promotions.deny' ? 'denegada' : $this->input('estado')),
+            ]);
+        }
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool

@@ -45,44 +45,38 @@ class DatabaseSeeder extends Seeder
         $this->command->info("✅ Admin created: {$admin->email}");
 
         // ========================================
-        // 2. Create Store Owners
-        // ========================================
-        $this->command->info('📋 Creating store owners...');
-        
-        // 3 approved store owners
-        $approvedOwners = User::factory()
-            ->count(3)
-            ->storeOwner()
-            ->create();
-
-        // 2 pending store owners (awaiting admin approval)
-        $pendingOwners = User::factory()
-            ->count(2)
-            ->pendingStoreOwner()
-            ->create();
-
-        $this->command->info("✅ Created 3 approved and 2 pending store owners");
-
-        // ========================================
-        // 3. Create Stores
+        // 2. Create Stores FIRST (before owners)
         // ========================================
         $this->command->info('📋 Creating stores...');
         
-        $stores = collect();
-        
-        // Distribute stores among approved owners
-        foreach ($approvedOwners as $index => $owner) {
-            $storeCount = $index === 0 ? 8 : ($index === 1 ? 7 : 5); // 8, 7, 5 = 20 stores
-            
-            $ownerStores = Store::factory()
-                ->count($storeCount)
-                ->forOwner($owner)
-                ->create();
-            
-            $stores = $stores->merge($ownerStores);
-        }
+        $stores = Store::factory()->count(20)->create();
 
         $this->command->info("✅ Created {$stores->count()} stores");
+
+        // ========================================
+        // 3. Create Store Owners and assign them to stores
+        // ========================================
+        $this->command->info('📋 Creating store owners...');
+        
+        // 3 approved store owners - assign to first 3 stores
+        $approvedOwners = collect();
+        foreach ($stores->take(3) as $index => $store) {
+            $owner = User::factory()
+                ->storeOwner()
+                ->create(['store_id' => $store->id]);
+            $approvedOwners->push($owner);
+        }
+
+        // 2 pending store owners (awaiting admin approval) - assign to next 2 stores
+        $pendingOwners = collect();
+        foreach ($stores->slice(3, 2) as $store) {
+            $owner = User::factory()
+                ->pendingStoreOwner()
+                ->create(['store_id' => $store->id]);
+            $pendingOwners->push($owner);
+        }
+
+        $this->command->info("✅ Created 3 approved and 2 pending store owners");
 
         // ========================================
         // 4. Create Promotions

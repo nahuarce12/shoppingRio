@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PromotionUsageRequest;
 use App\Models\Promotion;
 use App\Services\PromotionUsageService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -22,17 +23,21 @@ class PromotionUsageController extends Controller
     /**
      * Request to use a promotion (send request to store owner).
      */
-    public function request(PromotionUsageRequest $request, Promotion $promotion)
+    public function request(PromotionUsageRequest $request): RedirectResponse
     {
+        $promotionId = $request->validated()['promotion_id'];
+
+        $promotion = Promotion::with('store.owner')->findOrFail($promotionId);
+
         $result = $this->promotionUsageService->createUsageRequest(
-            auth()->user(),
-            $promotion
+            $promotion,
+            $request->user()
         );
 
         if ($result['success']) {
             return redirect()
-                ->route('client.usage-history')
-                ->with('success', 'Solicitud enviada exitosamente. Espere la aprobación del local.');
+                ->route('promociones.show', $promotion)
+                ->with('success', 'Solicitud enviada exitosamente. Esperá la aprobación del local.');
         }
 
         return redirect()
@@ -43,21 +48,23 @@ class PromotionUsageController extends Controller
     /**
      * Display client's usage history.
      */
-    public function history(Request $request)
+    public function index(Request $request)
     {
         $filters = $request->only(['estado', 'fecha_desde', 'fecha_hasta']);
 
+        $client = $request->user();
+
         $usageHistory = $this->promotionUsageService->getClientUsageHistory(
-            auth()->id(),
+            $client,
             $filters
-        );
+        )->paginate(10);
 
         // Statistics
         $stats = [
-            'total' => auth()->user()->promotionUsages()->count(),
-            'enviada' => auth()->user()->promotionUsages()->where('estado', 'enviada')->count(),
-            'aceptada' => auth()->user()->promotionUsages()->where('estado', 'aceptada')->count(),
-            'rechazada' => auth()->user()->promotionUsages()->where('estado', 'rechazada')->count(),
+            'total' => $client->promotionUsages()->count(),
+            'enviada' => $client->promotionUsages()->where('estado', 'enviada')->count(),
+            'aceptada' => $client->promotionUsages()->where('estado', 'aceptada')->count(),
+            'rechazada' => $client->promotionUsages()->where('estado', 'rechazada')->count(),
         ];
 
         return view('client.usage-history', compact('usageHistory', 'stats'));

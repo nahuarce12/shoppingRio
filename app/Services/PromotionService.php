@@ -32,7 +32,7 @@ class PromotionService
         if ($promotion->estado !== 'aprobada') {
             return [
                 'eligible' => false,
-                'reason' => 'Promotion is not approved by admin yet.'
+                'reason' => 'La promoción aún no fue aprobada por el administrador.'
             ];
         }
 
@@ -41,7 +41,7 @@ class PromotionService
         if ($today->lt($promotion->fecha_desde) || $today->gt($promotion->fecha_hasta)) {
             return [
                 'eligible' => false,
-                'reason' => 'Promotion is not within valid date range.'
+                'reason' => 'La promoción no está vigente en la fecha actual.'
             ];
         }
 
@@ -53,7 +53,7 @@ class PromotionService
         if (!isset($promotion->dias_semana[$projectDayIndex]) || !$promotion->dias_semana[$projectDayIndex]) {
             return [
                 'eligible' => false,
-                'reason' => 'Promotion is not valid for today.'
+                'reason' => 'La promoción no aplica para el día de hoy.'
             ];
         }
 
@@ -61,7 +61,7 @@ class PromotionService
         if (!$client->canAccessCategory($promotion->categoria_minima)) {
             return [
                 'eligible' => false,
-                'reason' => 'Your client category does not have access to this promotion.'
+                'reason' => 'Tu categoría de cliente no tiene acceso a esta promoción.'
             ];
         }
 
@@ -70,7 +70,7 @@ class PromotionService
         if ($hasUsed) {
             return [
                 'eligible' => false,
-                'reason' => 'You have already used this promotion.'
+                'reason' => 'Ya utilizaste esta promoción anteriormente.'
             ];
         }
 
@@ -171,9 +171,11 @@ class PromotionService
             $promotion->estado = 'aprobada';
             $promotion->save();
 
-            // Send approval email to store owner
-            Mail::to($promotion->store->owner->nombreUsuario)
-                ->send(new PromotionApprovedMail($promotion));
+            // Send approval email to all store owners
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
+                    ->send(new PromotionApprovedMail($promotion));
+            }
 
             DB::commit();
             return true;
@@ -204,9 +206,11 @@ class PromotionService
             $promotion->estado = 'denegada';
             $promotion->save();
 
-            // Send denial email to store owner with reason
-            Mail::to($promotion->store->owner->nombreUsuario)
-                ->send(new PromotionDeniedMail($promotion, $reason));
+            // Send denial email to all store owners with reason
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
+                    ->send(new PromotionDeniedMail($promotion, $reason));
+            }
 
             DB::commit();
             return true;

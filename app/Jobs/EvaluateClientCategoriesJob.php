@@ -94,7 +94,7 @@ class EvaluateClientCategoriesJob implements ShouldQueue
 
                         Log::info("Client upgraded successfully", [
                             'user_id' => $client->id,
-                            'email' => $client->nombreUsuario,
+                            'email' => $client->email,
                             'old_category' => $result['old_category'],
                             'new_category' => $result['new_category']
                         ]);
@@ -103,7 +103,7 @@ class EvaluateClientCategoriesJob implements ShouldQueue
                     $stats['errors']++;
                     Log::error("Failed to evaluate client category", [
                         'user_id' => $client->id,
-                        'email' => $client->nombreUsuario,
+                        'email' => $client->email,
                         'error' => $e->getMessage()
                     ]);
                 }

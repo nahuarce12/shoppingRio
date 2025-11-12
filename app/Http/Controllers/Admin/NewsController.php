@@ -7,6 +7,7 @@ use App\Http\Requests\StoreNewsRequest;
 use App\Models\News;
 use App\Services\NewsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Admin controller for managing news/announcements.
@@ -24,40 +25,7 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $query = News::query();
-
-        // Filter by category
-        if ($request->filled('categoria_cliente')) {
-            $query->where('categoria_cliente', $request->categoria_cliente);
-        }
-
-        // Filter by status (active/expired)
-        if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->where('fecha_hasta', '>=', now());
-            } elseif ($request->status === 'expired') {
-                $query->where('fecha_hasta', '<', now());
-            }
-        }
-
-        // Search in text
-        if ($request->filled('search')) {
-            $query->where('texto_novedad', 'like', "%{$request->search}%");
-        }
-
-        // Order by creation date (newest first)
-        $query->orderBy('created_at', 'desc');
-
-        $news = $query->paginate(15);
-
-        // Statistics
-        $stats = [
-            'total' => News::count(),
-            'active' => News::where('fecha_hasta', '>=', now())->count(),
-            'expired' => News::where('fecha_hasta', '<', now())->count(),
-        ];
-
-        return view('admin.news.index', compact('news', 'stats'));
+        return redirect()->route('admin.dashboard', ['section' => 'novedades']);
     }
 
     /**
@@ -77,10 +45,18 @@ class NewsController extends Controller
     public function store(StoreNewsRequest $request)
     {
         try {
-            $news = News::create($request->validated());
+            $data = $request->validated();
+            
+            // Handle image upload
+            if ($request->hasFile('imagen')) {
+                $imagePath = $request->file('imagen')->store('news/images', 'public');
+                $data['imagen'] = $imagePath;
+            }
+            
+            $news = News::create($data);
 
             return redirect()
-                ->route('admin.news.index')
+                ->route('admin.dashboard', ['section' => 'novedades'])
                 ->with('success', 'Novedad creada exitosamente.');
         } catch (\Exception $e) {
             return redirect()
@@ -96,7 +72,7 @@ class NewsController extends Controller
     public function show(News $news)
     {
         // Calculate who can see this news based on category hierarchy
-        $visibleTo = match($news->categoria_cliente) {
+        $visibleTo = match($news->categoria_destino) {
             'Inicial' => ['Inicial', 'Medium', 'Premium'],
             'Medium' => ['Medium', 'Premium'],
             'Premium' => ['Premium'],
@@ -126,9 +102,7 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
-        $categories = ['Inicial', 'Medium', 'Premium'];
-
-        return view('admin.news.edit', compact('news', 'categories'));
+        return redirect()->route('admin.dashboard', ['section' => 'novedades']);
     }
 
     /**
@@ -137,10 +111,23 @@ class NewsController extends Controller
     public function update(StoreNewsRequest $request, News $news)
     {
         try {
-            $news->update($request->validated());
+            $data = $request->validated();
+            
+            // Handle image upload
+            if ($request->hasFile('imagen')) {
+                // Delete old image if exists
+                if ($news->imagen && Storage::disk('public')->exists($news->imagen)) {
+                    Storage::disk('public')->delete($news->imagen);
+                }
+                
+                $imagePath = $request->file('imagen')->store('news/images', 'public');
+                $data['imagen'] = $imagePath;
+            }
+            
+            $news->update($data);
 
             return redirect()
-                ->route('admin.news.show', $news)
+                ->route('admin.dashboard', ['section' => 'novedades'])
                 ->with('success', 'Novedad actualizada exitosamente.');
         } catch (\Exception $e) {
             return redirect()
@@ -156,10 +143,15 @@ class NewsController extends Controller
     public function destroy(News $news)
     {
         try {
+            // Delete image if exists
+            if ($news->imagen && Storage::disk('public')->exists($news->imagen)) {
+                Storage::disk('public')->delete($news->imagen);
+            }
+            
             $news->delete();
 
             return redirect()
-                ->route('admin.news.index')
+                ->route('admin.dashboard', ['section' => 'novedades'])
                 ->with('success', 'Novedad eliminada exitosamente.');
         } catch (\Exception $e) {
             return redirect()

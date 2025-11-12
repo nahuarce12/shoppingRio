@@ -40,9 +40,9 @@ class PromotionPolicy
         if ($user->isStoreOwner() && $user->isApproved()) {
             // If store is provided, check ownership
             if ($store) {
-                return $store->owner_id === $user->id;
+                return $user->store_id === $store->id;
             }
-            // Otherwise, user can create for their stores
+            // Otherwise, user can create for their store
             return true;
         }
 
@@ -69,7 +69,7 @@ class PromotionPolicy
         }
 
         if ($user->isStoreOwner() && $user->isApproved()) {
-            return $promotion->store->owner_id === $user->id;
+            return $promotion->store_id === $user->store_id;
         }
 
         return false;
@@ -128,7 +128,7 @@ class PromotionPolicy
         }
 
         if ($user->isStoreOwner() && $user->isApproved()) {
-            return $promotion->store->owner_id === $user->id;
+            return $promotion->store_id === $user->store_id;
         }
 
         return false;

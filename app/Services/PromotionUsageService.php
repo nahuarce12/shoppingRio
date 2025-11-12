@@ -30,7 +30,9 @@ class PromotionUsageService
      */
     public function createUsageRequest(Promotion $promotion, User $client): array
     {
-        // Check eligibility first
+    $promotion->loadMissing('store.owner');
+
+    // Check eligibility first
         $promotionService = new PromotionService();
         $eligibility = $promotionService->checkEligibility($promotion, $client);
 
@@ -45,23 +47,26 @@ class PromotionUsageService
         try {
             DB::beginTransaction();
 
-            // Create usage request with 'enviada' status
+            // Create usage request with 'enviada' status and unique QR code
             $usage = PromotionUsage::create([
                 'client_id' => $client->id,
                 'promotion_id' => $promotion->id,
                 'fecha_uso' => Carbon::today(),
-                'estado' => 'enviada'
+                'estado' => 'enviada',
+                'codigo_qr' => PromotionUsage::generateUniqueQrCode()
             ]);
 
-            // Send notification email to store owner
-            Mail::to($promotion->store->owner->nombreUsuario)
-                ->send(new PromotionUsageRequestMail($usage));
+            // Send notification email to all store owners
+            foreach ($promotion->store->owners as $owner) {
+                Mail::to($owner->email)
+                    ->send(new PromotionUsageRequestMail($usage));
+            }
 
             DB::commit();
 
             return [
                 'success' => true,
-                'message' => 'Usage request sent successfully. Awaiting store owner approval.',
+                'message' => 'Solicitud enviada exitosamente. Esperá la aprobación del local.',
                 'usage' => $usage
             ];
         } catch (\Illuminate\Database\QueryException $e) {
@@ -71,7 +76,7 @@ class PromotionUsageService
             if ($e->getCode() == 23000) {
                 return [
                     'success' => false,
-                    'message' => 'You have already requested this promotion.',
+                    'message' => 'Ya solicitaste esta promoción.',
                     'usage' => null
                 ];
             }
@@ -79,7 +84,7 @@ class PromotionUsageService
             Log::error('Failed to create usage request: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Failed to create usage request. Please try again.',
+                'message' => 'No pudimos registrar la solicitud. Intentalo nuevamente.',
                 'usage' => null
             ];
         }
@@ -105,7 +110,7 @@ class PromotionUsageService
             $usage->save();
 
             // Send acceptance email to client
-            Mail::to($usage->client->nombreUsuario)
+            Mail::to($usage->client->email)
                 ->send(new PromotionUsageAcceptedMail($usage));
 
             DB::commit();
@@ -138,7 +143,7 @@ class PromotionUsageService
             $usage->save();
 
             // Send rejection email to client with reason
-            Mail::to($usage->client->nombreUsuario)
+            Mail::to($usage->client->email)
                 ->send(new PromotionUsageRejectedMail($usage, $reason));
 
             DB::commit();

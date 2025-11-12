@@ -91,6 +91,12 @@ class StorePromotionRequest extends FormRequest
                 'string',
                 'in:Inicial,Medium,Premium'
             ],
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,gif',
+                'max:2048' // 2MB max
+            ],
             'store_id' => [
                 'required',
                 'integer',
@@ -110,8 +116,8 @@ class StorePromotionRequest extends FormRequest
 
                     // Store owners can only create promotions for their own stores
                     if ($user->isStoreOwner()) {
-                        $store = \App\Models\Store::find($value);
-                        if (!$store || $store->owner_id !== $user->id) {
+                        // Cast both to int to avoid type comparison issues
+                        if ((int)$user->store_id !== (int)$value) {
                             $fail('You can only create promotions for your own store.');
                         }
                     } else {
@@ -144,6 +150,9 @@ class StorePromotionRequest extends FormRequest
             'dias_semana.*.boolean' => 'Each day must be true or false.',
             'categoria_minima.required' => 'The minimum client category is required.',
             'categoria_minima.in' => 'The minimum category must be Inicial, Medium, or Premium.',
+            'imagen.image' => 'The image must be an image file.',
+            'imagen.mimes' => 'The image must be a JPEG, PNG, or GIF file.',
+            'imagen.max' => 'The image file size must not exceed 2MB.',
             'store_id.required' => 'A store must be selected.',
             'store_id.exists' => 'The selected store does not exist.',
         ];
@@ -162,6 +171,7 @@ class StorePromotionRequest extends FormRequest
             'fecha_hasta' => 'end date',
             'dias_semana' => 'days of the week',
             'categoria_minima' => 'minimum category',
+            'imagen' => 'promotion image',
             'store_id' => 'store'
         ];
     }
@@ -171,6 +181,13 @@ class StorePromotionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        if (!$this->filled('store_id')) {
+            $user = Auth::user();
+            if ($user && $user->isStoreOwner() && $user->store_id) {
+                $this->merge(['store_id' => $user->store_id]);
+            }
+        }
+
         // Convert dias_semana values to boolean if they come as strings or integers
         if ($this->has('dias_semana') && is_array($this->dias_semana)) {
             $diasSemana = [];

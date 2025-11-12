@@ -78,7 +78,7 @@ class CategoryUpgradeService
             // Log the upgrade event
             Log::info("Client category upgraded: User {$client->id} from {$oldCategory} to {$newCategory}", [
                 'user_id' => $client->id,
-                'email' => $client->nombreUsuario,
+                'email' => $client->email,
                 'old_category' => $oldCategory,
                 'new_category' => $newCategory,
                 'accepted_count' => $acceptedCount,
@@ -86,7 +86,7 @@ class CategoryUpgradeService
             ]);
 
             // Send upgrade notification email to client
-            Mail::to($client->nombreUsuario)
+            Mail::to($client->email)
                 ->send(new CategoryUpgradeNotificationMail($client, $oldCategory, $newCategory));
 
             DB::commit();

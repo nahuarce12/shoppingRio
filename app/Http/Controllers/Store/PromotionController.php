@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromotionRequest;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -19,7 +20,12 @@ class PromotionController extends Controller
      */
     public function index(Request $request)
     {
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->store;
+
+        if (!$store) {
+            return view('dashboard.store.no-store');
+        }
 
         $query = $store->promotions();
 
@@ -39,11 +45,12 @@ class PromotionController extends Controller
 
         // Search in text
         if ($request->filled('search')) {
-            $query->where('texto_promocion', 'like', "%{$request->search}%");
+            $query->where('texto', 'like', "%{$request->search}%");
         }
 
-        // Order by creation date (newest first)
-        $query->orderBy('created_at', 'desc');
+        $query->withCount(['usages as accepted_usages_count' => function ($usageQuery) {
+            $usageQuery->where('estado', 'aceptada');
+        }])->orderBy('created_at', 'desc');
 
         $promotions = $query->paginate(15);
 
@@ -60,7 +67,7 @@ class PromotionController extends Controller
                 ->count(),
         ];
 
-        return view('store.promotions.index', compact('promotions', 'store', 'stats'));
+    return view('dashboard.store.promotions-index', compact('promotions', 'store', 'stats'));
     }
 
     /**
@@ -68,12 +75,17 @@ class PromotionController extends Controller
      */
     public function create()
     {
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->store;
+
+        if (!$store) {
+            return view('dashboard.store.no-store');
+        }
         
         $categories = ['Inicial', 'Medium', 'Premium'];
         $maxDuration = config('shopping.promotion.max_duration_days', 90);
 
-        return view('store.promotions.create', compact('store', 'categories', 'maxDuration'));
+    return view('dashboard.store.promotions-create', compact('store', 'categories', 'maxDuration'));
     }
 
     /**
@@ -83,30 +95,43 @@ class PromotionController extends Controller
     public function store(StorePromotionRequest $request)
     {
         try {
-            $store = auth()->user()->stores()->firstOrFail();
+            $user = Auth::user();
+            $store = $user?->store;
 
-            $promotion = Promotion::create(array_merge(
+            if (!$store) {
+                return view('dashboard.store.no-store');
+            }
+
+            $data = array_merge(
                 $request->validated(),
                 [
                     'store_id' => $store->id,
                     'estado' => 'pendiente' // Requires admin approval
                 ]
-            ));
+            );
+
+            // Handle image upload
+            if ($request->hasFile('imagen')) {
+                $imagePath = $request->file('imagen')->store('promotions/images', 'public');
+                $data['imagen'] = $imagePath;
+            }
+
+            $promotion = Promotion::create($data);
 
             Log::info('Promotion created by store owner', [
                 'promotion_id' => $promotion->id,
-                'promotion_code' => $promotion->codigo_promocion,
+                'promotion_code' => $promotion->codigo,
                 'store_id' => $store->id,
-                'owner_id' => auth()->id()
+                'owner_id' => Auth::id()
             ]);
 
             return redirect()
-                ->route('store.promotions.show', $promotion)
+                ->route('store.dashboard', ['section' => 'mis-promociones'])
                 ->with('success', 'Promoción creada exitosamente. Está pendiente de aprobación por el administrador.');
         } catch (\Exception $e) {
             Log::error('Failed to create promotion', [
                 'error' => $e->getMessage(),
-                'owner_id' => auth()->id()
+                'owner_id' => Auth::id()
             ]);
 
             return redirect()
@@ -122,7 +147,12 @@ class PromotionController extends Controller
     public function show(Promotion $promotion)
     {
         // Ensure owner can only see their own promotions
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->store;
+
+        if (!$store) {
+            return view('dashboard.store.no-store');
+        }
         
         if ($promotion->store_id !== $store->id) {
             abort(403, 'No tiene permiso para ver esta promoción.');
@@ -130,15 +160,17 @@ class PromotionController extends Controller
 
         $promotion->load('usages.client');
 
+        $usageCollection = $promotion->usages;
+
         // Get usage statistics
         $usageStats = [
-            'total' => $promotion->usages()->count(),
-            'enviada' => $promotion->usages()->where('estado', 'enviada')->count(),
-            'aceptada' => $promotion->usages()->where('estado', 'aceptada')->count(),
-            'rechazada' => $promotion->usages()->where('estado', 'rechazada')->count(),
+            'total' => $usageCollection->count(),
+            'pending' => $usageCollection->where('estado', 'enviada')->count(),
+            'accepted' => $usageCollection->where('estado', 'aceptada')->count(),
+            'rejected' => $usageCollection->where('estado', 'rechazada')->count(),
         ];
 
-        return view('store.promotions.show', compact('promotion', 'usageStats'));
+        return view('dashboard.store.promotion-show', compact('promotion', 'usageStats', 'store'));
     }
 
     /**
@@ -149,7 +181,12 @@ class PromotionController extends Controller
     public function destroy(Promotion $promotion)
     {
         // Ensure owner can only delete their own promotions
-        $store = auth()->user()->stores()->firstOrFail();
+        $user = Auth::user();
+        $store = $user?->store;
+
+        if (!$store) {
+            return view('dashboard.store.no-store');
+        }
         
         if ($promotion->store_id !== $store->id) {
             abort(403, 'No tiene permiso para eliminar esta promoción.');
@@ -165,24 +202,24 @@ class PromotionController extends Controller
         }
 
         try {
-            $promotionText = $promotion->texto_promocion;
+            $promotionText = $promotion->texto;
             $promotion->delete(); // Soft delete
 
             Log::info('Promotion deleted by store owner', [
                 'promotion_id' => $promotion->id,
-                'promotion_code' => $promotion->codigo_promocion,
+                'promotion_code' => $promotion->codigo,
                 'store_id' => $store->id,
-                'owner_id' => auth()->id()
+                'owner_id' => Auth::id()
             ]);
 
             return redirect()
-                ->route('store.promotions.index')
+                ->route('store.dashboard', ['section' => 'mis-promociones'])
                 ->with('success', "Promoción '{$promotionText}' eliminada exitosamente.");
         } catch (\Exception $e) {
             Log::error('Failed to delete promotion', [
                 'promotion_id' => $promotion->id,
                 'error' => $e->getMessage(),
-                'owner_id' => auth()->id()
+                'owner_id' => Auth::id()
             ]);
 
             return redirect()

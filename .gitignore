@@ -26,3 +26,5 @@ Thumbs.db
 
 # Legacy mockup (archived after Phase 5 - see MOCKUP-ARCHIVE-README.md)
 frontEndEG/
+.aiassistant/rules/Instrucciones.md
+.aiassistant/rules/Proyecto.md

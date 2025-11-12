@@ -6,6 +6,7 @@ use App\Models\Promotion;
 use App\Models\Store;
 use App\Services\PromotionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Public controller for unregistered users.
@@ -32,6 +33,15 @@ class PublicController extends Controller
             ->limit(6)
             ->get();
 
+        // Featured stores (stores with most active promotions)
+        $featuredStores = Store::withCount(['promotions' => function ($query) {
+                $query->approved()->active();
+            }])
+            ->having('promotions_count', '>', 0)
+            ->orderBy('promotions_count', 'desc')
+            ->limit(6)
+            ->get();
+
         // Total counts for stats
         $stats = [
             'stores' => Store::count(),
@@ -39,35 +49,63 @@ class PublicController extends Controller
             'categories' => ['Inicial', 'Medium', 'Premium'],
         ];
 
-        return view('public.home', compact('featuredPromotions', 'stats'));
+        return view('home.index', compact('featuredPromotions', 'featuredStores', 'stats'));
     }
 
     /**
      * Display all available promotions with filters.
      */
-    public function promotions(Request $request)
+    public function promotionsIndex(Request $request)
     {
         $filters = $request->only(['store_id', 'categoria_minima', 'search']);
 
-        $promotions = $this->promotionService->getPublicPromotions($filters);
+        $query = Promotion::approved()->active()->with('store');
+
+        // Filter by store
+        if ($request->filled('store_id')) {
+            $query->where('store_id', $request->store_id);
+        }
+
+        // Filter by minimum category
+        if ($request->filled('categoria_minima')) {
+            $query->where('categoria_minima', $request->categoria_minima);
+        }
+
+        // Search by text
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('texto', 'like', "%{$search}%");
+        }
+
+        $promotions = $query->orderBy('created_at', 'desc')->paginate(12);
 
         $stores = Store::orderBy('nombre')->get();
         $categories = ['Inicial', 'Medium', 'Premium'];
 
-        return view('public.promotions', compact('promotions', 'stores', 'categories'));
+        return view('pages.promociones.index', compact('promotions', 'stores', 'categories'));
     }
 
     /**
      * Display a single promotion.
      */
-    public function showPromotion(Promotion $promotion)
+    public function promotionShow(Promotion $promotion)
     {
         // Only show approved promotions to public
         if ($promotion->estado !== 'aprobada') {
             abort(404);
         }
 
-        $promotion->load('store');
+        $promotion->load(['store.owner']);
+
+        $clientEligibility = null;
+        $hasRequested = false;
+
+        if (Auth::check() && Auth::user()->isClient()) {
+            $clientEligibility = $this->promotionService->checkEligibility($promotion, Auth::user());
+            $hasRequested = $promotion->usages()
+                ->where('client_id', Auth::id())
+                ->exists();
+        }
 
         // Show similar promotions from same store
         $similarPromotions = Promotion::approved()
@@ -77,13 +115,13 @@ class PublicController extends Controller
             ->limit(3)
             ->get();
 
-        return view('public.promotion-show', compact('promotion', 'similarPromotions'));
+        return view('pages.promociones.show', compact('promotion', 'similarPromotions', 'clientEligibility', 'hasRequested'));
     }
 
     /**
      * Display all stores.
      */
-    public function stores(Request $request)
+    public function storesIndex(Request $request)
     {
         $query = Store::query();
 
@@ -105,23 +143,23 @@ class PublicController extends Controller
 
         $stores = $query->paginate(12);
 
-        $rubros = config('shopping.store_rubros', []);
+        $rubros = ['Indumentaria', 'Tecnología', 'Gastronomía', 'Perfumería', 'Deportes', 'Hogar', 'Entretenimiento', 'Salud'];
 
-        return view('public.stores', compact('stores', 'rubros'));
+        return view('pages.locales.index', compact('stores', 'rubros'));
     }
 
     /**
      * Display a single store with its promotions.
      */
-    public function showStore(Store $store)
+    public function storeShow(Store $store)
     {
-        $store->load(['owner', 'promotions' => function ($query) {
+        $store->load(['owners', 'promotions' => function ($query) {
             $query->approved()->active()->orderBy('created_at', 'desc');
         }]);
 
         $promotionCount = $store->promotions()->approved()->active()->count();
 
-        return view('public.store-show', compact('store', 'promotionCount'));
+        return view('pages.locales.show', compact('store', 'promotionCount'));
     }
 
     /**
@@ -129,9 +167,14 @@ class PublicController extends Controller
      */
     public function contact()
     {
-        $contactInfo = config('shopping.admin_contact', []);
+        $contactInfo = [
+            'email' => 'admin@shoppingrio.com',
+            'phone' => '(0341) 555-1234',
+            'address' => 'Av. Juan B. Justo 5000, Rosario, Santa Fe',
+            'hours' => 'Lunes a Domingo: 10:00 - 22:00',
+        ];
 
-        return view('public.contact', compact('contactInfo'));
+        return view('pages.static.contact', compact('contactInfo'));
     }
 
     /**
@@ -140,11 +183,24 @@ class PublicController extends Controller
     public function about()
     {
         $benefits = [
-            'Inicial' => config('shopping.client_categories.Inicial.benefits', []),
-            'Medium' => config('shopping.client_categories.Medium.benefits', []),
-            'Premium' => config('shopping.client_categories.Premium.benefits', []),
+            'Inicial' => [
+                'Acceso a promociones básicas',
+                'Notificaciones por email',
+                'Historial de compras',
+            ],
+            'Medium' => [
+                'Acceso a promociones Medium e Inicial',
+                'Notificaciones prioritarias',
+                'Descuentos especiales',
+            ],
+            'Premium' => [
+                'Acceso a todas las promociones',
+                'Notificaciones exclusivas',
+                'Eventos VIP',
+                'Descuentos máximos',
+            ],
         ];
 
-        return view('public.about', compact('benefits'));
+        return view('pages.static.about', compact('benefits'));
     }
 }

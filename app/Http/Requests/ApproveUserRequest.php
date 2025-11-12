@@ -12,6 +12,27 @@ use App\Models\User;
 class ApproveUserRequest extends FormRequest
 {
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $user = $this->route('user');
+        $routeName = optional($this->route())->getName();
+        $action = $routeName === 'admin.users.reject' ? 'reject' : 'approve';
+
+        if ($user instanceof User) {
+            $this->merge([
+                'user_id' => $user->getKey(),
+                'action' => $action,
+            ]);
+
+            if ($action === 'reject' && !$this->filled('reason')) {
+                $this->merge(['reason' => 'Rechazado por el administrador.']);
+            }
+        }
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -60,8 +81,7 @@ class ApproveUserRequest extends FormRequest
             'reason' => [
                 'nullable',
                 'string',
-                'max:500',
-                'required_if:action,reject'
+                'max:500'
             ]
         ];
     }
