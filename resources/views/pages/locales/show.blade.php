@@ -9,13 +9,13 @@ $owner = $store->owner;
 $localesIndexRoute = route('locales.index');
 @endphp
 
-@section('title', $store->nombre . ' - Shopping Rosario')
-@section('meta_description', 'Conocé las promociones y datos de ' . $store->nombre . ' en Shopping Rosario.')
+@section('title', $store->name . ' - Shopping Rosario')
+@section('meta_description', 'Conocé las promociones y datos de ' . $store->name . ' en Shopping Rosario.')
 
 @section('content')
 <x-layout.breadcrumbs :items="[
         ['label' => 'Locales', 'url' => $localesIndexRoute],
-        ['label' => $store->nombre]
+        ['label' => $store->name]
     ]" />
 
 <section class="py-4">
@@ -23,22 +23,21 @@ $localesIndexRoute = route('locales.index');
     <div class="row">
       <div class="col-lg-6 mb-4">
         <div class="ratio ratio-4x3 bg-light rounded">
-          <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen de {{ $store->nombre }}">
+          <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen de {{ $store->name }}">
         </div>
       </div>
       <div class="col-lg-6 mb-4">
         <div class="detail-info p-4 bg-white rounded shadow-sm h-100">
           <div class="d-flex justify-content-between align-items-start mb-3">
-            <h2 class="mb-0">{{ $store->nombre }}</h2>
-            <span class="badge bg-info fs-6">Código: {{ sprintf('%03d', $store->codigo) }}</span>
+            <h2 class="mb-0">{{ $store->name }}</h2>
           </div>
           <div class="mb-3 d-flex gap-2 flex-wrap">
-            <span class="badge bg-primary text-uppercase">{{ $store->rubro }}</span>
+            <span class="badge bg-primary text-uppercase">{{ $store->category }}</span>
             <span class="badge bg-success"><i class="bi bi-star-fill"></i> {{ $promotionCount }} {{ Str::plural('promoción', $promotionCount) }} activa{{ $promotionCount === 1 ? '' : 's' }}</span>
           </div>
-          <p class="lead mb-4">Local especializado en {{ Str::lower($store->rubro) }} dentro del Shopping Rosario.</p>
+          <p class="lead mb-4">Local especializado en {{ Str::lower($store->category) }} dentro del Shopping Rosario.</p>
 
-          <div class="info-item mb-2"><i class="bi bi-geo-alt-fill"></i> <strong>Ubicación:</strong> <span class="ms-1">{{ $store->ubicacion }}</span></div>
+          <div class="info-item mb-2"><i class="bi bi-geo-alt-fill"></i> <strong>Ubicación:</strong> <span class="ms-1">{{ $store->location }}</span></div>
 
           @if($store->owners->count() > 0)
             <div class="info-item mb-2">
@@ -68,8 +67,12 @@ $localesIndexRoute = route('locales.index');
         <div class="card shadow-sm">
           <div class="card-body">
             <h4 class="card-title mb-3"><i class="bi bi-info-circle"></i> Sobre el local</h4>
-            <p>{{ $store->nombre }} ofrece propuestas de {{ Str::lower($store->rubro) }} diseñadas para los visitantes del Shopping Rosario.</p>
-            <p class="mb-0">Consultá sus promociones activas y planificá tu próxima compra con beneficios exclusivos.</p>
+            @if($store->description)
+              <p>{{ $store->description }}</p>
+            @else
+              <p>{{ $store->name }} ofrece propuestas de {{ Str::lower($store->category) }} diseñadas para los visitantes del Shopping Rosario.</p>
+              <p class="mb-0">Consultá sus promociones activas y planificá tu próxima compra con beneficios exclusivos.</p>
+            @endif
           </div>
         </div>
       </div>
@@ -83,23 +86,23 @@ $localesIndexRoute = route('locales.index');
 
       @forelse($promotions as $promotion)
         @php
-          $days = collect($promotion->dias_semana ?? [])->map(fn ($value) => (bool) $value)->pad(7, false)->take(7)->values();
-          $daysToExpire = now()->diffInDays($promotion->fecha_hasta, false);
+          $days = collect($promotion->weekdays ?? [])->map(fn ($value) => (bool) $value)->pad(7, false)->take(7)->values();
+          $daysToExpire = now()->diffInDays($promotion->end_date, false);
         @endphp
         <div class="col-md-6 col-lg-4 mb-4">
-          <article class="card promo-card h-100 border-0 shadow-sm" data-category="{{ strtolower($promotion->categoria_minima) }}">
+          <article class="card promo-card h-100 border-0 shadow-sm" data-category="{{ strtolower($promotion->minimum_category) }}">
             <div class="position-relative">
               @if($daysToExpire >= 0 && $daysToExpire <= 5)
                 <span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="bi bi-exclamation-triangle-fill"></i> Por vencer</span>
               @endif
               <a href="{{ route('promociones.show', $promotion) }}" class="ratio ratio-4x3 bg-light d-block">
-                <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $promotion->texto }}">
+                <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $promotion->description }}">
               </a>
             </div>
             <div class="card-body">
-              <span class="badge text-uppercase mb-2 badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span>
-              <h5 class="card-title">{{ Str::limit($promotion->texto, 80) }}</h5>
-              <p class="small mb-2"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $promotion->fecha_hasta->format('d/m/Y') }}</p>
+              <span class="badge text-uppercase mb-2 badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span>
+              <h5 class="card-title">{{ Str::limit($promotion->description, 80) }}</h5>
+              <p class="small mb-2"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $promotion->end_date->format('d/m/Y') }}</p>
               <div class="promo-days">
                 @foreach($dayLabels as $index => $label)
                   <span class="{{ $days[$index] ? 'active' : '' }}">{{ $label }}</span>

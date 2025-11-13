@@ -51,7 +51,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
         
         Fortify::registerView(function () {
-            $stores = \App\Models\Store::orderBy('nombre')->get();
+            $stores = \App\Models\Store::orderBy('name')->get();
             return view('auth.register', compact('stores'));
         });
         

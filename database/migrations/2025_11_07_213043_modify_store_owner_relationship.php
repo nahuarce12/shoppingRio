@@ -27,7 +27,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('store_id')
                 ->nullable()
-                ->after('tipo_usuario')
+                ->after('user_type')
                 ->constrained('stores')
                 ->onDelete('cascade');
             
@@ -49,7 +49,7 @@ return new class extends Migration
 
         Schema::table('stores', function (Blueprint $table) {
             $table->foreignId('owner_id')
-                ->after('rubro')
+                ->after('category')
                 ->constrained('users')
                 ->onDelete('cascade');
             

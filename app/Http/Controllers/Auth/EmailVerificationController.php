@@ -44,7 +44,7 @@ class EmailVerificationController extends Controller
      */
     protected function redirectByUserType($user): RedirectResponse
     {
-        return match($user->tipo_usuario) {
+        return match($user->user_type) {
             'administrador' => redirect()->route('admin.dashboard')->with('success', '¡Email verificado exitosamente!'),
             'dueño de local' => redirect()->route('store.dashboard')->with('success', '¡Email verificado exitosamente!'),
             'cliente' => redirect()->route('client.dashboard')->with('success', '¡Email verificado exitosamente!'),

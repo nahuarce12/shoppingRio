@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             
             // Sequential unique code for store identification
-            $table->unsignedInteger('codigo')->unique()->index();
+            $table->unsignedInteger('code')->unique()->index();
             
             // Store basic information
-            $table->string('nombre', 100);
-            $table->string('ubicacion', 50);
-            $table->string('rubro', 20); // e.g., 'indumentaria', 'perfumeria', 'óptica', 'comida'
+            $table->string('name', 100);
+            $table->string('location', 50);
+            $table->string('category', 20); // e.g., 'indumentaria', 'perfumeria', 'óptica', 'comida'
             
             // Foreign key to store owner (user with tipo_usuario = 'dueño de local')
             $table->foreignId('owner_id')
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->softDeletes(); // Soft delete to preserve historical data
             
             // Indexes for performance
-            $table->index('rubro');
+            $table->index('category');
             $table->index('owner_id');
         });
     }

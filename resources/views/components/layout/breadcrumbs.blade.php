@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 $homeUrl = Route::has('home.index') ? route('home.index') : url('/');
 @endphp
 
-<nav aria-label="breadcrumb" class="bg-light border-bottom py-2">
+<nav aria-label="breadcrumb" class="border-bottom py-2">
   <div class="container">
     <ol class="breadcrumb mb-0">
       <li class="breadcrumb-item"><a href="{{ $homeUrl }}">Inicio</a></li>

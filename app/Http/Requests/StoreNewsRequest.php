@@ -28,7 +28,12 @@ class StoreNewsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'texto' => [
+            'title' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+            'description' => [
                 'required',
                 'string',
                 'max:200'
@@ -39,21 +44,21 @@ class StoreNewsRequest extends FormRequest
                 'mimes:jpeg,jpg,png,gif',
                 'max:2048' // 2MB max
             ],
-            'fecha_desde' => [
+            'start_date' => [
                 'required',
                 'date',
                 'after_or_equal:today'
             ],
-            'fecha_hasta' => [
+            'end_date' => [
                 'required',
                 'date',
                 'after_or_equal:fecha_desde',
                 function ($attribute, $value, $fail) {
-                    if (!$this->fecha_desde) {
+                    if (!$this->start_date) {
                         return;
                     }
                     
-                    $fechaDesde = Carbon::parse($this->fecha_desde);
+                    $fechaDesde = Carbon::parse($this->start_date);
                     $fechaHasta = Carbon::parse($value);
                     
                     // Check minimum duration (at least 1 day)
@@ -69,7 +74,7 @@ class StoreNewsRequest extends FormRequest
                     }
                 }
             ],
-            'categoria_destino' => [
+            'target_category' => [
                 'required',
                 'string',
                 'in:Inicial,Medium,Premium'
@@ -114,11 +119,11 @@ class StoreNewsRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'texto' => 'news text',
+            'description' => 'news text',
             'imagen' => 'news image',
-            'fecha_desde' => 'start date',
-            'fecha_hasta' => 'end date',
-            'categoria_destino' => 'target category'
+            'start_date' => 'start date',
+            'end_date' => 'end date',
+            'target_category' => 'target category'
         ];
     }
 

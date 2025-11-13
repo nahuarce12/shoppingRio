@@ -28,8 +28,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'tipo_usuario' => 'cliente',
-            'categoria_cliente' => 'Inicial',
+            'user_type' => 'cliente',
+            'client_category' => 'Inicial',
             'approved_at' => now(),
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),
@@ -52,8 +52,8 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'tipo_usuario' => 'administrador',
-            'categoria_cliente' => null,
+            'user_type' => 'administrador',
+            'client_category' => null,
             'approved_at' => now(),
             'email_verified_at' => now(),
         ]);
@@ -65,8 +65,8 @@ class UserFactory extends Factory
     public function storeOwner(): static
     {
         return $this->state(fn (array $attributes) => [
-            'tipo_usuario' => 'dueño de local',
-            'categoria_cliente' => null,
+            'user_type' => 'dueño de local',
+            'client_category' => null,
             'approved_at' => now(),
             'email_verified_at' => now(),
         ]);
@@ -78,8 +78,8 @@ class UserFactory extends Factory
     public function pendingStoreOwner(): static
     {
         return $this->state(fn (array $attributes) => [
-            'tipo_usuario' => 'dueño de local',
-            'categoria_cliente' => null,
+            'user_type' => 'dueño de local',
+            'client_category' => null,
             'approved_at' => null,
             'email_verified_at' => now(),
         ]);
@@ -91,8 +91,8 @@ class UserFactory extends Factory
     public function client(string $category = 'Inicial'): static
     {
         return $this->state(fn (array $attributes) => [
-            'tipo_usuario' => 'cliente',
-            'categoria_cliente' => $category,
+            'user_type' => 'cliente',
+            'client_category' => $category,
             'approved_at' => now(),
         ]);
     }

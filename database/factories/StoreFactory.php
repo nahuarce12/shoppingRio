@@ -52,9 +52,9 @@ class StoreFactory extends Factory
         ];
 
         return [
-            'nombre' => fake()->company() . ' ' . fake()->randomElement(['Store', 'Shop', 'Boutique', 'Gallery', 'Center']),
-            'ubicacion' => fake()->randomElement($ubicaciones),
-            'rubro' => fake()->randomElement($rubros),
+            'name' => fake()->company() . ' ' . fake()->randomElement(['Store', 'Shop', 'Boutique', 'Gallery', 'Center']),
+            'location' => fake()->randomElement($ubicaciones),
+            'category' => fake()->randomElement($rubros),
         ];
     }
 
@@ -64,7 +64,7 @@ class StoreFactory extends Factory
     public function rubro(string $rubro): static
     {
         return $this->state(fn (array $attributes) => [
-            'rubro' => $rubro,
+            'category' => $rubro,
         ]);
     }
 
@@ -74,8 +74,8 @@ class StoreFactory extends Factory
     public function indumentaria(): static
     {
         return $this->state(fn (array $attributes) => [
-            'rubro' => 'indumentaria',
-            'nombre' => fake()->randomElement([
+            'category' => 'indumentaria',
+            'name' => fake()->randomElement([
                 'Fashion Store',
                 'Elegance Boutique',
                 'Style Gallery',
@@ -91,14 +91,14 @@ class StoreFactory extends Factory
     public function comida(): static
     {
         return $this->state(fn (array $attributes) => [
-            'rubro' => 'comida',
-            'ubicacion' => fake()->randomElement([
+            'category' => 'comida',
+            'location' => fake()->randomElement([
                 'Patio de Comidas - Local PC1',
                 'Patio de Comidas - Local PC2',
                 'Patio de Comidas - Local PC3',
                 'Patio de Comidas - Local PC4',
             ]),
-            'nombre' => fake()->randomElement([
+            'name' => fake()->randomElement([
                 'Burger House',
                 'Pizza Express',
                 'Sushi Bar',
@@ -114,8 +114,8 @@ class StoreFactory extends Factory
     public function tecnologia(): static
     {
         return $this->state(fn (array $attributes) => [
-            'rubro' => 'tecnologia',
-            'nombre' => fake()->randomElement([
+            'category' => 'tecnologia',
+            'name' => fake()->randomElement([
                 'TechWorld',
                 'Digital Store',
                 'Gadget Center',

@@ -35,7 +35,7 @@ class PromotionApprovalController extends Controller
     public function show(Promotion $promotion)
     {
         // Only show pending promotions
-        if ($promotion->estado !== 'pendiente') {
+        if ($promotion->status !== 'pendiente') {
             return redirect()
                 ->route('admin.dashboard', ['section' => 'aprobar-promociones'])
                 ->with('info', 'Esta promoción ya fue procesada.');
@@ -51,7 +51,7 @@ class PromotionApprovalController extends Controller
      */
     public function approve(UpdatePromotionStatusRequest $request, Promotion $promotion)
     {
-        if ($promotion->estado !== 'pendiente') {
+        if ($promotion->status !== 'pendiente') {
             return redirect()
                 ->route('admin.dashboard', ['section' => 'aprobar-promociones'])
                 ->with('error', 'Esta promoción ya fue procesada anteriormente.');
@@ -62,7 +62,7 @@ class PromotionApprovalController extends Controller
         if ($success) {
             return redirect()
                 ->route('admin.dashboard', ['section' => 'aprobar-promociones'])
-                ->with('success', "Promoción '{$promotion->texto}' aprobada exitosamente. Se envió notificación al local.");
+                ->with('success', "Promoción '{$promotion->description}' aprobada exitosamente. Se envió notificación al local.");
         }
 
         return redirect()
@@ -75,7 +75,7 @@ class PromotionApprovalController extends Controller
      */
     public function deny(UpdatePromotionStatusRequest $request, Promotion $promotion)
     {
-        if ($promotion->estado !== 'pendiente') {
+        if ($promotion->status !== 'pendiente') {
             return redirect()
                 ->route('admin.dashboard', ['section' => 'aprobar-promociones'])
                 ->with('error', 'Esta promoción ya fue procesada anteriormente.');
@@ -88,7 +88,7 @@ class PromotionApprovalController extends Controller
         if ($success) {
             return redirect()
                 ->route('admin.dashboard', ['section' => 'aprobar-promociones'])
-                ->with('success', "Promoción '{$promotion->texto}' denegada. Se envió notificación al local con el motivo.");
+                ->with('success', "Promoción '{$promotion->description}' denegada. Se envió notificación al local con el motivo.");
         }
 
         return redirect()

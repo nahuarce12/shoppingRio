@@ -28,26 +28,31 @@ class StorePromotionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'texto' => [
+            'title' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+            'description' => [
                 'required',
                 'string',
                 'max:200'
             ],
-            'fecha_desde' => [
+            'start_date' => [
                 'required',
                 'date',
                 'after_or_equal:today'
             ],
-            'fecha_hasta' => [
+            'end_date' => [
                 'required',
                 'date',
                 'after_or_equal:fecha_desde',
                 function ($attribute, $value, $fail) {
-                    if (!$this->fecha_desde) {
+                    if (!$this->start_date) {
                         return;
                     }
                     
-                    $fechaDesde = Carbon::parse($this->fecha_desde);
+                    $fechaDesde = Carbon::parse($this->start_date);
                     $fechaHasta = Carbon::parse($value);
                     $maxDuration = config('shopping.promotion.max_duration_days', 365);
                     
@@ -56,7 +61,7 @@ class StorePromotionRequest extends FormRequest
                     }
                 }
             ],
-            'dias_semana' => [
+            'weekdays' => [
                 'required',
                 'array',
                 'size:7',
@@ -86,7 +91,7 @@ class StorePromotionRequest extends FormRequest
                 'required',
                 'boolean'
             ],
-            'categoria_minima' => [
+            'minimum_category' => [
                 'required',
                 'string',
                 'in:Inicial,Medium,Premium'
@@ -166,11 +171,11 @@ class StorePromotionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'texto' => 'promotion description',
-            'fecha_desde' => 'start date',
-            'fecha_hasta' => 'end date',
-            'dias_semana' => 'days of the week',
-            'categoria_minima' => 'minimum category',
+            'description' => 'promotion description',
+            'start_date' => 'start date',
+            'end_date' => 'end date',
+            'weekdays' => 'days of the week',
+            'minimum_category' => 'minimum category',
             'imagen' => 'promotion image',
             'store_id' => 'store'
         ];
@@ -189,16 +194,16 @@ class StorePromotionRequest extends FormRequest
         }
 
         // Convert dias_semana values to boolean if they come as strings or integers
-        if ($this->has('dias_semana') && is_array($this->dias_semana)) {
+        if ($this->has('weekdays') && is_array($this->weekdays)) {
             $diasSemana = [];
-            foreach ($this->dias_semana as $day) {
+            foreach ($this->weekdays as $day) {
                 if (is_string($day)) {
                     $diasSemana[] = filter_var($day, FILTER_VALIDATE_BOOLEAN);
                 } else {
                     $diasSemana[] = (bool) $day;
                 }
             }
-            $this->merge(['dias_semana' => $diasSemana]);
+            $this->merge(['weekdays' => $diasSemana]);
         }
     }
 }

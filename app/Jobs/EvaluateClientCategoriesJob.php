@@ -66,7 +66,7 @@ class EvaluateClientCategoriesJob implements ShouldQueue
 
         try {
             // Get all clients (tipo_usuario = 'cliente')
-            $clients = User::where('tipo_usuario', 'cliente')
+            $clients = User::where('user_type', 'cliente')
                 ->whereNotNull('email_verified_at') // Only verified clients
                 ->get();
 
@@ -77,7 +77,7 @@ class EvaluateClientCategoriesJob implements ShouldQueue
                     $stats['evaluated']++;
 
                     // Store old category for upgrade tracking
-                    $oldCategory = $client->categoria_cliente;
+                    $oldCategory = $client->client_category;
 
                     // Evaluate client for potential upgrade
                     $result = $categoryUpgradeService->evaluateClient($client);

@@ -10,7 +10,7 @@ $totalRequests = $usageSummary['total'] ?? 0;
 $acceptedCount = $usageSummary['accepted'] ?? 0;
 $rejectedCount = $usageSummary['rejected'] ?? 0;
 $uniqueClients = $usageSummary['unique_clients'] ?? 0;
-$defaultDays = old('dias_semana', array_fill(0, 7, 1));
+$defaultDays = old('weekdays', array_fill(0, 7, 1));
 $ownerUsage = $ownerReport['usage_requests'] ?? [
   'total' => $totalRequests,
   'pending' => $pendingCount,
@@ -28,7 +28,7 @@ $ownerPromotions = $ownerReport['promotions'] ?? [
   'denied' => $promotionStats['denegada'] ?? 0,
 ];
 $topPromotion = $recentPromotions->sortByDesc('accepted_usages_count')->first();
-if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 'dias_semana'])) {
+if ($errors->hasAny(['description', 'start_date', 'end_date', 'minimum_category', 'weekdays'])) {
   $section = 'crear-promocion';
 }
 @endphp
@@ -48,8 +48,8 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
             <div class="mb-3">
               <i class="bi bi-building" style="font-size: 5rem; color: var(--primary-color);"></i>
             </div>
-            <h2 class="h5">{{ $store->nombre }}</h2>
-            <p class="text-muted mb-2">Código: {{ str_pad($store->codigo ?? $store->id, 3, '0', STR_PAD_LEFT) }}</p>
+            <h2 class="h5">{{ $store->name }}</h2>
+            <p class="text-muted mb-2">Código: {{ str_pad($store->code ?? $store->id, 3, '0', STR_PAD_LEFT) }}</p>
             <p class="text-muted mb-2">{{ auth()->user()->name }} (Dueño/a)</p>
             <span class="badge bg-success">Cuenta Activa</span>
 
@@ -145,18 +145,18 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                   <tbody>
                     @foreach ($recentPromotions as $promo)
                     @php
-                      $estadoBadge = match($promo->estado) {
+                      $estadoBadge = match($promo->status) {
                         'pendiente' => 'bg-warning text-dark',
                         'aprobada' => 'bg-success',
                         'denegada' => 'bg-danger',
                         default => 'bg-secondary'
                       };
-                      $estadoText = ucfirst($promo->estado);
+                      $estadoText = ucfirst($promo->status);
                     @endphp
                     <tr>
-                      <td>{{ Str::limit($promo->texto, 40) }}</td>
-                      <td><span class="badge badge-{{ strtolower($promo->categoria_minima) }}">{{ $promo->categoria_minima }}</span></td>
-                      <td>{{ $promo->fecha_hasta->format('d/m/Y') }}</td>
+                      <td>{{ Str::limit($promo->description, 40) }}</td>
+                      <td><span class="badge badge-{{ strtolower($promo->minimum_category) }}">{{ $promo->minimum_category }}</span></td>
+                      <td>{{ $promo->end_date->format('d/m/Y') }}</td>
                       <td>
                         <span class="badge {{ $estadoBadge }}">{{ $estadoText }}</span>
                       </td>
@@ -196,35 +196,35 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                 <div class="row">
                   <div class="col-md-12 mb-3">
                     <label class="form-label">Descripción de la Promoción *</label>
-                    <textarea class="form-control @error('texto') is-invalid @enderror" name="texto" rows="3" maxlength="200" placeholder="Ej: 50% OFF en segunda unidad" required>{{ old('texto') }}</textarea>
-                    <div class="form-text"><span id="dashboard-char-count">{{ strlen(old('texto', '')) }}</span>/200 caracteres. Incluí condiciones y restricciones.</div>
-                    @error('texto')
+                    <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="3" maxlength="200" placeholder="Ej: 50% OFF en segunda unidad" required>{{ old('description') }}</textarea>
+                    <div class="form-text"><span id="dashboard-char-count">{{ strlen(old('description', '')) }}</span>/200 caracteres. Incluí condiciones y restricciones.</div>
+                    @error('description')
                       <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                   </div>
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Categoría de Cliente *</label>
-                    <select class="form-select @error('categoria_minima') is-invalid @enderror" name="categoria_minima" required>
+                    <select class="form-select @error('minimum_category') is-invalid @enderror" name="minimum_category" required>
                       <option value="">Seleccionar categoría...</option>
-                      <option value="Inicial" {{ old('categoria_minima') === 'Inicial' ? 'selected' : '' }}>Inicial</option>
-                      <option value="Medium" {{ old('categoria_minima') === 'Medium' ? 'selected' : '' }}>Medium</option>
-                      <option value="Premium" {{ old('categoria_minima') === 'Premium' ? 'selected' : '' }}>Premium</option>
+                      <option value="Inicial" {{ old('minimum_category') === 'Inicial' ? 'selected' : '' }}>Inicial</option>
+                      <option value="Medium" {{ old('minimum_category') === 'Medium' ? 'selected' : '' }}>Medium</option>
+                      <option value="Premium" {{ old('minimum_category') === 'Premium' ? 'selected' : '' }}>Premium</option>
                     </select>
-                    @error('categoria_minima')
+                    @error('minimum_category')
                       <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                   </div>
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Válido Desde *</label>
-                    <input type="date" class="form-control @error('fecha_desde') is-invalid @enderror" name="fecha_desde" value="{{ old('fecha_desde', now()->format('Y-m-d')) }}" min="{{ now()->format('Y-m-d') }}" required>
-                    @error('fecha_desde')
+                    <input type="date" class="form-control @error('start_date') is-invalid @enderror" name="start_date" value="{{ old('start_date', now()->format('Y-m-d')) }}" min="{{ now()->format('Y-m-d') }}" required>
+                    @error('start_date')
                       <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                   </div>
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Válido Hasta *</label>
-                    <input type="date" class="form-control @error('fecha_hasta') is-invalid @enderror" name="fecha_hasta" value="{{ old('fecha_hasta') }}" min="{{ now()->format('Y-m-d') }}" required>
-                    @error('fecha_hasta')
+                    <input type="date" class="form-control @error('end_date') is-invalid @enderror" name="end_date" value="{{ old('end_date') }}" min="{{ now()->format('Y-m-d') }}" required>
+                    @error('end_date')
                       <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                   </div>
@@ -234,7 +234,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                       @foreach (['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as $index => $dia)
                       <div class="form-check form-check-inline">
                         <input type="hidden" name="dias_semana[{{ $index }}]" value="0">
-                        <input class="form-check-input day-checkbox @error('dias_semana') is-invalid @enderror" type="checkbox" id="dashboard-dia-{{ $index }}" name="dias_semana[{{ $index }}]" value="1" {{ (!empty($defaultDays[$index]) && (int) $defaultDays[$index] === 1) ? 'checked' : '' }}>
+                        <input class="form-check-input day-checkbox @error('weekdays') is-invalid @enderror" type="checkbox" id="dashboard-dia-{{ $index }}" name="dias_semana[{{ $index }}]" value="1" {{ (!empty($defaultDays[$index]) && (int) $defaultDays[$index] === 1) ? 'checked' : '' }}>
                         <label class="form-check-label" for="dashboard-dia-{{ $index }}">{{ $dia }}</label>
                       </div>
                       @endforeach
@@ -242,7 +242,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                     <div id="dashboard-days-error" class="invalid-feedback" style="display: none;">
                       Debes seleccionar al menos un día.
                     </div>
-                    @error('dias_semana')
+                    @error('weekdays')
                       <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                   </div>
@@ -286,10 +286,10 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                         <i class="bi bi-person-circle"></i> {{ $solicitud->client->name }}<br>
                         <small class="text-muted">{{ $solicitud->client->email }}</small>
                       </td>
-                      <td>{{ Str::limit($solicitud->promotion->texto, 40) }}</td>
-                      <td>{{ $solicitud->fecha_uso->format('d/m/Y H:i') }}</td>
+                      <td>{{ Str::limit($solicitud->promotion->description, 40) }}</td>
+                      <td>{{ $solicitud->usage_date->format('d/m/Y H:i') }}</td>
                       <td class="text-center">
-                        @if($solicitud->codigo_qr)
+                        @if($solicitud->code_qr)
                           <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#qrModalStore{{ $solicitud->id }}">
                             <i class="bi bi-qr-code"></i>
                           </button>
@@ -314,7 +314,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                     </tr>
 
                     <!-- Modal QR para dueño -->
-                    @if($solicitud->codigo_qr)
+                    @if($solicitud->code_qr)
                     <div class="modal fade" id="qrModalStore{{ $solicitud->id }}" tabindex="-1" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
@@ -327,7 +327,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                               <img src="{{ $solicitud->getQrCodeBase64() }}" alt="QR Code" class="img-fluid" style="max-width: 250px;">
                             </div>
                             <div class="alert alert-secondary mb-2">
-                              <strong>Código:</strong> <code>{{ $solicitud->codigo_qr }}</code>
+                              <strong>Código:</strong> <code>{{ $solicitud->code_qr }}</code>
                             </div>
                             <p class="mb-1"><strong>Cliente:</strong> {{ $solicitud->client->name }}</p>
                             <p class="text-muted"><small>{{ $solicitud->client->email }}</small></p>
@@ -368,7 +368,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                   <select class="form-select">
                     <option value="">Todas</option>
                     @foreach($recentPromotions as $promo)
-                      <option value="{{ $promo->id }}">{{ Str::limit($promo->texto, 40) }}</option>
+                      <option value="{{ $promo->id }}">{{ Str::limit($promo->description, 40) }}</option>
                     @endforeach
                   </select>
                 </div>
@@ -413,7 +413,7 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
               <h3 class="h6">Promoción Más Usada</h3>
               @if($topPromotion && $topPromotion->accepted_usages_count > 0)
                 <div class="alert alert-success">
-                  <strong>{{ Str::limit($topPromotion->texto, 80) }}</strong><br>
+                  <strong>{{ Str::limit($topPromotion->description, 80) }}</strong><br>
                   Utilizada {{ $topPromotion->accepted_usages_count }} {{ Str::plural('vez', $topPromotion->accepted_usages_count) }}.
                 </div>
               @else
@@ -441,9 +441,9 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                             <strong>{{ $usage->client?->name ?? 'Cliente eliminado' }}</strong><br>
                             <small class="text-muted">{{ $usage->client?->email ?? 'Sin email' }}</small>
                           </td>
-                          <td>{{ Str::limit($usage->promotion?->texto ?? 'Promoción eliminada', 60) }}</td>
+                          <td>{{ Str::limit($usage->promotion?->description ?? 'Promoción eliminada', 60) }}</td>
                           <td>
-                            @switch($usage->estado)
+                            @switch($usage->status)
                               @case('aceptada')
                                 <span class="badge bg-success">Aceptada</span>
                                 @break
@@ -454,10 +454,10 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                                 <span class="badge bg-warning text-dark">Pendiente</span>
                                 @break
                               @default
-                                <span class="badge bg-secondary">{{ ucfirst($usage->estado ?? 'desconocido') }}</span>
+                                <span class="badge bg-secondary">{{ ucfirst($usage->status ?? 'desconocido') }}</span>
                             @endswitch
                           </td>
-                          <td>{{ optional($usage->fecha_uso)->format('d/m/Y') ?? $usage->created_at->format('d/m/Y H:i') }}</td>
+                          <td>{{ optional($usage->usage_date)->format('d/m/Y') ?? $usage->created_at->format('d/m/Y H:i') }}</td>
                         </tr>
                       @endforeach
                     </tbody>
@@ -485,17 +485,17 @@ if ($errors->hasAny(['texto', 'fecha_desde', 'fecha_hasta', 'categoria_minima', 
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre del Local</label>
-                    <input type="text" class="form-control" name="nombre" value="{{ $store->nombre }}" readonly>
+                    <input type="text" class="form-control" name="name" value="{{ $store->name }}" readonly>
                     <small class="text-muted">Solo el administrador puede cambiar el nombre del local.</small>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Rubro</label>
-                    <input type="text" class="form-control" value="{{ $store->rubro }}" readonly>
+                    <input type="text" class="form-control" value="{{ $store->category }}" readonly>
                     <small class="text-muted">Solo el administrador puede cambiar el rubro.</small>
                   </div>
                   <div class="col-md-12 mb-3">
                     <label class="form-label">Ubicación</label>
-                    <input type="text" class="form-control" value="{{ $store->ubicacion ?? 'No especificada' }}" readonly>
+                    <input type="text" class="form-control" value="{{ $store->location ?? 'No especificada' }}" readonly>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Email del Responsable</label>
@@ -549,10 +549,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('dashboard-promotion-form');
   const dayCheckboxes = form ? form.querySelectorAll('.day-checkbox') : [];
   const daysError = document.getElementById('dashboard-days-error');
-  const textoField = form ? form.querySelector('textarea[name="texto"]') : null;
+  const textoField = form ? form.querySelector('textarea[name="description"]') : null;
   const charCounter = document.getElementById('dashboard-char-count');
-  const fechaDesde = form ? form.querySelector('input[name="fecha_desde"]') : null;
-  const fechaHasta = form ? form.querySelector('input[name="fecha_hasta"]') : null;
+  const fechaDesde = form ? form.querySelector('input[name="start_date"]') : null;
+  const fechaHasta = form ? form.querySelector('input[name="end_date"]') : null;
 
   const validateDays = () => {
     if (!dayCheckboxes.length) {

@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Add tipo_usuario enum field
-            $table->enum('tipo_usuario', ['administrador', 'dueño de local', 'cliente'])
+            $table->enum('user_type', ['administrador', 'dueño de local', 'cliente'])
                 ->default('cliente')
                 ->after('password')
                 ->index();
             
             // Add categoria_cliente enum field (only for clients)
-            $table->enum('categoria_cliente', ['Inicial', 'Medium', 'Premium'])
+            $table->enum('client_category', ['Inicial', 'Medium', 'Premium'])
                 ->nullable()
                 ->default('Inicial')
-                ->after('tipo_usuario')
+                ->after('user_type')
                 ->index();
             
             // Add approval tracking for store owners
@@ -44,7 +44,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['approved_by']);
-            $table->dropColumn(['tipo_usuario', 'categoria_cliente', 'approved_at', 'approved_by']);
+            $table->dropColumn(['user_type', 'client_category', 'approved_at', 'approved_by']);
         });
     }
 };

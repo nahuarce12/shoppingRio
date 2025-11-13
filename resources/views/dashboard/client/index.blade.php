@@ -15,9 +15,9 @@
             <div class="mb-3">
               <i class="bi bi-person-circle" style="font-size: 5rem; color: var(--primary-color);"></i>
             </div>
-            <h2 class="h5">{{ $client->nombre }} {{ $client->apellido }}</h2>
+            <h2 class="h5">{{ $client->name }} {{ $client->apellido }}</h2>
             <p class="text-muted mb-2">{{ $client->email }}</p>
-            <span class="badge badge-{{ strtolower($client->categoria_cliente) }} badge-category fs-6">Cliente {{ $client->categoria_cliente }}</span>
+            <span class="badge badge-{{ strtolower($client->client_category) }} badge-category fs-6">Cliente {{ $client->client_category }}</span>
 
             <hr>
 
@@ -49,7 +49,7 @@
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <strong>Nombre Completo:</strong>
-                  <p class="mb-0">{{ $client->nombre }} {{ $client->apellido }}</p>
+                  <p class="mb-0">{{ $client->name }} {{ $client->apellido }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Email:</strong>
@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Categoría:</strong>
-                  <p class="mb-0"><span class="badge badge-{{ strtolower($client->categoria_cliente) }} badge-category">{{ $client->categoria_cliente }}</span></p>
+                  <p class="mb-0"><span class="badge badge-{{ strtolower($client->client_category) }} badge-category">{{ $client->client_category }}</span></p>
                 </div>
                 <div class="col-md-6 mb-3">
                   <strong>Miembro desde:</strong>
@@ -105,7 +105,7 @@
 
               <h3 class="h6">Progreso de Categoría</h3>
               @php
-                $currentCategory = $client->categoria_cliente;
+                $currentCategory = $client->client_category;
                 $totalUsed = $usageStats['aceptada'];
                 $mediumThreshold = config('shopping.category_thresholds.medium', 10);
                 $premiumThreshold = config('shopping.category_thresholds.premium', 25);
@@ -168,19 +168,19 @@
                         'aceptada' => ['label' => 'Aceptada', 'class' => 'success'],
                         'rechazada' => ['label' => 'Rechazada', 'class' => 'danger'],
                       ];
-                      $estado = $estadoLabels[$usage->estado] ?? ['label' => ucfirst($usage->estado), 'class' => 'secondary'];
+                      $estado = $estadoLabels[$usage->status] ?? ['label' => ucfirst($usage->status), 'class' => 'secondary'];
                     @endphp
                     <tr>
-                      <td>{{ $usage->fecha_uso->format('d/m/Y') }}</td>
-                      <td><i class="bi bi-shop"></i> {{ $usage->promotion->store->nombre }}</td>
-                      <td>{{ Str::limit($usage->promotion->texto, 40) }}</td>
+                      <td>{{ $usage->usage_date->format('d/m/Y') }}</td>
+                      <td><i class="bi bi-shop"></i> {{ $usage->promotion->store->name }}</td>
+                      <td>{{ Str::limit($usage->promotion->description, 40) }}</td>
                       <td><span class="badge bg-{{ $estado['class'] }}">{{ $estado['label'] }}</span></td>
                       <td class="text-center">
-                        @if($usage->codigo_qr && $usage->estado === 'aceptada')
+                        @if($usage->code_qr && $usage->status === 'aceptada')
                           <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#qrModal{{ $usage->id }}">
                             <i class="bi bi-qr-code"></i> Ver QR
                           </button>
-                        @elseif($usage->estado === 'enviada')
+                        @elseif($usage->status === 'enviada')
                           <small class="text-muted">Pendiente</small>
                         @else
                           <small class="text-muted">—</small>
@@ -189,7 +189,7 @@
                     </tr>
 
                     <!-- Modal para mostrar QR -->
-                    @if($usage->codigo_qr && $usage->estado === 'aceptada')
+                    @if($usage->code_qr && $usage->status === 'aceptada')
                     <div class="modal fade" id="qrModal{{ $usage->id }}" tabindex="-1" aria-labelledby="qrModalLabel{{ $usage->id }}" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
@@ -204,13 +204,13 @@
                               <img src="{{ $usage->getQrCodeBase64() }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
                             </div>
                             <div class="alert alert-info">
-                              <strong>Código:</strong> {{ $usage->codigo_qr }}
+                              <strong>Código:</strong> {{ $usage->code_qr }}
                             </div>
                             <p class="text-muted mb-2">
-                              <strong>Local:</strong> {{ $usage->promotion->store->nombre }}
+                              <strong>Local:</strong> {{ $usage->promotion->store->name }}
                             </p>
                             <p class="text-muted mb-2">
-                              <strong>Promoción:</strong> {{ $usage->promotion->texto }}
+                              <strong>Promoción:</strong> {{ $usage->promotion->description }}
                             </p>
                             <p class="text-muted mb-0">
                               <small>Mostrá este código en el local para usar tu descuento</small>
@@ -247,7 +247,7 @@
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre</label>
-                    <input type="text" class="form-control" value="{{ $client->nombre }}">
+                    <input type="text" class="form-control" value="{{ $client->name }}">
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Apellido</label>

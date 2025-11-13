@@ -36,12 +36,12 @@ class DashboardController extends Controller
         // Promotion statistics
         $promotionStats = [
             'total' => $store->promotions()->count(),
-            'pendiente' => $store->promotions()->where('estado', 'pendiente')->count(),
-            'aprobada' => $store->promotions()->where('estado', 'aprobada')->count(),
+            'pendiente' => $store->promotions()->where('status', 'pendiente')->count(),
+            'aprobada' => $store->promotions()->where('status', 'aprobada')->count(),
             'active' => $store->promotions()
-                ->where('estado', 'aprobada')
-                ->where('fecha_desde', '<=', now())
-                ->where('fecha_hasta', '>=', now())
+                ->where('status', 'aprobada')
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
                 ->count(),
         ];
 
@@ -68,7 +68,7 @@ class DashboardController extends Controller
             ->whereHas('promotion', function ($query) use ($store) {
                 $query->where('store_id', $store->id);
             })
-            ->orderByDesc('fecha_uso')
+            ->orderByDesc('usage_date')
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
@@ -76,7 +76,7 @@ class DashboardController extends Controller
         // Recent promotions
         $recentPromotions = $store->promotions()
             ->withCount(['usages as accepted_usages_count' => function ($query) {
-                $query->where('estado', 'aceptada');
+                $query->where('status', 'aceptada');
             }])
             ->orderBy('created_at', 'desc')
             ->limit(5)

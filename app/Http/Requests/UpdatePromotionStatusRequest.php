@@ -22,9 +22,9 @@ class UpdatePromotionStatusRequest extends FormRequest
         if ($promotion instanceof Promotion) {
             $this->merge([
                 'promotion_id' => $promotion->getKey(),
-                'estado' => $routeName === 'admin.promotions.approve'
+                'status' => $routeName === 'admin.promotions.approve'
                     ? 'aprobada'
-                    : ($routeName === 'admin.promotions.deny' ? 'denegada' : $this->input('estado')),
+                    : ($routeName === 'admin.promotions.deny' ? 'denegada' : $this->input('status')),
             ]);
         }
     }
@@ -58,13 +58,13 @@ class UpdatePromotionStatusRequest extends FormRequest
                     }
 
                     // Check if promotion is pending
-                    if ($promotion->estado !== 'pendiente') {
+                    if ($promotion->status !== 'pendiente') {
                         $fail('Only pending promotions can be approved or denied.');
                         return;
                     }
                 }
             ],
-            'estado' => [
+            'status' => [
                 'required',
                 'string',
                 'in:aprobada,denegada'
@@ -111,7 +111,7 @@ class UpdatePromotionStatusRequest extends FormRequest
     {
         return [
             'promotion_id' => 'promotion',
-            'estado' => 'approval status',
+            'status' => 'approval status',
             'admin_notes' => 'admin notes',
             'reason' => 'denial reason'
         ];

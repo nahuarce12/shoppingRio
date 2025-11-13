@@ -39,7 +39,7 @@ class GenerateQrCodesForExistingUsages extends Command
         $bar->start();
 
         foreach ($usagesWithoutQr as $usage) {
-            $usage->codigo_qr = PromotionUsage::generateUniqueQrCode();
+            $usage->code_qr = PromotionUsage::generateUniqueQrCode();
             $usage->save();
             $bar->advance();
         }

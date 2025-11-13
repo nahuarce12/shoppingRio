@@ -89,16 +89,16 @@ class ReportController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'store_id' => 'nullable|exists:stores,id',
-            'estado' => 'nullable|in:enviada,aceptada,rechazada',
+            'status' => 'nullable|in:enviada,aceptada,rechazada',
         ]);
 
-        $filters = $request->only(['start_date', 'end_date', 'store_id', 'estado']);
+        $filters = $request->only(['start_date', 'end_date', 'store_id', 'status']);
 
         $report = $this->reportService->getPromotionUsageReport(
             $filters['start_date'] ?? null,
             $filters['end_date'] ?? null,
             $filters['store_id'] ?? null,
-            $filters['estado'] ?? null
+            $filters['status'] ?? null
         );
 
         // Generate CSV
@@ -127,9 +127,9 @@ class ReportController extends Controller
             // Data rows
             foreach ($report['by_promotion'] as $item) {
                 fputcsv($file, [
-                    $item->codigo_promocion,
-                    $item->texto_promocion,
-                    $item->store->nombre,
+                    $item->code_promocion,
+                    $item->description_promocion,
+                    $item->store->name,
                     $item->total_requests,
                     $item->accepted_count,
                     $item->rejected_count,

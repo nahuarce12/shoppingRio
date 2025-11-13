@@ -100,9 +100,9 @@ class DatabaseSeeder extends Seeder
         // Set promotion states: 30 approved, 10 pending, 10 denied
         $allPromotions = $promotions->shuffle();
         
-        $allPromotions->take(30)->each(fn($promo) => $promo->update(['estado' => 'aprobada']));
-        $allPromotions->slice(30, 10)->each(fn($promo) => $promo->update(['estado' => 'pendiente']));
-        $allPromotions->slice(40, 10)->each(fn($promo) => $promo->update(['estado' => 'denegada']));
+        $allPromotions->take(30)->each(fn($promo) => $promo->update(['status' => 'aprobada']));
+        $allPromotions->slice(30, 10)->each(fn($promo) => $promo->update(['status' => 'pendiente']));
+        $allPromotions->slice(40, 10)->each(fn($promo) => $promo->update(['status' => 'denegada']));
 
         $this->command->info("✅ Created {$promotions->count()} promotions (30 approved, 10 pending, 10 denied)");
 
@@ -143,7 +143,7 @@ class DatabaseSeeder extends Seeder
         // ========================================
         $this->command->info('📋 Creating promotion usages...');
         
-        $approvedPromotions = Promotion::where('estado', 'aprobada')->get();
+        $approvedPromotions = Promotion::where('status', 'aprobada')->get();
         $usageCount = 0;
 
         // Create realistic usage patterns
@@ -154,7 +154,7 @@ class DatabaseSeeder extends Seeder
             // Get eligible promotions for this client's category
             $eligiblePromotions = $approvedPromotions->filter(function ($promo) use ($client) {
                 $categoryHierarchy = ['Inicial' => 0, 'Medium' => 1, 'Premium' => 2];
-                return $categoryHierarchy[$promo->categoria_minima] <= $categoryHierarchy[$client->categoria_cliente];
+                return $categoryHierarchy[$promo->minimum_category] <= $categoryHierarchy[$client->client_category];
             });
 
             if ($eligiblePromotions->isEmpty()) {

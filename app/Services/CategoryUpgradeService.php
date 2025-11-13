@@ -33,7 +33,7 @@ class CategoryUpgradeService
             ];
         }
 
-        $oldCategory = $client->categoria_cliente;
+        $oldCategory = $client->client_category;
 
         // Get accepted promotions count in last 6 months
         $usageService = new PromotionUsageService();
@@ -72,7 +72,7 @@ class CategoryUpgradeService
         try {
             DB::beginTransaction();
 
-            $client->categoria_cliente = $newCategory;
+            $client->client_category = $newCategory;
             $client->save();
 
             // Log the upgrade event
@@ -198,7 +198,7 @@ class CategoryUpgradeService
             'premium' => 15
         ]);
 
-        $currentCategory = $client->categoria_cliente;
+        $currentCategory = $client->client_category;
         $nextCategory = null;
         $neededCount = null;
 

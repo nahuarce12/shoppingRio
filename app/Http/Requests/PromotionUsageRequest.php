@@ -57,7 +57,7 @@ class PromotionUsageRequest extends FormRequest
                     }
 
                     // Check if promotion is approved
-                    if ($promotion->estado !== 'aprobada') {
+                    if ($promotion->status !== 'aprobada') {
                         $fail('This promotion is not approved yet.');
                         return;
                     }

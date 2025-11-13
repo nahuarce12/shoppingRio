@@ -55,12 +55,12 @@ class TestEmailTemplates extends Command
         $this->newLine();
 
         // Get test data
-        $testClient = User::where('tipo_usuario', 'cliente')->first();
-        $testStoreOwner = User::where('tipo_usuario', 'dueño de local')->where('approved_at', '!=', null)->first();
-        $testPendingOwner = User::where('tipo_usuario', 'dueño de local')->whereNull('approved_at')->first();
+        $testClient = User::where('user_type', 'cliente')->first();
+        $testStoreOwner = User::where('user_type', 'dueño de local')->where('approved_at', '!=', null)->first();
+        $testPendingOwner = User::where('user_type', 'dueño de local')->whereNull('approved_at')->first();
         $testStore = Store::first();
-        $testPromotion = Promotion::where('estado', 'aprobada')->first();
-        $testUsage = PromotionUsage::where('estado', 'enviada')->first();
+        $testPromotion = Promotion::where('status', 'aprobada')->first();
+        $testUsage = PromotionUsage::where('status', 'enviada')->first();
 
         if (!$testClient || !$testStoreOwner || !$testStore || !$testPromotion) {
             $this->error('❌ Test data not found. Please run: php artisan migrate:fresh --seed');

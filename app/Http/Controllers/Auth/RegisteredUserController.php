@@ -20,7 +20,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $stores = Store::orderBy('nombre')->get();
+        $stores = Store::orderBy('name')->get();
         return view('auth.register', compact('stores'));
     }
 
@@ -31,11 +31,11 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $tipoUsuario = $request->input('tipo_usuario');
+        $tipoUsuario = $request->input('user_type');
         $isStoreOwner = $tipoUsuario === 'dueño de local';
 
         $rules = [
-            'tipo_usuario' => ['required', 'in:cliente,dueño de local'],
+            'user_type' => ['required', 'in:cliente,dueño de local'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -46,7 +46,7 @@ class RegisteredUserController extends Controller
         }
 
         $validated = $request->validate($rules, [], [
-            'name' => 'nombre',
+            'name' => 'name',
             'email' => 'correo electrónico',
             'store_id' => 'local',
         ]);
@@ -55,8 +55,8 @@ class RegisteredUserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'tipo_usuario' => $tipoUsuario,
-            'categoria_cliente' => $tipoUsuario === 'cliente' ? 'Inicial' : null,
+            'user_type' => $tipoUsuario,
+            'client_category' => $tipoUsuario === 'cliente' ? 'Inicial' : null,
             'approved_at' => $tipoUsuario === 'cliente' ? now() : null,
             'store_id' => $isStoreOwner ? $validated['store_id'] : null,
         ]);
@@ -64,7 +64,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         // Only auto-login clients, store owners must wait for approval
-        if ($user->tipo_usuario === 'cliente') {
+        if ($user->user_type === 'cliente') {
             Auth::login($user);
             return redirect()->route('verification.notice');
         }

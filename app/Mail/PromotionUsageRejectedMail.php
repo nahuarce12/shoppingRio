@@ -30,7 +30,7 @@ class PromotionUsageRejectedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Promotion Request Update - ' . $this->usage->promotion->store->nombre,
+            subject: 'Promotion Request Update - ' . $this->usage->promotion->store->name,
         );
     }
 
@@ -51,9 +51,9 @@ class PromotionUsageRejectedMail extends Mailable
             view: 'emails.promotion-usage-rejected',
             with: [
                 'clientName' => $this->usage->client->name,
-                'storeName' => $this->usage->promotion->store->nombre,
-                'promotionText' => $this->usage->promotion->texto,
-                'promotionCode' => $this->usage->promotion->codigo,
+                'storeName' => $this->usage->promotion->store->name,
+                'promotionText' => $this->usage->promotion->description,
+                'promotionCode' => $this->usage->promotion->code,
                 'reason' => $this->reason ?? 'Unfortunately, the store could not approve your request at this time.',
                 'alternativePromotions' => $alternativePromotions,
                 'promotionsUrl' => url('/promotions'),

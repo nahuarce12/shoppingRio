@@ -71,9 +71,9 @@
     <div class="row g-4">
       @forelse($featuredPromotions as $promotion)
       <div class="col-md-6 col-lg-4">
-        <div class="card promo-card" data-category="{{ strtolower($promotion->categoria_minima) }}" data-local="{{ $promotion->store->nombre }}">
+        <div class="card promo-card" data-category="{{ strtolower($promotion->minimum_category) }}" data-local="{{ $promotion->store->name }}">
           @php
-            $daysUntilEnd = now()->diffInDays($promotion->fecha_hasta, false);
+            $daysUntilEnd = now()->diffInDays($promotion->end_date, false);
           @endphp
           @if($daysUntilEnd >= 0 && $daysUntilEnd <= 7)
           <span class="badge bg-danger promo-badge">
@@ -81,18 +81,18 @@
           </span>
           @endif
           <a href="{{ route('promociones.show', $promotion->id) }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción {{ $promotion->store->nombre }}">
+            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción {{ $promotion->store->name }}">
           </a>
           <div class="card-body">
             <div class="mb-2">
-              <span class="badge badge-{{ strtolower($promotion->categoria_minima) }} badge-category">{{ $promotion->categoria_minima }}</span>
+              <span class="badge badge-{{ strtolower($promotion->minimum_category) }} badge-category">{{ $promotion->minimum_category }}</span>
             </div>
-            <h5 class="card-title">{{ Str::limit($promotion->texto, 60) }}</h5>
+            <h5 class="card-title">{{ Str::limit($promotion->description, 60) }}</h5>
             <p class="promo-info mb-1">
-              <i class="bi bi-shop"></i> {{ $promotion->store->nombre }}
+              <i class="bi bi-shop"></i> {{ $promotion->store->name }}
             </p>
             <div class="promo-validity">
-              <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion->fecha_hasta->format('d/m/Y') }}
+              <i class="bi bi-calendar-event"></i> Válido hasta: {{ $promotion->end_date->format('d/m/Y') }}
             </div>
           </div>
         </div>
@@ -124,13 +124,13 @@
     <div class="row g-4 justify-content-center">
       @forelse($featuredStores as $store)
       <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="card local-card" data-category="{{ strtolower($store->rubro) }}">
+        <div class="card local-card" data-category="{{ strtolower($store->category) }}">
           <a href="{{ route('locales.show', $store->id) }}">
-            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $store->nombre }}">
+            <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $store->name }}">
           </a>
           <div class="card-body text-center">
-            <h5 class="card-title">{{ $store->nombre }}</h5>
-            <p class="category-text">{{ $store->rubro }}</p>
+            <h5 class="card-title">{{ $store->name }}</h5>
+            <p class="category-text">{{ $store->category }}</p>
             @if($store->promotions_count > 0)
             <small class="text-muted">
               <i class="bi bi-tag"></i> {{ $store->promotions_count }} {{ Str::plural('promoción', $store->promotions_count) }}

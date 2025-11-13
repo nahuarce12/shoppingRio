@@ -34,7 +34,7 @@ class NewsPolicy
         }
 
         // Check category-based access
-        return $news->isAccessibleByCategory($user->categoria_cliente ?? 'Inicial');
+        return $news->isAccessibleByCategory($user->client_category ?? 'Inicial');
     }
 
     /**

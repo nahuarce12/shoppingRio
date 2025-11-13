@@ -66,7 +66,7 @@ class CleanupExpiredNewsJob implements ShouldQueue
             $cutoffDate = Carbon::now()->subDays($retentionDays);
 
             // Find expired news beyond retention period
-            $expiredNews = News::where('fecha_hasta', '<', $cutoffDate)->get();
+            $expiredNews = News::where('end_date', '<', $cutoffDate)->get();
 
             $stats['total_expired'] = $expiredNews->count();
 
@@ -78,8 +78,8 @@ class CleanupExpiredNewsJob implements ShouldQueue
             foreach ($expiredNews as $news) {
                 try {
                     $newsId = $news->id;
-                    $newsTitle = substr($news->texto_novedad, 0, 50); // First 50 chars for logging
-                    $expiredDate = $news->fecha_hasta;
+                    $newsTitle = substr($news->description_novedad, 0, 50); // First 50 chars for logging
+                    $expiredDate = $news->end_date;
 
                     // Delete the news item
                     $news->delete();

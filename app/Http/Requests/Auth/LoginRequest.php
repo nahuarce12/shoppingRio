@@ -51,7 +51,7 @@ class LoginRequest extends FormRequest
 
         // Check if store owner account is approved
         $user = Auth::user();
-        if ($user->tipo_usuario === 'dueño de local' && is_null($user->approved_at)) {
+        if ($user->user_type === 'dueño de local' && is_null($user->approved_at)) {
             Auth::logout();
             
             throw ValidationException::withMessages([

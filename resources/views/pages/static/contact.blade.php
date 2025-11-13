@@ -47,7 +47,7 @@
             <form id="contactForm">
               <div class="mb-3">
                 <label for="contact-name" class="form-label">Nombre Completo *</label>
-                <input type="text" class="form-control" id="contact-name" name="nombre">
+                <input type="text" class="form-control" id="contact-name" name="name">
               </div>
               <div class="mb-3">
                 <label for="contact-email" class="form-label">Email *</label>

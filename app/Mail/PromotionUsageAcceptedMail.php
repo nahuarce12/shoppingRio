@@ -29,7 +29,7 @@ class PromotionUsageAcceptedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Promotion Request Accepted - ' . $this->usage->promotion->store->nombre,
+            subject: 'Promotion Request Accepted - ' . $this->usage->promotion->store->name,
         );
     }
 
@@ -42,12 +42,12 @@ class PromotionUsageAcceptedMail extends Mailable
             view: 'emails.promotion-usage-accepted',
             with: [
                 'clientName' => $this->usage->client->name,
-                'storeName' => $this->usage->promotion->store->nombre,
-                'storeLocation' => $this->usage->promotion->store->ubicacion,
-                'promotionText' => $this->usage->promotion->texto,
-                'promotionCode' => $this->usage->promotion->codigo,
-                'usageDate' => $this->usage->fecha_uso->format('d/m/Y'),
-                'validUntil' => $this->usage->promotion->fecha_hasta->format('d/m/Y'),
+                'storeName' => $this->usage->promotion->store->name,
+                'storeLocation' => $this->usage->promotion->store->location,
+                'promotionText' => $this->usage->promotion->description,
+                'promotionCode' => $this->usage->promotion->code,
+                'usageDate' => $this->usage->usage_date->format('d/m/Y'),
+                'validUntil' => $this->usage->promotion->end_date->format('d/m/Y'),
                 'storeLocatorUrl' => url('/stores/' . $this->usage->promotion->store->id),
                 'promotionsUrl' => url('/promotions'),
             ]

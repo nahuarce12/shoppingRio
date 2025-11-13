@@ -83,19 +83,19 @@ $navbarClasses = $isHomePage ? 'navbar navbar-expand-lg navbar-light navbar-over
             <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu">
-            @if(Auth::user()->tipo_usuario === 'administrador')
+            @if(Auth::user()->user_type === 'administrador')
             <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
               <i class="bi bi-speedometer2"></i> Panel Administrador
             </a></li>
             @endif
             
-            @if(Auth::user()->tipo_usuario === 'dueño de local')
+            @if(Auth::user()->user_type === 'dueño de local')
             <li><a class="dropdown-item" href="{{ route('store.dashboard') }}">
               <i class="bi bi-shop"></i> Panel de Local
             </a></li>
             @endif
             
-            @if(Auth::user()->tipo_usuario === 'cliente')
+            @if(Auth::user()->user_type === 'cliente')
             <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
               <i class="bi bi-person-badge"></i> Mi Cuenta
             </a></li>

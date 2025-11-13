@@ -23,8 +23,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'tipo_usuario',
-        'categoria_cliente',
+        'user_type',
+        'client_category',
         'approved_at',
         'approved_by',
         'store_id',
@@ -104,7 +104,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeClients($query)
     {
-        return $query->where('tipo_usuario', 'cliente');
+        return $query->where('user_type', 'cliente');
     }
 
     /**
@@ -112,7 +112,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeStoreOwners($query)
     {
-        return $query->where('tipo_usuario', 'dueño de local');
+        return $query->where('user_type', 'dueño de local');
     }
 
     /**
@@ -120,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeAdmins($query)
     {
-        return $query->where('tipo_usuario', 'administrador');
+        return $query->where('user_type', 'administrador');
     }
 
     /**
@@ -136,7 +136,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopePending($query)
     {
-        return $query->where('tipo_usuario', 'dueño de local')
+        return $query->where('user_type', 'dueño de local')
             ->whereNull('approved_at');
     }
 
@@ -145,7 +145,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeByCategory($query, string $category)
     {
-        return $query->where('categoria_cliente', $category);
+        return $query->where('client_category', $category);
     }
 
     // ==================== Accessors & Helpers ====================
@@ -155,7 +155,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin(): bool
     {
-        return $this->tipo_usuario === 'administrador';
+        return $this->user_type === 'administrador';
     }
 
     /**
@@ -163,7 +163,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isStoreOwner(): bool
     {
-        return $this->tipo_usuario === 'dueño de local';
+        return $this->user_type === 'dueño de local';
     }
 
     /**
@@ -171,7 +171,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isClient(): bool
     {
-        return $this->tipo_usuario === 'cliente';
+        return $this->user_type === 'cliente';
     }
 
     /**
@@ -196,7 +196,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         $hierarchy = ['Inicial' => 1, 'Medium' => 2, 'Premium' => 3];
-        $userLevel = $hierarchy[$this->categoria_cliente] ?? 0;
+        $userLevel = $hierarchy[$this->client_category] ?? 0;
         $requiredLevel = $hierarchy[$requiredCategory] ?? 0;
 
         return $userLevel >= $requiredLevel;
@@ -208,6 +208,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getCategoryLevel(): int
     {
         $hierarchy = ['Inicial' => 1, 'Medium' => 2, 'Premium' => 3];
-        return $hierarchy[$this->categoria_cliente] ?? 0;
+        return $hierarchy[$this->client_category] ?? 0;
     }
 }

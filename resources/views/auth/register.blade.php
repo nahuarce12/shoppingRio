@@ -76,7 +76,7 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
 
             <form method="POST" action="{{ $clientRegisterAction }}" id="clientForm" novalidate">
               @csrf
-              <input type="hidden" name="tipo_usuario" value="cliente">
+              <input type="hidden" name="user_type" value="cliente">
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="client-name" class="form-label">Nombre *</label>
@@ -308,7 +308,7 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
 
             <form method="POST" action="{{ $ownerRegisterAction }}" id="ownerForm" novalidate>
               @csrf
-              <input type="hidden" name="tipo_usuario" value="dueño de local">
+              <input type="hidden" name="user_type" value="dueño de local">
               
               <h2 class="h5 mb-3"><i class="bi bi-building"></i> Seleccionar Local</h2>
 
@@ -326,7 +326,7 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
                   <option value="">Seleccioná tu local</option>
                   @foreach($stores as $store)
                     <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>
-                      {{ $store->nombre }} - {{ $store->ubicacion }} ({{ ucfirst($store->rubro) }})
+                      {{ $store->name }} - {{ $store->location }} ({{ ucfirst($store->category) }})
                     </option>
                   @endforeach
                 </select>

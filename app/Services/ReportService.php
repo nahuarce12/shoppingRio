@@ -29,12 +29,12 @@ class ReportService
 
         if ($startDate) {
             $start = Carbon::parse($startDate)->startOfDay()->toDateString();
-            $usageQuery->whereDate('fecha_uso', '>=', $start);
+            $usageQuery->whereDate('usage_date', '>=', $start);
         }
 
         if ($endDate) {
             $end = Carbon::parse($endDate)->endOfDay()->toDateString();
-            $usageQuery->whereDate('fecha_uso', '<=', $end);
+            $usageQuery->whereDate('usage_date', '<=', $end);
         }
 
         if ($storeId) {
@@ -44,15 +44,15 @@ class ReportService
         }
 
         if ($estado) {
-            $usageQuery->where('estado', $estado);
+            $usageQuery->where('status', $estado);
         }
 
         $usages = $usageQuery->get();
 
         $totalRequests = $usages->count();
-        $accepted = $usages->where('estado', 'aceptada')->count();
-        $rejected = $usages->where('estado', 'rechazada')->count();
-        $pending = $usages->where('estado', 'enviada')->count();
+        $accepted = $usages->where('status', 'aceptada')->count();
+        $rejected = $usages->where('status', 'rechazada')->count();
+        $pending = $usages->where('status', 'enviada')->count();
 
         $byStore = $usages
             ->filter(fn ($usage) => $usage->promotion && $usage->promotion->store)
@@ -60,15 +60,15 @@ class ReportService
             ->map(function ($group) {
                 $store = $group->first()->promotion->store;
                 $total = $group->count();
-                $accepted = $group->where('estado', 'aceptada')->count();
-                $rejected = $group->where('estado', 'rechazada')->count();
-                $pending = $group->where('estado', 'enviada')->count();
+                $accepted = $group->where('status', 'aceptada')->count();
+                $rejected = $group->where('status', 'rechazada')->count();
+                $pending = $group->where('status', 'enviada')->count();
 
                 return (object) [
                     'store_id' => $store->id,
-                    'store_codigo' => $store->codigo,
-                    'store_name' => $store->nombre,
-                    'store_rubro' => $store->rubro,
+                    'store_codigo' => $store->code,
+                    'store_name' => $store->name,
+                    'store_rubro' => $store->category,
                     'total_requests' => $total,
                     'accepted_count' => $accepted,
                     'rejected_count' => $rejected,
@@ -86,15 +86,15 @@ class ReportService
                 $promotion = $group->first()->promotion;
                 $store = $promotion->store;
                 $total = $group->count();
-                $accepted = $group->where('estado', 'aceptada')->count();
-                $rejected = $group->where('estado', 'rechazada')->count();
-                $pending = $group->where('estado', 'enviada')->count();
+                $accepted = $group->where('status', 'aceptada')->count();
+                $rejected = $group->where('status', 'rechazada')->count();
+                $pending = $group->where('status', 'enviada')->count();
 
                 return (object) [
                     'promotion_id' => $promotion->id,
-                    'codigo_promocion' => $promotion->codigo,
-                    'texto_promocion' => $promotion->texto,
-                    'categoria_minima' => $promotion->categoria_minima,
+                    'codigo_promocion' => $promotion->code,
+                    'texto_promocion' => $promotion->description,
+                    'minimum_category' => $promotion->minimum_category,
                     'store' => $store,
                     'total_requests' => $total,
                     'accepted_count' => $accepted,
@@ -119,7 +119,7 @@ class ReportService
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'store_id' => $storeId,
-                'estado' => $estado,
+                'status' => $estado,
             ],
         ];
     }
@@ -130,7 +130,7 @@ class ReportService
             $filters['date_from'] ?? null,
             $filters['date_to'] ?? null,
             $filters['store_id'] ?? null,
-            $filters['estado'] ?? null
+            $filters['status'] ?? null
         );
 
         return $report['by_store'];
@@ -142,7 +142,7 @@ class ReportService
 
         $stores = Store::with(['promotions' => function ($query) use ($startDate) {
             $query->with(['usages' => function ($usageQuery) use ($startDate) {
-                $usageQuery->whereDate('fecha_uso', '>=', $startDate);
+                $usageQuery->whereDate('usage_date', '>=', $startDate);
             }]);
         }])->get();
 
@@ -151,22 +151,22 @@ class ReportService
             $usages = $promotions->flatMap(fn ($promotion) => $promotion->usages);
 
             $totalPromotions = $promotions->count();
-            $approvedPromotions = $promotions->where('estado', 'aprobada')->count();
-            $pendingPromotions = $promotions->where('estado', 'pendiente')->count();
-            $deniedPromotions = $promotions->where('estado', 'denegada')->count();
+            $approvedPromotions = $promotions->where('status', 'aprobada')->count();
+            $pendingPromotions = $promotions->where('status', 'pendiente')->count();
+            $deniedPromotions = $promotions->where('status', 'denegada')->count();
 
             $totalRequests = $usages->count();
-            $accepted = $usages->where('estado', 'aceptada')->count();
-            $rejected = $usages->where('estado', 'rechazada')->count();
-            $pending = $usages->where('estado', 'enviada')->count();
+            $accepted = $usages->where('status', 'aceptada')->count();
+            $rejected = $usages->where('status', 'rechazada')->count();
+            $pending = $usages->where('status', 'enviada')->count();
 
             $activePromotions = $promotions->filter(fn ($promotion) => $promotion->isActive())->count();
 
             return (object) [
                 'store_id' => $store->id,
-                'store_codigo' => $store->codigo,
-                'store_name' => $store->nombre,
-                'store_rubro' => $store->rubro,
+                'store_codigo' => $store->code,
+                'store_name' => $store->name,
+                'store_rubro' => $store->category,
                 'total_promotions' => $totalPromotions,
                 'approved_promotions' => $approvedPromotions,
                 'pending_promotions' => $pendingPromotions,
@@ -187,8 +187,8 @@ class ReportService
         $startDate = Carbon::now()->subMonths($periodMonths)->startOfMonth();
 
         $usages = PromotionUsage::with(['promotion.store'])
-            ->where('estado', 'aceptada')
-            ->whereDate('fecha_uso', '>=', $startDate)
+            ->where('status', 'aceptada')
+            ->whereDate('usage_date', '>=', $startDate)
             ->get();
 
         $popular = $usages
@@ -197,13 +197,13 @@ class ReportService
             ->map(function ($group) {
                 $promotion = $group->first()->promotion;
                 $store = $promotion->store;
-                $accepted = $group->where('estado', 'aceptada')->count();
+                $accepted = $group->where('status', 'aceptada')->count();
                 $total = $group->count();
 
                 return (object) [
                     'promotion_id' => $promotion->id,
-                    'codigo_promocion' => $promotion->codigo,
-                    'texto_promocion' => $promotion->texto,
+                    'codigo_promocion' => $promotion->code,
+                    'texto_promocion' => $promotion->description,
                     'store' => $store,
                     'accepted_count' => $accepted,
                     'total_requests' => $total,
@@ -222,13 +222,13 @@ class ReportService
         $startDate = Carbon::now()->subMonths($periodMonths)->startOfMonth();
 
         $usages = PromotionUsage::with('client')
-            ->whereDate('fecha_uso', '>=', $startDate)
+            ->whereDate('usage_date', '>=', $startDate)
             ->get();
 
         $totalRequests = $usages->count();
-        $accepted = $usages->where('estado', 'aceptada')->count();
-        $rejected = $usages->where('estado', 'rechazada')->count();
-        $pending = $usages->where('estado', 'enviada')->count();
+        $accepted = $usages->where('status', 'aceptada')->count();
+        $rejected = $usages->where('status', 'rechazada')->count();
+        $pending = $usages->where('status', 'enviada')->count();
 
         $topClients = $usages
             ->filter(fn ($usage) => $usage->client)
@@ -236,15 +236,15 @@ class ReportService
             ->map(function ($group) {
                 $client = $group->first()->client;
                 $total = $group->count();
-                $accepted = $group->where('estado', 'aceptada')->count();
-                $rejected = $group->where('estado', 'rechazada')->count();
-                $pending = $group->where('estado', 'enviada')->count();
+                $accepted = $group->where('status', 'aceptada')->count();
+                $rejected = $group->where('status', 'rechazada')->count();
+                $pending = $group->where('status', 'enviada')->count();
 
                 return (object) [
                     'client_id' => $client->id,
                     'client_name' => $client->name,
                     'client_email' => $client->email,
-                    'categoria_cliente' => $client->categoria_cliente,
+                    'client_category' => $client->client_category,
                     'total_requests' => $total,
                     'accepted_count' => $accepted,
                     'rejected_count' => $rejected,
@@ -257,7 +257,7 @@ class ReportService
 
         $categoryBreakdown = $usages
             ->filter(fn ($usage) => $usage->client)
-            ->groupBy(fn ($usage) => $usage->client->categoria_cliente)
+            ->groupBy(fn ($usage) => $usage->client->client_category)
             ->map(fn ($group) => $group->count())
             ->all();
 
@@ -267,15 +267,15 @@ class ReportService
             $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
 
             $monthlyUsages = $usages->filter(function ($usage) use ($monthStart, $monthEnd) {
-                return $usage->fecha_uso >= $monthStart && $usage->fecha_uso <= $monthEnd;
+                return $usage->usage_date >= $monthStart && $usage->usage_date <= $monthEnd;
             });
 
             $monthlyTrend[] = [
                 'month' => $monthStart->format('Y-m'),
                 'total_requests' => $monthlyUsages->count(),
-                'accepted' => $monthlyUsages->where('estado', 'aceptada')->count(),
-                'rejected' => $monthlyUsages->where('estado', 'rechazada')->count(),
-                'pending' => $monthlyUsages->where('estado', 'enviada')->count(),
+                'accepted' => $monthlyUsages->where('status', 'aceptada')->count(),
+                'rejected' => $monthlyUsages->where('status', 'rechazada')->count(),
+                'pending' => $monthlyUsages->where('status', 'enviada')->count(),
             ];
         }
 
@@ -318,8 +318,8 @@ class ReportService
         ];
 
         foreach ($clients as $client) {
-            if (isset($distribution[$client->categoria_cliente])) {
-                $distribution[$client->categoria_cliente]++;
+            if (isset($distribution[$client->client_category])) {
+                $distribution[$client->client_category]++;
             }
         }
 
@@ -362,10 +362,10 @@ class ReportService
 
             // Apply date filters
             if (!empty($filters['date_from'])) {
-                $usagesQuery->where('fecha_uso', '>=', $filters['date_from']);
+                $usagesQuery->where('usage_date', '>=', $filters['date_from']);
             }
             if (!empty($filters['date_to'])) {
-                $usagesQuery->where('fecha_uso', '<=', $filters['date_to']);
+                $usagesQuery->where('usage_date', '<=', $filters['date_to']);
             }
 
             $usages = $usagesQuery->get();
@@ -373,21 +373,21 @@ class ReportService
             $report[] = [
                 'store' => [
                     'id' => $store->id,
-                    'codigo' => $store->codigo,
-                    'nombre' => $store->nombre,
-                    'rubro' => $store->rubro
+                    'code' => $store->code,
+                    'name' => $store->name,
+                    'category' => $store->category
                 ],
                 'promotions' => [
                     'total' => $promotions->count(),
-                    'pending' => $promotions->where('estado', 'pendiente')->count(),
-                    'approved' => $promotions->where('estado', 'aprobada')->count(),
-                    'denied' => $promotions->where('estado', 'denegada')->count(),
+                    'pending' => $promotions->where('status', 'pendiente')->count(),
+                    'approved' => $promotions->where('status', 'aprobada')->count(),
+                    'denied' => $promotions->where('status', 'denegada')->count(),
                 ],
                 'usage_requests' => [
                     'total' => $usages->count(),
-                    'pending' => $usages->where('estado', 'enviada')->count(),
-                    'accepted' => $usages->where('estado', 'aceptada')->count(),
-                    'rejected' => $usages->where('estado', 'rechazada')->count(),
+                    'pending' => $usages->where('status', 'enviada')->count(),
+                    'accepted' => $usages->where('status', 'aceptada')->count(),
+                    'rejected' => $usages->where('status', 'rechazada')->count(),
                 ],
                 'clients' => [
                     'unique_count' => $usages->pluck('client_id')->unique()->count(),
@@ -417,8 +417,8 @@ class ReportService
         ];
 
         foreach ($clients as $client) {
-            if (isset($byCategory[$client->categoria_cliente])) {
-                $byCategory[$client->categoria_cliente]++;
+            if (isset($byCategory[$client->client_category])) {
+                $byCategory[$client->client_category]++;
             }
         }
 
@@ -441,32 +441,32 @@ class ReportService
                 'client_id' => $usage->client_id,
                 'client_name' => $usage->client->name,
                 'client_email' => $usage->client->email,
-                'client_category' => $usage->client->categoria_cliente,
-                'fecha_uso' => $usage->fecha_uso->format('Y-m-d'),
-                'estado' => $usage->estado
+                'client_category' => $usage->client->client_category,
+                'usage_date' => $usage->usage_date->format('Y-m-d'),
+                'status' => $usage->status
             ];
         }
 
         return [
             'promotion' => [
                 'id' => $promotion->id,
-                'codigo' => $promotion->codigo,
-                'texto' => $promotion->texto,
-                'fecha_desde' => $promotion->fecha_desde->format('Y-m-d'),
-                'fecha_hasta' => $promotion->fecha_hasta->format('Y-m-d'),
-                'categoria_minima' => $promotion->categoria_minima,
-                'estado' => $promotion->estado
+                'code' => $promotion->code,
+                'description' => $promotion->description,
+                'start_date' => $promotion->start_date->format('Y-m-d'),
+                'end_date' => $promotion->end_date->format('Y-m-d'),
+                'minimum_category' => $promotion->minimum_category,
+                'status' => $promotion->status
             ],
             'store' => [
                 'id' => $promotion->store->id,
-                'codigo' => $promotion->store->codigo,
-                'nombre' => $promotion->store->nombre
+                'code' => $promotion->store->code,
+                'name' => $promotion->store->name
             ],
             'statistics' => [
                 'total_requests' => $usages->count(),
-                'pending' => $usages->where('estado', 'enviada')->count(),
-                'accepted' => $usages->where('estado', 'aceptada')->count(),
-                'rejected' => $usages->where('estado', 'rechazada')->count(),
+                'pending' => $usages->where('status', 'enviada')->count(),
+                'accepted' => $usages->where('status', 'aceptada')->count(),
+                'rejected' => $usages->where('status', 'rechazada')->count(),
             ],
             'clients' => $clientList
         ];
@@ -483,8 +483,8 @@ class ReportService
             'stores' => [
                 'total' => Store::count(),
                 'by_rubro' => Store::selectRaw('rubro, COUNT(*) as count')
-                    ->groupBy('rubro')
-                    ->pluck('count', 'rubro')
+                    ->groupBy('category')
+                    ->pluck('count', 'category')
                     ->toArray()
             ],
             'store_owners' => [
@@ -512,7 +512,7 @@ class ReportService
                 'pending' => PromotionUsage::pending()->count(),
                 'accepted' => PromotionUsage::accepted()->count(),
                 'rejected' => PromotionUsage::rejected()->count(),
-                'this_month' => PromotionUsage::where('fecha_uso', '>=', Carbon::now()->startOfMonth())->count()
+                'this_month' => PromotionUsage::where('usage_date', '>=', Carbon::now()->startOfMonth())->count()
             ]
         ];
     }
@@ -536,9 +536,9 @@ class ReportService
 
             $monthData = [
                 'month' => $monthStart->format('Y-m'),
-                'usage_requests' => PromotionUsage::whereBetween('fecha_uso', [$monthStart, $monthEnd])->count(),
-                'accepted_requests' => PromotionUsage::whereBetween('fecha_uso', [$monthStart, $monthEnd])
-                    ->where('estado', 'aceptada')
+                'usage_requests' => PromotionUsage::whereBetween('usage_date', [$monthStart, $monthEnd])->count(),
+                'accepted_requests' => PromotionUsage::whereBetween('usage_date', [$monthStart, $monthEnd])
+                    ->where('status', 'aceptada')
                     ->count()
             ];
 

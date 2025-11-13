@@ -41,10 +41,10 @@ class NewsFactory extends Factory
         $fechaHasta = fake()->dateTimeBetween($fechaDesde, '+2 months');
 
         return [
-            'texto' => fake()->randomElement($newsTemplates),
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
-            'categoria_destino' => fake()->randomElement(['Inicial', 'Medium', 'Premium']),
+            'description' => fake()->randomElement($newsTemplates),
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
+            'target_category' => fake()->randomElement(['Inicial', 'Medium', 'Premium']),
             'created_by' => 1, // Default to admin user ID 1, can be overridden
         ];
     }
@@ -55,7 +55,7 @@ class NewsFactory extends Factory
     public function forCategory(string $category): static
     {
         return $this->state(fn (array $attributes) => [
-            'categoria_destino' => $category,
+            'target_category' => $category,
         ]);
     }
 
@@ -92,8 +92,8 @@ class NewsFactory extends Factory
         $fechaHasta = fake()->dateTimeBetween('+1 week', '+2 months');
 
         return $this->state(fn (array $attributes) => [
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
         ]);
     }
 
@@ -106,8 +106,8 @@ class NewsFactory extends Factory
         $fechaHasta = fake()->dateTimeBetween($fechaDesde, '-1 week');
 
         return $this->state(fn (array $attributes) => [
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
         ]);
     }
 
@@ -120,8 +120,8 @@ class NewsFactory extends Factory
         $fechaHasta = fake()->dateTimeBetween($fechaDesde, '+2 months');
 
         return $this->state(fn (array $attributes) => [
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
         ]);
     }
 
@@ -134,8 +134,8 @@ class NewsFactory extends Factory
         $fechaHasta = fake()->dateTimeBetween('+3 months', '+6 months');
 
         return $this->state(fn (array $attributes) => [
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
         ]);
     }
 }

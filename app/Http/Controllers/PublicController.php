@@ -57,7 +57,7 @@ class PublicController extends Controller
      */
     public function promotionsIndex(Request $request)
     {
-        $filters = $request->only(['store_id', 'categoria_minima', 'search']);
+        $filters = $request->only(['store_id', 'minimum_category', 'search']);
 
         $query = Promotion::approved()->active()->with('store');
 
@@ -67,19 +67,19 @@ class PublicController extends Controller
         }
 
         // Filter by minimum category
-        if ($request->filled('categoria_minima')) {
-            $query->where('categoria_minima', $request->categoria_minima);
+        if ($request->filled('minimum_category')) {
+            $query->where('minimum_category', $request->minimum_category);
         }
 
         // Search by text
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('texto', 'like', "%{$search}%");
+            $query->where('description', 'like', "%{$search}%");
         }
 
         $promotions = $query->orderBy('created_at', 'desc')->paginate(12);
 
-        $stores = Store::orderBy('nombre')->get();
+        $stores = Store::orderBy('name')->get();
         $categories = ['Inicial', 'Medium', 'Premium'];
 
         return view('pages.promociones.index', compact('promotions', 'stores', 'categories'));
@@ -91,7 +91,7 @@ class PublicController extends Controller
     public function promotionShow(Promotion $promotion)
     {
         // Only show approved promotions to public
-        if ($promotion->estado !== 'aprobada') {
+        if ($promotion->status !== 'aprobada') {
             abort(404);
         }
 
@@ -126,20 +126,20 @@ class PublicController extends Controller
         $query = Store::query();
 
         // Filter by rubro
-        if ($request->filled('rubro')) {
-            $query->where('rubro', $request->rubro);
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
         }
 
         // Search by name or location
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('ubicacion', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
-        $query->orderBy('nombre');
+        $query->orderBy('name');
 
         $stores = $query->paginate(12);
 

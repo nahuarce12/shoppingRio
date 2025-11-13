@@ -72,7 +72,7 @@ class NewsController extends Controller
     public function show(News $news)
     {
         // Calculate who can see this news based on category hierarchy
-        $visibleTo = match($news->categoria_destino) {
+        $visibleTo = match($news->target_category) {
             'Inicial' => ['Inicial', 'Medium', 'Premium'],
             'Medium' => ['Medium', 'Premium'],
             'Premium' => ['Premium'],
@@ -81,14 +81,14 @@ class NewsController extends Controller
 
         // Get client count per category
         $clientCounts = [
-            'Inicial' => \App\Models\User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Inicial')
+            'Inicial' => \App\Models\User::where('user_type', 'cliente')
+                ->where('client_category', 'Inicial')
                 ->count(),
-            'Medium' => \App\Models\User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Medium')
+            'Medium' => \App\Models\User::where('user_type', 'cliente')
+                ->where('client_category', 'Medium')
                 ->count(),
-            'Premium' => \App\Models\User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Premium')
+            'Premium' => \App\Models\User::where('user_type', 'cliente')
+                ->where('client_category', 'Premium')
                 ->count(),
         ];
 
@@ -165,8 +165,8 @@ class NewsController extends Controller
      */
     public function expired()
     {
-        $expiredNews = News::where('fecha_hasta', '<', now())
-            ->orderBy('fecha_hasta', 'desc')
+        $expiredNews = News::where('end_date', '<', now())
+            ->orderBy('end_date', 'desc')
             ->paginate(20);
 
         $retentionDays = config('shopping.scheduled_jobs.news_cleanup.retention_days', 30);

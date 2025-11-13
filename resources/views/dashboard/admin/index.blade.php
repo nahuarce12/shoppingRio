@@ -118,9 +118,9 @@ use Illuminate\Support\Str;
                   <tbody>
                     @forelse($stores as $store)
                     <tr>
-                      <td>{{ str_pad($store->codigo, 3, '0', STR_PAD_LEFT) }}</td>
-                      <td>{{ $store->nombre }}</td>
-                      <td>{{ ucwords(str_replace(['-', '_'], ' ', $store->rubro)) }}</td>
+                      <td>{{ str_pad($store->code, 3, '0', STR_PAD_LEFT) }}</td>
+                      <td>{{ $store->name }}</td>
+                      <td>{{ ucwords(str_replace(['-', '_'], ' ', $store->category)) }}</td>
                       <td>{{ $store->owner->first()?->name ?? 'Sin asignar' }}</td>
                       <td>
                         <span class="badge {{ $store->trashed() ? 'bg-secondary' : 'bg-success' }}">
@@ -135,10 +135,11 @@ use Illuminate\Support\Str;
                           data-bs-toggle="modal" 
                           data-bs-target="#modalEditarLocal" 
                           data-store-id="{{ $store->id }}"
-                          data-store-codigo="{{ $store->codigo }}"
-                          data-store-nombre="{{ $store->nombre }}"
-                          data-store-rubro="{{ $store->rubro }}"
-                          data-store-ubicacion="{{ $store->ubicacion }}"
+                          data-store-code="{{ $store->code }}"
+                          data-store-name="{{ $store->name }}"
+                          data-store-category="{{ $store->category }}"
+                          data-store-location="{{ $store->location }}"
+                          data-store-description="{{ $store->description ?? '' }}"
                           data-store-logo="{{ $store->logo ? asset('storage/' . $store->logo) : '' }}">
                           <i class="bi bi-pencil"></i>
                         </button>
@@ -241,19 +242,19 @@ use Illuminate\Support\Str;
                   <tbody>
                     @forelse($pendingPromotions as $promotion)
                     <tr>
-                      <td>{{ $promotion->store?->nombre ?? 'Local eliminado' }}</td>
-                      <td>{{ Str::limit($promotion->texto, 80) }}</td>
-                      <td><span class="badge badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span></td>
-                      <td>{{ $promotion->fecha_desde?->format('d/m/Y') }} - {{ $promotion->fecha_hasta?->format('d/m/Y') }}</td>
-                      <td><span class="badge bg-warning text-dark text-uppercase">{{ $promotion->estado }}</span></td>
+                      <td>{{ $promotion->store?->name ?? 'Local eliminado' }}</td>
+                      <td>{{ Str::limit($promotion->description, 80) }}</td>
+                      <td><span class="badge badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span></td>
+                      <td>{{ $promotion->start_date?->format('d/m/Y') }} - {{ $promotion->end_date?->format('d/m/Y') }}</td>
+                      <td><span class="badge bg-warning text-dark text-uppercase">{{ $promotion->status }}</span></td>
                       <td class="d-flex gap-2">
-                        <form action="{{ route('admin.promotions.approve', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Aprobar la promoción \"{{ addslashes($promotion->texto) }}\"?');">
+                        <form action="{{ route('admin.promotions.approve', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Aprobar la promoción \"{{ addslashes($promotion->description) }}\"?');">
                           @csrf
                           <button type="submit" class="btn btn-success btn-sm">
                             <i class="bi bi-check-lg"></i> Aprobar
                           </button>
                         </form>
-                        <form action="{{ route('admin.promotions.deny', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Denegar la promoción \"{{ addslashes($promotion->texto) }}\"?');">
+                        <form action="{{ route('admin.promotions.deny', $promotion->id) }}" method="POST" onsubmit="return confirm('¿Denegar la promoción \"{{ addslashes($promotion->description) }}\"?');">
                           @csrf
                           <button type="submit" class="btn btn-danger btn-sm">
                             <i class="bi bi-x-lg"></i> Denegar
@@ -299,13 +300,13 @@ use Illuminate\Support\Str;
                   <tbody>
                     @forelse($latestNews as $news)
                     @php
-                      $isActive = $news->fecha_hasta?->isFuture() ?? false;
+                      $isActive = $news->end_date?->isFuture() ?? false;
                     @endphp
                     <tr>
-                      <td>{{ Str::limit($news->texto, 80) }}</td>
-                      <td><span class="badge badge-{{ strtolower($news->categoria_destino) }}">{{ $news->categoria_destino }}</span></td>
-                      <td>{{ $news->fecha_desde?->format('d/m/Y') }}</td>
-                      <td>{{ $news->fecha_hasta?->format('d/m/Y') }}</td>
+                      <td>{{ Str::limit($news->description, 80) }}</td>
+                      <td><span class="badge badge-{{ strtolower($news->target_category) }}">{{ $news->target_category }}</span></td>
+                      <td>{{ $news->start_date?->format('d/m/Y') }}</td>
+                      <td>{{ $news->end_date?->format('d/m/Y') }}</td>
                       <td>
                         <span class="badge {{ $isActive ? 'bg-success' : 'bg-secondary' }}">
                           {{ $isActive ? 'Vigente' : 'Expirada' }}
@@ -316,11 +317,12 @@ use Illuminate\Support\Str;
                           data-bs-toggle="modal" 
                           data-bs-target="#modalEditarNovedad" 
                           data-news-id="{{ $news->id }}"
-                          data-news-codigo="{{ $news->codigo }}"
-                          data-news-texto="{{ $news->texto }}"
-                          data-news-fecha-desde="{{ $news->fecha_desde?->format('Y-m-d') }}"
-                          data-news-fecha-hasta="{{ $news->fecha_hasta?->format('Y-m-d') }}"
-                          data-news-categoria="{{ $news->categoria_destino }}"
+                          data-news-code="{{ $news->code }}"
+                          data-news-title="{{ $news->title ?? '' }}"
+                          data-news-description="{{ $news->description }}"
+                          data-news-start-date="{{ $news->start_date?->format('Y-m-d') }}"
+                          data-news-end-date="{{ $news->end_date?->format('Y-m-d') }}"
+                          data-news-target-category="{{ $news->target_category }}"
                           data-news-imagen="{{ $news->imagen ? asset('storage/' . $news->imagen) : '' }}">
                           <i class="bi bi-pencil"></i>
                         </button>
@@ -573,32 +575,32 @@ use Illuminate\Support\Str;
         <div class="modal-body">
           {{-- Nombre del Local --}}
           <div class="mb-3">
-            <label for="nombre" class="form-label">
+            <label for="name" class="form-label">
               Nombre del Local <span class="text-danger">*</span>
             </label>
             <input 
               type="text" 
-              class="form-control @error('nombre') is-invalid @enderror" 
-              id="nombre" 
-              name="nombre" 
-              value="{{ old('nombre') }}"
+              class="form-control @error('name') is-invalid @enderror" 
+              id="name" 
+              name="name" 
+              value="{{ old('name') }}"
               maxlength="100"
               placeholder="Ej: Tienda de Electrodomésticos XYZ"
               required>
-            @error('nombre')
+            @error('name')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Rubro --}}
           <div class="mb-3">
-            <label for="rubro" class="form-label">
+            <label for="category" class="form-label">
               Rubro <span class="text-danger">*</span>
             </label>
             <select 
-              class="form-select @error('rubro') is-invalid @enderror" 
-              id="rubro" 
-              name="rubro"
+              class="form-select @error('category') is-invalid @enderror" 
+              id="category" 
+              name="category"
               required>
               <option value="">Seleccionar rubro...</option>
               <option value="indumentaria">Indumentaria</option>
@@ -611,29 +613,49 @@ use Illuminate\Support\Str;
               <option value="jugueteria">Juguetería</option>
               <option value="otros">Otros</option>
             </select>
-            @error('rubro')
+            @error('category')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Ubicación --}}
           <div class="mb-3">
-            <label for="ubicacion" class="form-label">
+            <label for="location" class="form-label">
               Ubicación <span class="text-danger">*</span>
             </label>
             <input 
               type="text" 
-              class="form-control @error('ubicacion') is-invalid @enderror" 
-              id="ubicacion" 
-              name="ubicacion" 
-              value="{{ old('ubicacion') }}"
+              class="form-control @error('location') is-invalid @enderror" 
+              id="location" 
+              name="location" 
+              value="{{ old('location') }}"
               maxlength="50"
               placeholder="Ej: Primer Piso - Local 205"
               required>
             <div class="form-text">
               Indicá el piso y número de local dentro del shopping
             </div>
-            @error('ubicacion')
+            @error('location')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+
+          {{-- Descripción del Local --}}
+          <div class="mb-3">
+            <label for="description" class="form-label">
+              Descripción del Local <span class="text-muted">(Opcional)</span>
+            </label>
+            <textarea 
+              class="form-control @error('description') is-invalid @enderror" 
+              id="description" 
+              name="description" 
+              rows="3"
+              maxlength="500"
+              placeholder="Descripción que aparecerá en la sección 'Sobre el local' en la página de detalles"></textarea>
+            <div class="form-text">
+              Máximo 500 caracteres - Esta descripción aparecerá en la página de detalles del local
+            </div>
+            @error('description')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -685,13 +707,13 @@ use Illuminate\Support\Str;
         <div class="modal-body">
           {{-- Código (read-only) --}}
           <div class="mb-3">
-            <label for="edit_codigo" class="form-label">
+            <label for="edit_code" class="form-label">
               Código del Local
             </label>
             <input 
               type="text" 
               class="form-control" 
-              id="edit_codigo" 
+              id="edit_code" 
               readonly
               disabled>
             <div class="form-text">
@@ -701,31 +723,31 @@ use Illuminate\Support\Str;
 
           {{-- Nombre del Local --}}
           <div class="mb-3">
-            <label for="edit_nombre" class="form-label">
+            <label for="edit_name" class="form-label">
               Nombre del Local <span class="text-danger">*</span>
             </label>
             <input 
               type="text" 
-              class="form-control @error('nombre') is-invalid @enderror" 
-              id="edit_nombre" 
-              name="nombre" 
+              class="form-control @error('name') is-invalid @enderror" 
+              id="edit_name" 
+              name="name" 
               maxlength="100"
               placeholder="Ej: Tienda de Electrodomésticos XYZ"
               required>
-            @error('nombre')
+            @error('name')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Rubro --}}
           <div class="mb-3">
-            <label for="edit_rubro" class="form-label">
+            <label for="edit_category" class="form-label">
               Rubro <span class="text-danger">*</span>
             </label>
             <select 
-              class="form-select @error('rubro') is-invalid @enderror" 
-              id="edit_rubro" 
-              name="rubro"
+              class="form-select @error('category') is-invalid @enderror" 
+              id="edit_category" 
+              name="category"
               required>
               <option value="">Seleccionar rubro...</option>
               <option value="indumentaria">Indumentaria</option>
@@ -738,28 +760,48 @@ use Illuminate\Support\Str;
               <option value="jugueteria">Juguetería</option>
               <option value="otros">Otros</option>
             </select>
-            @error('rubro')
+            @error('category')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Ubicación --}}
           <div class="mb-3">
-            <label for="edit_ubicacion" class="form-label">
+            <label for="edit_location" class="form-label">
               Ubicación <span class="text-danger">*</span>
             </label>
             <input 
               type="text" 
-              class="form-control @error('ubicacion') is-invalid @enderror" 
-              id="edit_ubicacion" 
-              name="ubicacion" 
+              class="form-control @error('location') is-invalid @enderror" 
+              id="edit_location" 
+              name="location" 
               maxlength="50"
               placeholder="Ej: Primer Piso - Local 205"
               required>
             <div class="form-text">
               Indicá el piso y número de local dentro del shopping
             </div>
-            @error('ubicacion')
+            @error('location')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+
+          {{-- Descripción del Local --}}
+          <div class="mb-3">
+            <label for="edit_description" class="form-label">
+              Descripción del Local <span class="text-muted">(Opcional)</span>
+            </label>
+            <textarea 
+              class="form-control @error('description') is-invalid @enderror" 
+              id="edit_description" 
+              name="description" 
+              rows="3"
+              maxlength="500"
+              placeholder="Descripción que aparecerá en la sección 'Sobre el local' en la página de detalles"></textarea>
+            <div class="form-text">
+              Máximo 500 caracteres - Esta descripción aparecerá en la página de detalles del local
+            </div>
+            @error('description')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -816,23 +858,45 @@ use Illuminate\Support\Str;
       <form method="POST" action="{{ route('admin.news.store') }}" id="formNuevaNovedad" enctype="multipart/form-data" novalidate>
         @csrf
         <div class="modal-body">
+          {{-- Título de la Novedad --}}
+          <div class="mb-3">
+            <label for="news_title" class="form-label">
+              T\u00edtulo de la Novedad <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="text" 
+              class="form-control @error('title') is-invalid @enderror" 
+              id="news_title" 
+              name="title" 
+              value="{{ old('title') }}"
+              maxlength="100"
+              placeholder="Ej: Nuevas promociones de verano, Apertura de nuevo local..."
+              required>
+            <div class="form-text">
+              M\u00e1ximo 100 caracteres - Este ser\u00e1 el t\u00edtulo principal de la novedad
+            </div>
+            @error('title')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+
           {{-- Texto de la Novedad --}}
           <div class="mb-3">
-            <label for="texto" class="form-label">
-              Texto de la Novedad <span class="text-danger">*</span>
+            <label for="description" class="form-label">
+              Descripci\u00f3n de la Novedad <span class="text-danger">*</span>
             </label>
             <textarea 
-              class="form-control @error('texto') is-invalid @enderror" 
-              id="texto" 
-              name="texto" 
+              class="form-control @error('description') is-invalid @enderror" 
+              id="description" 
+              name="description" 
               rows="3"
               maxlength="200"
-              placeholder="Ej: Nuevas promociones de verano disponibles..."
-              required>{{ old('texto') }}</textarea>
+              placeholder="Ej: Visita nuestros locales y aprovecha las promociones de verano..."
+              required>{{ old('description') }}</textarea>
             <div class="form-text">
-              Máximo 200 caracteres
+              Máximo 200 caracteres - Agrega detalles adicionales sobre la novedad
             </div>
-            @error('texto')
+            @error('description')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -861,68 +925,68 @@ use Illuminate\Support\Str;
 
           {{-- Fecha Desde --}}
           <div class="mb-3">
-            <label for="fecha_desde" class="form-label">
+            <label for="start_date" class="form-label">
               Fecha de Inicio <span class="text-danger">*</span>
             </label>
             <input 
               type="date" 
-              class="form-control @error('fecha_desde') is-invalid @enderror" 
-              id="fecha_desde" 
-              name="fecha_desde" 
-              value="{{ old('fecha_desde', now()->format('Y-m-d')) }}"
+              class="form-control @error('start_date') is-invalid @enderror" 
+              id="start_date" 
+              name="start_date" 
+              value="{{ old('start_date', now()->format('Y-m-d')) }}"
               min="{{ now()->format('Y-m-d') }}"
               required>
-            @error('fecha_desde')
+            @error('start_date')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Fecha Hasta --}}
           <div class="mb-3">
-            <label for="fecha_hasta" class="form-label">
+            <label for="end_date" class="form-label">
               Fecha de Vencimiento <span class="text-danger">*</span>
             </label>
             <input 
               type="date" 
-              class="form-control @error('fecha_hasta') is-invalid @enderror" 
-              id="fecha_hasta" 
-              name="fecha_hasta" 
-              value="{{ old('fecha_hasta', now()->addDays(30)->format('Y-m-d')) }}"
+              class="form-control @error('end_date') is-invalid @enderror" 
+              id="end_date" 
+              name="end_date" 
+              value="{{ old('end_date', now()->addDays(30)->format('Y-m-d')) }}"
               min="{{ now()->format('Y-m-d') }}"
               required>
             <div class="form-text">
               La novedad será visible hasta esta fecha
             </div>
-            @error('fecha_hasta')
+            @error('end_date')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Categoría Destino --}}
           <div class="mb-3">
-            <label for="categoria_destino" class="form-label">
+            <label for="target_category" class="form-label">
               Categoría de Cliente <span class="text-danger">*</span>
             </label>
             <select 
-              class="form-select @error('categoria_destino') is-invalid @enderror" 
-              id="categoria_destino" 
-              name="categoria_destino"
+              class="form-select @error('target_category') is-invalid @enderror" 
+              id="target_category" 
+              name="target_category"
               required>
               <option value="">Seleccionar categoría...</option>
-              <option value="Inicial" {{ old('categoria_destino') == 'Inicial' ? 'selected' : '' }}>
+              <option value="Inicial" {{ old('target_category') == 'Inicial' ? 'selected' : '' }}>
                 Inicial (Visible para todos los clientes)
               </option>
-              <option value="Medium" {{ old('categoria_destino') == 'Medium' ? 'selected' : '' }}>
+              <option value="Medium" {{ old('target_category') == 'Medium' ? 'selected' : '' }}>
                 Medium (Visible para Medium y Premium)
               </option>
-              <option value="Premium" {{ old('categoria_destino') == 'Premium' ? 'selected' : '' }}>
+              <option value="Premium" {{ old('target_category') == 'Premium' ? 'selected' : '' }}>
                 Premium (Solo clientes Premium)
               </option>
             </select>
             <div class="form-text">
               Los clientes pueden ver novedades de su categoría o inferiores
             </div>
-            @error('categoria_destino')
+            @error('target_category')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -952,13 +1016,13 @@ use Illuminate\Support\Str;
         <div class="modal-body">
           {{-- Código (read-only) --}}
           <div class="mb-3">
-            <label for="edit_news_codigo" class="form-label">
+            <label for="edit_news_code" class="form-label">
               Código de la Novedad
             </label>
             <input 
               type="text" 
               class="form-control" 
-              id="edit_news_codigo" 
+              id="edit_news_code" 
               readonly
               disabled>
             <div class="form-text">
@@ -966,15 +1030,36 @@ use Illuminate\Support\Str;
             </div>
           </div>
 
+          {{-- Título de la Novedad --}}
+          <div class="mb-3">
+            <label for="edit_news_title" class="form-label">
+              Título de la Novedad <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="text" 
+              class="form-control @error('title') is-invalid @enderror" 
+              id="edit_news_title" 
+              name="title" 
+              maxlength="100"
+              placeholder="Ej: Nuevas promociones de verano, Apertura de nuevo local..."
+              required>
+            <div class="form-text">
+              Máximo 100 caracteres - Este será el título principal de la novedad
+            </div>
+            @error('title')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+
           {{-- Texto de la Novedad --}}
           <div class="mb-3">
-            <label for="edit_texto" class="form-label">
+            <label for="edit_description" class="form-label">
               Texto de la Novedad <span class="text-danger">*</span>
             </label>
             <textarea 
-              class="form-control @error('texto') is-invalid @enderror" 
-              id="edit_texto" 
-              name="texto" 
+              class="form-control @error('description') is-invalid @enderror" 
+              id="edit_description" 
+              name="description" 
               rows="3"
               maxlength="200"
               placeholder="Ej: Nuevas promociones de verano disponibles..."
@@ -982,7 +1067,7 @@ use Illuminate\Support\Str;
             <div class="form-text">
               Máximo 200 caracteres
             </div>
-            @error('texto')
+            @error('description')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -1019,48 +1104,48 @@ use Illuminate\Support\Str;
 
           {{-- Fecha Desde --}}
           <div class="mb-3">
-            <label for="edit_fecha_desde" class="form-label">
+            <label for="edit_start_date" class="form-label">
               Fecha de Inicio <span class="text-danger">*</span>
             </label>
             <input 
               type="date" 
-              class="form-control @error('fecha_desde') is-invalid @enderror" 
-              id="edit_fecha_desde" 
-              name="fecha_desde" 
+              class="form-control @error('start_date') is-invalid @enderror" 
+              id="edit_start_date" 
+              name="start_date" 
               required>
-            @error('fecha_desde')
+            @error('start_date')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Fecha Hasta --}}
           <div class="mb-3">
-            <label for="edit_fecha_hasta" class="form-label">
+            <label for="edit_end_date" class="form-label">
               Fecha de Vencimiento <span class="text-danger">*</span>
             </label>
             <input 
               type="date" 
-              class="form-control @error('fecha_hasta') is-invalid @enderror" 
-              id="edit_fecha_hasta" 
-              name="fecha_hasta" 
+              class="form-control @error('end_date') is-invalid @enderror" 
+              id="edit_end_date" 
+              name="end_date" 
               required>
             <div class="form-text">
               La novedad será visible hasta esta fecha
             </div>
-            @error('fecha_hasta')
+            @error('end_date')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
 
           {{-- Categoría Destino --}}
           <div class="mb-3">
-            <label for="edit_categoria_destino" class="form-label">
+            <label for="edit_target_category" class="form-label">
               Categoría de Cliente <span class="text-danger">*</span>
             </label>
             <select 
-              class="form-select @error('categoria_destino') is-invalid @enderror" 
-              id="edit_categoria_destino" 
-              name="categoria_destino"
+              class="form-select @error('target_category') is-invalid @enderror" 
+              id="edit_target_category" 
+              name="target_category"
               required>
               <option value="">Seleccionar categoría...</option>
               <option value="Inicial">Inicial (Visible para todos los clientes)</option>
@@ -1070,7 +1155,7 @@ use Illuminate\Support\Str;
             <div class="form-text">
               Los clientes pueden ver novedades de su categoría o inferiores
             </div>
-            @error('categoria_destino')
+            @error('target_category')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -1086,6 +1171,16 @@ use Illuminate\Support\Str;
   </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+  /* Ensure modals are scrollable when content exceeds viewport */
+  .modal-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+</style>
+@endpush
 
 @push('scripts')
 @vite('resources/js/frontoffice/main.js')
@@ -1142,10 +1237,11 @@ use Illuminate\Support\Str;
       modalEditarLocal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         const storeId = button.getAttribute('data-store-id');
-        const storeCodigo = button.getAttribute('data-store-codigo');
-        const storeNombre = button.getAttribute('data-store-nombre');
-        const storeRubro = button.getAttribute('data-store-rubro');
-        const storeUbicacion = button.getAttribute('data-store-ubicacion');
+        const storeCode = button.getAttribute('data-store-code');
+        const storeName = button.getAttribute('data-store-name');
+        const storeCategory = button.getAttribute('data-store-category');
+        const storeLocation = button.getAttribute('data-store-location');
+        const storeDescription = button.getAttribute('data-store-description');
         const storeLogo = button.getAttribute('data-store-logo');
         
         // Update form action - use Laravel route helper with base path
@@ -1154,10 +1250,11 @@ use Illuminate\Support\Str;
         form.action = baseUrl + '/admin/stores/' + storeId;
         
         // Populate fields
-        document.getElementById('edit_codigo').value = storeCodigo;
-        document.getElementById('edit_nombre').value = storeNombre;
-        document.getElementById('edit_rubro').value = storeRubro;
-        document.getElementById('edit_ubicacion').value = storeUbicacion;
+        document.getElementById('edit_code').value = storeCode;
+        document.getElementById('edit_name').value = storeName;
+        document.getElementById('edit_category').value = storeCategory;
+        document.getElementById('edit_location').value = storeLocation;
+        document.getElementById('edit_description').value = storeDescription || '';
         
         // Show current logo if exists
         if (storeLogo) {
@@ -1223,11 +1320,12 @@ use Illuminate\Support\Str;
       modalEditarNovedad.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         const newsId = button.getAttribute('data-news-id');
-        const newsCodigo = button.getAttribute('data-news-codigo');
-        const newsTexto = button.getAttribute('data-news-texto');
-        const newsFechaDesde = button.getAttribute('data-news-fecha-desde');
-        const newsFechaHasta = button.getAttribute('data-news-fecha-hasta');
-        const newsCategoria = button.getAttribute('data-news-categoria');
+        const newsCode = button.getAttribute('data-news-code');
+        const newsTitle = button.getAttribute('data-news-title');
+        const newsDescription = button.getAttribute('data-news-description');
+        const newsStartDate = button.getAttribute('data-news-start-date');
+        const newsEndDate = button.getAttribute('data-news-end-date');
+        const newsTargetCategory = button.getAttribute('data-news-target-category');
         const newsImagen = button.getAttribute('data-news-imagen');
         
         // Update form action
@@ -1236,11 +1334,12 @@ use Illuminate\Support\Str;
         form.action = baseUrl + '/admin/news/' + newsId;
         
         // Populate fields
-        document.getElementById('edit_news_codigo').value = newsCodigo;
-        document.getElementById('edit_texto').value = newsTexto;
-        document.getElementById('edit_fecha_desde').value = newsFechaDesde;
-        document.getElementById('edit_fecha_hasta').value = newsFechaHasta;
-        document.getElementById('edit_categoria_destino').value = newsCategoria;
+        document.getElementById('edit_news_code').value = newsCode;
+        document.getElementById('edit_news_title').value = newsTitle || '';
+        document.getElementById('edit_description').value = newsDescription;
+        document.getElementById('edit_start_date').value = newsStartDate;
+        document.getElementById('edit_end_date').value = newsEndDate;
+        document.getElementById('edit_target_category').value = newsTargetCategory;
         
         // Show current imagen if exists
         if (newsImagen) {
@@ -1257,7 +1356,7 @@ use Illuminate\Support\Str;
     }
     
     // Show modal if there are validation errors for store creation
-    @if ($errors->any() && (old('nombre') || old('rubro') || old('ubicacion')))
+    @if ($errors->any() && (old('name') || old('category') || old('location')))
     const modalNuevoLocal = new bootstrap.Modal(document.getElementById('modalNuevoLocal'));
     modalNuevoLocal.show();
     // Navigate to stores section
@@ -1267,7 +1366,7 @@ use Illuminate\Support\Str;
     @endif
     
     // Show modal if there are validation errors for news creation
-    @if ($errors->any() && (old('texto') || old('categoria_destino')))
+    @if ($errors->any() && (old('description') || old('target_category')))
     const modalNuevaNovedad = new bootstrap.Modal(document.getElementById('modalNuevaNovedad'));
     modalNuevaNovedad.show();
     // Navigate to news section

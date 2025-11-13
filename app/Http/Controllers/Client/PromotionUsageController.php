@@ -50,7 +50,7 @@ class PromotionUsageController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['estado', 'fecha_desde', 'fecha_hasta']);
+        $filters = $request->only(['status', 'start_date', 'end_date']);
 
         $client = $request->user();
 
@@ -62,9 +62,9 @@ class PromotionUsageController extends Controller
         // Statistics
         $stats = [
             'total' => $client->promotionUsages()->count(),
-            'enviada' => $client->promotionUsages()->where('estado', 'enviada')->count(),
-            'aceptada' => $client->promotionUsages()->where('estado', 'aceptada')->count(),
-            'rechazada' => $client->promotionUsages()->where('estado', 'rechazada')->count(),
+            'enviada' => $client->promotionUsages()->where('status', 'enviada')->count(),
+            'aceptada' => $client->promotionUsages()->where('status', 'aceptada')->count(),
+            'rechazada' => $client->promotionUsages()->where('status', 'rechazada')->count(),
         ];
 
         return view('client.usage-history', compact('usageHistory', 'stats'));

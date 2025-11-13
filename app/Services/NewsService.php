@@ -29,8 +29,8 @@ class NewsService
             return News::query()
                 ->with('creator')
                 ->active()
-                ->forCategory($user->categoria_cliente)
-                ->orderBy('fecha_desde', 'desc')
+                ->forCategory($user->client_category)
+                ->orderBy('start_date', 'desc')
                 ->get();
         }
 
@@ -38,8 +38,8 @@ class NewsService
         return News::query()
             ->with('creator')
             ->active()
-            ->where('categoria_destino', 'Inicial')
-            ->orderBy('fecha_desde', 'desc')
+            ->where('target_category', 'Inicial')
+            ->orderBy('start_date', 'desc')
             ->get();
     }
 
@@ -55,7 +55,7 @@ class NewsService
 
         // Filter by category
         if (!empty($filters['categoria'])) {
-            $query->where('categoria_destino', $filters['categoria']);
+            $query->where('target_category', $filters['categoria']);
         }
 
         // Filter by active/expired status
@@ -65,13 +65,13 @@ class NewsService
             $query->expired();
         }
 
-        return $query->orderBy('fecha_desde', 'desc');
+        return $query->orderBy('start_date', 'desc');
     }
 
     /**
      * Create new news announcement (admin only).
      *
-     * @param array $data ['texto', 'fecha_desde', 'fecha_hasta', 'categoria_destino', 'created_by']
+     * @param array $data ['description', 'start_date', 'end_date', 'target_category', 'created_by']
      * @return array ['success' => bool, 'news' => News|null, 'message' => string]
      */
     public function createNews(array $data): array
@@ -80,7 +80,7 @@ class NewsService
             DB::beginTransaction();
 
             // Validate date range
-            if (Carbon::parse($data['fecha_hasta'])->lt(Carbon::parse($data['fecha_desde']))) {
+            if (Carbon::parse($data['end_date'])->lt(Carbon::parse($data['start_date']))) {
                 return [
                     'success' => false,
                     'news' => null,
@@ -89,17 +89,17 @@ class NewsService
             }
 
             $news = News::create([
-                'texto' => $data['texto'],
-                'fecha_desde' => $data['fecha_desde'],
-                'fecha_hasta' => $data['fecha_hasta'],
-                'categoria_destino' => $data['categoria_destino'],
+                'description' => $data['description'],
+                'start_date' => $data['start_date'],
+                'end_date' => $data['end_date'],
+                'target_category' => $data['target_category'],
                 'created_by' => $data['created_by']
             ]);
 
             Log::info("News created: ID {$news->id}", [
                 'news_id' => $news->id,
-                'codigo' => $news->codigo,
-                'categoria' => $news->categoria_destino,
+                'code' => $news->code,
+                'categoria' => $news->target_category,
                 'created_by' => $data['created_by']
             ]);
 
@@ -126,7 +126,7 @@ class NewsService
      * Update existing news (admin only).
      *
      * @param News $news
-     * @param array $data ['texto', 'fecha_desde', 'fecha_hasta', 'categoria_destino']
+     * @param array $data ['description', 'start_date', 'end_date', 'target_category']
      * @return array ['success' => bool, 'message' => string]
      */
     public function updateNews(News $news, array $data): array
@@ -135,8 +135,8 @@ class NewsService
             DB::beginTransaction();
 
             // Validate date range if dates are being updated
-            if (isset($data['fecha_desde']) && isset($data['fecha_hasta'])) {
-                if (Carbon::parse($data['fecha_hasta'])->lt(Carbon::parse($data['fecha_desde']))) {
+            if (isset($data['start_date']) && isset($data['end_date'])) {
+                if (Carbon::parse($data['end_date'])->lt(Carbon::parse($data['start_date']))) {
                     return [
                         'success' => false,
                         'message' => 'End date must be after start date.'
@@ -149,7 +149,7 @@ class NewsService
 
             Log::info("News updated: ID {$news->id}", [
                 'news_id' => $news->id,
-                'codigo' => $news->codigo
+                'code' => $news->code
             ]);
 
             DB::commit();
@@ -179,7 +179,7 @@ class NewsService
     {
         try {
             $newsId = $news->id;
-            $codigo = $news->codigo;
+            $codigo = $news->code;
 
             $news->delete();
 
@@ -250,8 +250,8 @@ class NewsService
 
         $byCategory = News::query()
             ->selectRaw('categoria_destino, COUNT(*) as count')
-            ->groupBy('categoria_destino')
-            ->pluck('count', 'categoria_destino')
+            ->groupBy('target_category')
+            ->pluck('count', 'target_category')
             ->toArray();
 
         return [
@@ -271,7 +271,7 @@ class NewsService
      */
     public function willExpireSoon(News $news, int $days = 7): bool
     {
-        $expirationDate = Carbon::parse($news->fecha_hasta);
+        $expirationDate = Carbon::parse($news->end_date);
         $checkDate = Carbon::now()->addDays($days);
 
         return $expirationDate->lte($checkDate) && !$news->isExpired();
@@ -289,8 +289,8 @@ class NewsService
 
         return News::query()
             ->active()
-            ->where('fecha_hasta', '<=', $checkDate)
-            ->orderBy('fecha_hasta', 'asc')
+            ->where('end_date', '<=', $checkDate)
+            ->orderBy('end_date', 'asc')
             ->get();
     }
 
@@ -304,10 +304,10 @@ class NewsService
     public function extendExpiration(News $news, int $days): array
     {
         try {
-            $oldDate = $news->fecha_hasta;
+            $oldDate = $news->end_date;
             $newDate = Carbon::parse($oldDate)->addDays($days);
 
-            $news->fecha_hasta = $newDate;
+            $news->end_date = $newDate;
             $news->save();
 
             Log::info("News expiration extended: ID {$news->id}", [

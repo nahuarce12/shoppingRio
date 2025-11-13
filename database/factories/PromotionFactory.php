@@ -66,12 +66,12 @@ class PromotionFactory extends Factory
         }
 
         return [
-            'texto' => fake()->randomElement($promoTexts),
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta,
-            'categoria_minima' => fake()->randomElement(['Inicial', 'Medium', 'Premium']),
-            'dias_semana' => $diasSemana,
-            'estado' => 'aprobada',
+            'description' => fake()->randomElement($promoTexts),
+            'start_date' => $fechaDesde,
+            'end_date' => $fechaHasta,
+            'minimum_category' => fake()->randomElement(['Inicial', 'Medium', 'Premium']),
+            'weekdays' => $diasSemana,
+            'status' => 'aprobada',
             'store_id' => null, // Will be set by seeder or state method
         ];
     }
@@ -92,7 +92,7 @@ class PromotionFactory extends Factory
     public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'pendiente',
+            'status' => 'pendiente',
         ]);
     }
 
@@ -102,7 +102,7 @@ class PromotionFactory extends Factory
     public function approved(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'aprobada',
+            'status' => 'aprobada',
         ]);
     }
 
@@ -112,7 +112,7 @@ class PromotionFactory extends Factory
     public function denied(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'denegada',
+            'status' => 'denegada',
         ]);
     }
 
@@ -122,7 +122,7 @@ class PromotionFactory extends Factory
     public function forCategory(string $category): static
     {
         return $this->state(fn (array $attributes) => [
-            'categoria_minima' => $category,
+            'minimum_category' => $category,
         ]);
     }
 
@@ -156,7 +156,7 @@ class PromotionFactory extends Factory
     public function allWeek(): static
     {
         return $this->state(fn (array $attributes) => [
-            'dias_semana' => [1, 1, 1, 1, 1, 1, 1],
+            'weekdays' => [1, 1, 1, 1, 1, 1, 1],
         ]);
     }
 
@@ -166,7 +166,7 @@ class PromotionFactory extends Factory
     public function weekendsOnly(): static
     {
         return $this->state(fn (array $attributes) => [
-            'dias_semana' => [0, 0, 0, 0, 0, 1, 1], // Saturday and Sunday
+            'weekdays' => [0, 0, 0, 0, 0, 1, 1], // Saturday and Sunday
         ]);
     }
 
@@ -176,7 +176,7 @@ class PromotionFactory extends Factory
     public function weekdaysOnly(): static
     {
         return $this->state(fn (array $attributes) => [
-            'dias_semana' => [1, 1, 1, 1, 1, 0, 0], // Monday to Friday
+            'weekdays' => [1, 1, 1, 1, 1, 0, 0], // Monday to Friday
         ]);
     }
 

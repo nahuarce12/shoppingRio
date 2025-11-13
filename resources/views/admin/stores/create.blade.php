@@ -18,63 +18,83 @@
 
                         {{-- Nombre del Local --}}
                         <div class="mb-3">
-                            <label for="nombre" class="form-label">
+                            <label for="name" class="form-label">
                                 Nombre del Local <span class="text-danger">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control @error('nombre') is-invalid @enderror" 
-                                id="nombre" 
-                                name="nombre" 
-                                value="{{ old('nombre') }}"
+                                class="form-control @error('name') is-invalid @enderror" 
+                                id="name" 
+                                name="name" 
+                                value="{{ old('name') }}"
                                 maxlength="100"
                                 placeholder="Ej: Tienda de Electrodom\u00e9sticos XYZ"
                                 required>
-                            @error('nombre')
+                            @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         {{-- Rubro --}}
                         <div class="mb-3">
-                            <label for="rubro" class="form-label">
+                            <label for="category" class="form-label">
                                 Rubro <span class="text-danger">*</span>
                             </label>
                             <select 
-                                class="form-select @error('rubro') is-invalid @enderror" 
-                                id="rubro" 
-                                name="rubro"
+                                class="form-select @error('category') is-invalid @enderror" 
+                                id="category" 
+                                name="category"
                                 required>
                                 <option value="">Seleccionar rubro...</option>
                                 @foreach($rubros as $rubro)
-                                    <option value="{{ $rubro }}" {{ old('rubro') == $rubro ? 'selected' : '' }}>
+                                    <option value="{{ $rubro }}" {{ old('category') == $rubro ? 'selected' : '' }}>
                                         {{ ucfirst($rubro) }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('rubro')
+                            @error('category')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         {{-- Ubicación --}}
                         <div class="mb-3">
-                            <label for="ubicacion" class="form-label">
+                            <label for="location" class="form-label">
                                 Ubicaci\u00f3n <span class="text-danger">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control @error('ubicacion') is-invalid @enderror" 
-                                id="ubicacion" 
-                                name="ubicacion" 
-                                value="{{ old('ubicacion') }}"
+                                class="form-control @error('location') is-invalid @enderror" 
+                                id="location" 
+                                name="location" 
+                                value="{{ old('location') }}"
                                 maxlength="50"
                                 placeholder="Ej: Primer Piso - Local 205"
                                 required>
                             <div class="form-text">
                                 Indic\u00e1 el piso y n\u00famero de local dentro del shopping
                             </div>
-                            @error('ubicacion')
+                            @error('location')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Descripción --}}
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                Descripci\u00f3n del Local <span class="text-muted">(Opcional)</span>
+                            </label>
+                            <textarea 
+                                class="form-control @error('description') is-invalid @enderror" 
+                                id="description" 
+                                name="description" 
+                                rows="4"
+                                maxlength="500"
+                                placeholder="Ej: Somos una tienda especializada en electrodomésticos de última generación...">{{ old('description') }}</textarea>
+                            <div class="form-text">
+                                Esta descripci\u00f3n aparecer\u00e1 en la secci\u00f3n "Sobre el local" en la p\u00e1gina de detalle
+                            </div>
+                            @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

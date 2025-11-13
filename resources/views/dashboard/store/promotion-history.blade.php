@@ -37,12 +37,12 @@ use Illuminate\Support\Str;
                                     <strong>{{ $usage->client->name }}</strong><br>
                                     <small class="text-muted">{{ $usage->client->email }}</small>
                                 </td>
-                                <td>{{ Str::limit($usage->promotion->texto, 80) }}</td>
-                                <td>{{ optional($usage->fecha_uso)->format('d/m/Y') ?? '-' }}</td>
+                                <td>{{ Str::limit($usage->promotion->description, 80) }}</td>
+                                <td>{{ optional($usage->usage_date)->format('d/m/Y') ?? '-' }}</td>
                                 <td>
-                                    @if($usage->estado === 'aceptada')
+                                    @if($usage->status === 'aceptada')
                                         <span class="badge bg-success">Aceptada</span>
-                                    @elseif($usage->estado === 'rechazada')
+                                    @elseif($usage->status === 'rechazada')
                                         <span class="badge bg-danger">Rechazada</span>
                                     @else
                                         <span class="badge bg-warning text-dark">Pendiente</span>

@@ -15,18 +15,18 @@ return new class extends Migration
             $table->id();
             
             // Sequential unique code for news identification
-            $table->unsignedInteger('codigo')->unique()->index();
+            $table->unsignedInteger('code')->unique()->index();
             
             // News text content
-            $table->string('texto', 200);
+            $table->string('description', 200);
             
             // Date range validity (news auto-expires after fecha_hasta)
-            $table->date('fecha_desde');
-            $table->date('fecha_hasta');
+            $table->date('start_date');
+            $table->date('end_date');
             
             // Target client category (determines visibility based on hierarchy)
             // 'Inicial' visible to all, 'Medium' to Medium+Premium, 'Premium' to Premium only
-            $table->enum('categoria_destino', ['Inicial', 'Medium', 'Premium'])
+            $table->enum('target_category', ['Inicial', 'Medium', 'Premium'])
                 ->default('Inicial');
             
             // Foreign key to admin user who created the news
@@ -37,9 +37,9 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes for performance
-            $table->index('fecha_hasta'); // For auto-expiration queries
-            $table->index('categoria_destino');
-            $table->index(['fecha_hasta', 'categoria_destino']); // Composite index for active news query
+            $table->index('end_date'); // For auto-expiration queries
+            $table->index('target_category');
+            $table->index(['end_date', 'target_category']); // Composite index for active news query
         });
     }
 

@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 $dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-$activeDays = collect($promotion->dias_semana ?? [])
+$activeDays = collect($promotion->weekdays ?? [])
     ->map(fn ($value) => (bool) $value)
     ->pad(7, false)
     ->take(7)
@@ -13,25 +13,25 @@ $activeDays = collect($promotion->dias_semana ?? [])
     ->all();
 
 $categoryHierarchy = ['Inicial', 'Medium', 'Premium'];
-$minCategoryIndex = array_search($promotion->categoria_minima, $categoryHierarchy, true) ?? 0;
+$minCategoryIndex = array_search($promotion->minimum_category, $categoryHierarchy, true) ?? 0;
 $accessibleCategories = array_slice($categoryHierarchy, $minCategoryIndex);
 $storeRoute = route('locales.show', $promotion->store);
 $promotionsIndexRoute = route('promociones.index');
 $registerRoute = Route::has('register') ? route('register') : '#';
-$daysToExpire = now()->diffInDays($promotion->fecha_hasta, false);
+$daysToExpire = now()->diffInDays($promotion->end_date, false);
 $clientEligibility = $clientEligibility ?? null;
 $hasRequested = $hasRequested ?? false;
 $canRequest = ($clientEligibility['eligible'] ?? false) && !$hasRequested;
 $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
 @endphp
 
-@section('title', $promotion->texto . ' - Shopping Rosario')
-@section('meta_description', 'Detalles de la promoción "' . $promotion->texto . '" disponible en ' . $promotion->store->nombre . '.')
+@section('title', $promotion->description . ' - Shopping Rosario')
+@section('meta_description', 'Detalles de la promoción "' . $promotion->description . '" disponible en ' . $promotion->store->name . '.')
 
 @section('content')
 <x-layout.breadcrumbs :items="[
         ['label' => 'Promociones', 'url' => $promotionsIndexRoute],
-        ['label' => Str::limit($promotion->texto, 70)]
+        ['label' => Str::limit($promotion->description, 70)]
     ]" />
 
 <section class="py-4">
@@ -39,34 +39,34 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
     <div class="row">
       <div class="col-lg-6 mb-4">
         <div class="ratio ratio-4x3 bg-light rounded">
-          <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen referencial de {{ $promotion->texto }}">
+          <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen referencial de {{ $promotion->description }}">
         </div>
       </div>
       <div class="col-lg-6 mb-4">
         <div class="detail-info p-4 bg-white rounded shadow-sm h-100">
           <div class="d-flex justify-content-between align-items-start mb-3">
-            <h2 class="mb-0">{{ $promotion->texto }}</h2>
-            <span class="badge text-uppercase badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span>
+            <h2 class="mb-0">{{ $promotion->description }}</h2>
+            <span class="badge text-uppercase badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span>
           </div>
 
-          <p class="text-muted mb-3">Código promoción: {{ sprintf('%04d', $promotion->codigo) }}</p>
+          <p class="text-muted mb-3">Código promoción: {{ sprintf('%04d', $promotion->code) }}</p>
 
           <div class="info-item mb-2">
             <i class="bi bi-shop-window"></i>
             <strong>Local:</strong>
-            <a href="{{ $storeRoute }}" class="ms-1">{{ $promotion->store->nombre }}</a>
+            <a href="{{ $storeRoute }}" class="ms-1">{{ $promotion->store->name }}</a>
           </div>
 
           <div class="info-item mb-2">
             <i class="bi bi-geo-alt-fill"></i>
             <strong>Ubicación:</strong>
-            <span class="ms-1">{{ $promotion->store->ubicacion }}</span>
+            <span class="ms-1">{{ $promotion->store->location }}</span>
           </div>
 
           <div class="info-item mb-2">
             <i class="bi bi-calendar-range"></i>
             <strong>Vigencia:</strong>
-            <span class="ms-1">{{ $promotion->fecha_desde->format('d/m/Y') }} al {{ $promotion->fecha_hasta->format('d/m/Y') }}</span>
+            <span class="ms-1">{{ $promotion->start_date->format('d/m/Y') }} al {{ $promotion->end_date->format('d/m/Y') }}</span>
           </div>
 
           <div class="info-item mb-2">
@@ -123,7 +123,7 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
           @else
             <div class="alert alert-info mt-3" role="alert">
               <i class="bi bi-info-circle-fill"></i>
-              Para canjearla iniciá sesión o registrate y solicitá el beneficio indicando el local {{ sprintf('%03d', $promotion->store->codigo) }}.
+              Para canjearla iniciá sesión o registrate y solicitá el beneficio indicando el local {{ sprintf('%03d', $promotion->store->code) }}.
             </div>
 
             <div class="mt-3 d-grid gap-2">
@@ -164,27 +164,27 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
     @if($similarPromotions->isNotEmpty())
       <div class="row mt-5">
         <div class="col-12 mb-3">
-          <h3 class="section-title">Más promociones de {{ $promotion->store->nombre }}</h3>
+          <h3 class="section-title">Más promociones de {{ $promotion->store->name }}</h3>
         </div>
 
         @foreach($similarPromotions as $similar)
           @php
-            $similarDaysToExpire = now()->diffInDays($similar->fecha_hasta, false);
+            $similarDaysToExpire = now()->diffInDays($similar->end_date, false);
           @endphp
           <div class="col-md-4 mb-4">
-            <article class="card h-100 border-0 shadow-sm promo-card" data-category="{{ strtolower($similar->categoria_minima) }}">
+            <article class="card h-100 border-0 shadow-sm promo-card" data-category="{{ strtolower($similar->minimum_category) }}">
               <div class="position-relative">
                 @if($similarDaysToExpire >= 0 && $similarDaysToExpire <= 5)
                   <span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="bi bi-exclamation-triangle-fill"></i> Por vencer</span>
                 @endif
                 <a href="{{ route('promociones.show', $similar) }}" class="ratio ratio-4x3 bg-light d-block">
-                  <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $similar->texto }}">
+                  <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $similar->description }}">
                 </a>
               </div>
               <div class="card-body">
-                <span class="badge text-uppercase mb-2 badge-{{ strtolower($similar->categoria_minima) }}">{{ $similar->categoria_minima }}</span>
-                <h5 class="card-title">{{ Str::limit($similar->texto, 80) }}</h5>
-                <p class="small mb-0"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $similar->fecha_hasta->format('d/m/Y') }}</p>
+                <span class="badge text-uppercase mb-2 badge-{{ strtolower($similar->minimum_category) }}">{{ $similar->minimum_category }}</span>
+                <h5 class="card-title">{{ Str::limit($similar->description, 80) }}</h5>
+                <p class="small mb-0"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $similar->end_date->format('d/m/Y') }}</p>
               </div>
               <div class="card-footer bg-white border-0 text-end">
                 <a href="{{ route('promociones.show', $similar) }}" class="btn btn-outline-primary btn-sm">Ver detalle</a>

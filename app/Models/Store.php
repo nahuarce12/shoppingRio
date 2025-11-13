@@ -18,10 +18,11 @@ class Store extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'codigo',
-        'nombre',
-        'ubicacion',
-        'rubro',
+        'code',
+        'name',
+        'location',
+        'category',
+        'description',
         'logo',
     ];
 
@@ -31,7 +32,7 @@ class Store extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'codigo' => 'integer',
+        'code' => 'integer',
     ];
 
     // ==================== Relationships ====================
@@ -43,7 +44,7 @@ class Store extends Model
     public function owners(): HasMany
     {
         return $this->hasMany(User::class, 'store_id')
-            ->where('tipo_usuario', 'dueño de local');
+            ->where('user_type', 'dueño de local');
     }
 
     /**
@@ -75,11 +76,11 @@ class Store extends Model
     }
 
     /**
-     * Scope to filter stores by business category (rubro).
+     * Scope to filter stores by business category.
      */
-    public function scopeByRubro($query, string $rubro)
+    public function scopeByCategory($query, string $category)
     {
-        return $query->where('rubro', $rubro);
+        return $query->where('category', $category);
     }
 
     /**
@@ -87,24 +88,24 @@ class Store extends Model
      */
     public function scopeSearch($query, string $search)
     {
-        return $query->where('nombre', 'like', "%{$search}%");
+        return $query->where('name', 'like', "%{$search}%");
     }
 
     // ==================== Model Events ====================
 
     /**
      * Boot the model.
-     * Generate sequential codigo on creation.
+     * Generate sequential code on creation.
      */
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($store) {
-            if (empty($store->codigo)) {
-                // Get the highest codigo and add 1
-                $maxCodigo = static::withTrashed()->max('codigo') ?? 0;
-                $store->codigo = $maxCodigo + 1;
+            if (empty($store->code)) {
+                // Get the highest code and add 1
+                $maxCode = static::withTrashed()->max('code') ?? 0;
+                $store->code = $maxCode + 1;
             }
         });
     }
@@ -117,9 +118,9 @@ class Store extends Model
     public function getActivePromotionsCountAttribute(): int
     {
         return $this->promotions()
-            ->where('estado', 'aprobada')
-            ->whereDate('fecha_desde', '<=', now())
-            ->whereDate('fecha_hasta', '>=', now())
+            ->where('status', 'aprobada')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
             ->count();
     }
 }

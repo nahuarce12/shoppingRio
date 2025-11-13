@@ -27,32 +27,32 @@ class DashboardController extends Controller
         // System statistics
         $stats = [
             'stores_active' => Store::count(),
-            'clients_total' => User::where('tipo_usuario', 'cliente')->count(),
-            'promotions_pending' => Promotion::where('estado', 'pendiente')->count(),
-            'owners_pending' => User::where('tipo_usuario', 'dueño de local')
+            'clients_total' => User::where('user_type', 'cliente')->count(),
+            'promotions_pending' => Promotion::where('status', 'pendiente')->count(),
+            'owners_pending' => User::where('user_type', 'dueño de local')
                 ->whereNull('approved_at')
                 ->count(),
         ];
 
         // Client category distribution
         $categoryDistribution = [
-            'Inicial' => User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Inicial')
+            'Inicial' => User::where('user_type', 'cliente')
+                ->where('client_category', 'Inicial')
                 ->count(),
-            'Medium' => User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Medium')
+            'Medium' => User::where('user_type', 'cliente')
+                ->where('client_category', 'Medium')
                 ->count(),
-            'Premium' => User::where('tipo_usuario', 'cliente')
-                ->where('categoria_cliente', 'Premium')
+            'Premium' => User::where('user_type', 'cliente')
+                ->where('client_category', 'Premium')
                 ->count(),
         ];
 
         // Total usage statistics
         $usageStats = [
-            'total' => PromotionUsage::where('estado', 'aceptada')->count(),
-            'this_month' => PromotionUsage::where('estado', 'aceptada')
-                ->whereMonth('fecha_uso', now()->month)
-                ->whereYear('fecha_uso', now()->year)
+            'total' => PromotionUsage::where('status', 'aceptada')->count(),
+            'this_month' => PromotionUsage::where('status', 'aceptada')
+                ->whereMonth('usage_date', now()->month)
+                ->whereYear('usage_date', now()->year)
                 ->count(),
         ];
 
@@ -62,17 +62,18 @@ class DashboardController extends Controller
             ->leftJoin('promotions', 'stores.id', '=', 'promotions.store_id')
             ->leftJoin('promotion_usage', function ($join) {
                 $join->on('promotions.id', '=', 'promotion_usage.promotion_id')
-                    ->where('promotion_usage.estado', 'aceptada');
+                    ->where('promotion_usage.status', 'aceptada');
             })
             ->groupBy(
                 'stores.id',
-                'stores.codigo',
-                'stores.nombre',
-                'stores.ubicacion',
-                'stores.rubro',
+                'stores.code',
+                'stores.name',
+                'stores.location',
+                'stores.category',
                 'stores.logo',
                 'stores.created_at',
                 'stores.updated_at',
+                'stores.description',
                 'stores.deleted_at'
             )
             ->orderByDesc('usage_count')

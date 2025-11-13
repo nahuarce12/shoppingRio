@@ -15,25 +15,25 @@ return new class extends Migration
             $table->id();
             
             // Sequential unique code for promotion identification
-            $table->unsignedInteger('codigo')->unique()->index();
+            $table->unsignedInteger('code')->unique()->index();
             
             // Promotion description (e.g., '20% pago contado', '2x1 para mismo producto')
-            $table->string('texto', 200);
+            $table->string('description', 200);
             
             // Date range validity
-            $table->date('fecha_desde');
-            $table->date('fecha_hasta');
+            $table->date('start_date');
+            $table->date('end_date');
             
             // Days of week validity (JSON array of 7 booleans: Monday=0 to Sunday=6)
             // Example: [true, true, false, false, false, true, true] = Mon, Tue, Sat, Sun
-            $table->json('dias_semana');
+            $table->json('weekdays');
             
             // Minimum client category required to access this promotion
-            $table->enum('categoria_minima', ['Inicial', 'Medium', 'Premium'])
+            $table->enum('minimum_category', ['Inicial', 'Medium', 'Premium'])
                 ->default('Inicial');
             
             // Admin approval status
-            $table->enum('estado', ['pendiente', 'aprobada', 'denegada'])
+            $table->enum('status', ['pendiente', 'aprobada', 'denegada'])
                 ->default('pendiente')
                 ->index();
             
@@ -46,10 +46,10 @@ return new class extends Migration
             $table->softDeletes(); // Soft delete to preserve historical usage data
             
             // Indexes for performance
-            $table->index('fecha_desde');
-            $table->index('fecha_hasta');
-            $table->index('categoria_minima');
-            $table->index(['estado', 'fecha_desde', 'fecha_hasta']); // Composite index for active promotions query
+            $table->index('start_date');
+            $table->index('end_date');
+            $table->index('minimum_category');
+            $table->index(['status', 'start_date', 'end_date']); // Composite index for active promotions query
         });
     }
 
