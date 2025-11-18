@@ -2,7 +2,7 @@
 
 @section('content')
     <h2>Actualización sobre tu promoción</h2>
-    
+
     <div class="danger-box">
         <strong>❌ Tu promoción ha sido DENEGADA</strong>
     </div>
@@ -12,7 +12,6 @@
     <div class="info-box">
         <strong>📍 Local:</strong> {{ $storeName }}<br>
         <strong>🎯 Promoción:</strong> {{ $promotionText }}<br>
-        <strong>� Código:</strong> #{{ $promotionCode }}
     </div>
 
     <div class="warning-box">

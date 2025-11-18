@@ -61,21 +61,21 @@ use Illuminate\Support\Str;
                     <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="Descripción de la promoción">
                 </div>
                 <div class="col-md-3 col-lg-2">
-                    <label class="form-label" for="estado">Estado</label>
-                    <select class="form-select" id="estado" name="estado">
+                    <label class="form-label" for="status">Estado</label>
+                    <select class="form-select" id="status" name="status">
                         <option value="">Todos</option>
                         @foreach(['pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'denegada' => 'Denegada'] as $value => $label)
-                            <option value="{{ $value }}" @selected(request('estado') === $value)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-3 col-lg-2">
-                    <label class="form-label" for="fecha_desde">Desde</label>
-                    <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ request('fecha_desde') }}">
+                    <label class="form-label" for="start_date">Desde</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}">
                 </div>
                 <div class="col-md-3 col-lg-2">
-                    <label class="form-label" for="fecha_hasta">Hasta</label>
-                    <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ request('fecha_hasta') }}">
+                    <label class="form-label" for="end_date">Hasta</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request('end_date') }}">
                 </div>
                 <div class="col-md-3 col-lg-2 d-grid">
                     <button type="submit" class="btn btn-outline-primary">
@@ -104,22 +104,22 @@ use Illuminate\Support\Str;
                     <tbody>
                         @forelse($promotions as $promotion)
                             <tr>
-                                <td>#{{ str_pad($promotion->codigo, 4, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ Str::limit($promotion->texto, 80) }}</td>
-                                <td><span class="badge badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span></td>
+                                <td>#{{ str_pad($promotion->code, 4, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ Str::limit($promotion->description, 80) }}</td>
+                                <td><span class="badge badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span></td>
                                 <td>
-                                    <div>{{ $promotion->fecha_desde->format('d/m/Y') }} - {{ $promotion->fecha_hasta->format('d/m/Y') }}</div>
+                                    <div>{{ $promotion->start_date->format('d/m/Y') }} - {{ $promotion->end_date->format('d/m/Y') }}</div>
                                 </td>
                                 <td>
                                     @php
-                                        $badgeClass = match($promotion->estado) {
+                                        $badgeClass = match($promotion->status) {
                                             'aprobada' => 'bg-success',
                                             'pendiente' => 'bg-warning text-dark',
                                             'denegada' => 'bg-danger',
                                             default => 'bg-secondary'
                                         };
                                     @endphp
-                                    <span class="badge {{ $badgeClass }}">{{ ucfirst($promotion->estado) }}</span>
+                                    <span class="badge {{ $badgeClass }}">{{ ucfirst($promotion->status) }}</span>
                                 </td>
                                 <td>{{ $promotion->accepted_usages_count ?? 0 }}</td>
                                 <td class="text-center">

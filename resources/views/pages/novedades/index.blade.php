@@ -1,168 +1,167 @@
 @extends('layouts.app')
 
 @section('title', 'Novedades - Shopping Rosario')
-@section('meta_description', 'Enterate de las últimas novedades, eventos y anuncios especiales del Shopping Rosario.')
+@section('meta_description', 'Descubrí todas las novedades y noticias del Shopping Rosario. Mantenete informado sobre eventos, aperturas y promociones especiales.')
 
 @php
-use Illuminate\Support\Facades\Route;
-
-$newsItems = [
-[
-'title' => 'Nueva Temporada Primavera-Verano',
-'category' => 'Premium',
-'category_class' => 'badge-premium',
-'date' => '20/10/2025',
-'expires' => '15/12/2025',
-'image' => 'https://via.placeholder.com/400x250/e74c3c/ffffff?text=Nueva+Temporada',
-'description' => 'Descubre las últimas tendencias en moda para esta temporada. Todos los locales de indumentaria renuevan su stock con las mejores propuestas.',
-'is_active' => true,
-],
-[
-'title' => 'Expo Tech 2025',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'date' => '18/10/2025',
-'expires' => '25/10/2025',
-'image' => 'https://via.placeholder.com/400x250/3498db/ffffff?text=Evento+Tech',
-'description' => 'Gran exhibición de tecnología con lanzamientos exclusivos. Todos los locales de tecnología participan con ofertas especiales y demostraciones en vivo.',
-'is_active' => true,
-],
-[
-'title' => 'Semana Gastronómica',
-'category' => 'Medium',
-'category_class' => 'badge-medium',
-'date' => '15/10/2025',
-'expires' => '22/10/2025',
-'image' => 'https://via.placeholder.com/400x250/27ae60/ffffff?text=Semana+Gourmet',
-'description' => 'Disfruta de menús especiales en todos nuestros restaurantes. Una semana dedicada a los mejores sabores de la ciudad con propuestas únicas.',
-'is_active' => true,
-],
-[
-'title' => 'Anticipo Black Friday',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'date' => '10/10/2025',
-'expires' => '31/10/2025',
-'image' => 'https://via.placeholder.com/400x250/f39c12/ffffff?text=Black+Friday',
-'description' => 'No esperes hasta noviembre. Adelantamos algunas ofertas exclusivas para nuestros clientes registrados en categorías Inicial y superiores.',
-'is_active' => true,
-],
-[
-'title' => 'Día del Niño - Actividades Especiales',
-'category' => 'Inicial',
-'category_class' => 'badge-inicial',
-'date' => '05/10/2025',
-'expires' => null,
-'image' => 'https://via.placeholder.com/400x250/9b59b6/ffffff?text=Kids+Day',
-'description' => 'Celebramos el Día del Niño con actividades, juegos y sorpresas en todo el shopping. Entrada gratuita a todas las actividades.',
-'is_active' => false,
-],
-[
-'title' => 'Inauguración: Sports Zone',
-'category' => 'Premium',
-'category_class' => 'badge-premium',
-'date' => '01/10/2025',
-'expires' => '31/10/2025',
-'image' => 'https://via.placeholder.com/400x250/e67e22/ffffff?text=Nuevo+Local',
-'description' => 'Damos la bienvenida a Sports Zone, tu nueva tienda de deportes con las mejores marcas. Promociones especiales de inauguración todo el mes.',
-'is_active' => true,
-],
-];
+  use Illuminate\Support\Str;
 @endphp
 
 @section('content')
-<x-layout.breadcrumbs :items="[['label' => 'Novedades']]" />
+<x-layout.breadcrumbs :items="[['label' => 'Novedades', 'url' => route('novedades.index')]]" />
 
 <section class="py-4">
   <div class="container text-center">
-    <h1 class="display-5 fw-bold text-primary">Novedades</h1>
-    <p class="lead">Mantente al día con las últimas noticias y eventos del centro comercial.</p>
+    <h1 class="display-5 fw-bold" style="color: var(--primary-color)">Novedades</h1>
+    <p class="lead">Mantenete al día con las últimas noticias, eventos y actualizaciones del shopping.</p>
   </div>
 </section>
 
 <section class="py-4">
   <div class="container">
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="input-group input-group-lg">
-          <span class="input-group-text bg-white border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 ps-0" id="searchNews" placeholder="Buscar Novedad">
+    <form method="GET" action="{{ route('novedades.index') }}" id="news-filter-form" class="card shadow-sm p-3 border-0">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-lg-6">
+          <label for="search" class="form-label">Buscar novedad</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" style="font-size: 1.1rem;" value="{{ request('search') }}" placeholder="Ingresá título, descripción o palabras clave">
+          </div>
         </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label" for="categoryNews">Categoría de Cliente</label>
-          <select class="form-select" id="categoryNews">
+        <div class="col-12 col-lg-4">
+          <label for="target_category" class="form-label">Categoría de cliente</label>
+          <select style="font-size: 1.1rem;" class="form-select form-select-lg" id="target_category" name="target_category">
             <option value="">Todas las categorías</option>
-            @foreach(collect($newsItems)->pluck('category')->unique() as $category)
-            <option value="{{ strtolower($category) }}">{{ $category }}</option>
+            @foreach($categories as $category)
+              <option value="{{ $category }}" @selected(request('target_category') === $category)>{{ $category }}</option>
             @endforeach
           </select>
         </div>
-        <div class="col-md-4">
-          <label class="form-label" for="dateFrom">Desde</label>
-          <input type="date" class="form-control" id="dateFrom">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="dateTo">Hasta</label>
-          <input type="date" class="form-control" id="dateTo">
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary w-100" title="Aplicar filtros"><i class="bi bi-filter"></i></button>
+          <a href="{{ route('novedades.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros"><i class="bi bi-x-circle"></i></a>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 </section>
 
-<section class="py-5">
+<section class="py-4">
   <div class="container">
-    <div class="row g-4" id="news-grid">
-      @foreach($newsItems as $item)
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 hover-shadow" data-category="{{ strtolower($item['category']) }}">
-          <img src="{{ $item['image'] }}" class="card-img-top" alt="{{ $item['title'] }}">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="badge {{ $item['category_class'] }}">{{ $item['category'] }}</span>
-              <small class="text-muted">
-                <i class="bi bi-calendar3"></i> {{ $item['date'] }}
-              </small>
-            </div>
-            <h5 class="card-title">{{ $item['title'] }}</h5>
-            <p class="card-text">{{ $item['description'] }}</p>
-            <div class="mt-3">
-              @if($item['is_active'] && $item['expires'])
-              <span class="badge bg-info">
-                <i class="bi bi-clock"></i> Vigente hasta: {{ $item['expires'] }}
-              </span>
-              @elseif(!$item['is_active'])
-              <span class="badge bg-warning text-dark">
-                <i class="bi bi-clock"></i> Finalizada
-              </span>
-              @endif
-            </div>
+    @if($news->count() > 0)
+      <div class="row g-4" id="news-grid">
+        @foreach($news as $newsItem)
+          @php
+            $daysToExpire = now()->diffInDays($newsItem->end_date, false);
+            $isExpiring = $daysToExpire >= 0 && $daysToExpire <= 3;
+            $isNew = now()->diffInDays($newsItem->created_at, false) <= 7;
+          @endphp
+          <div class="col-12 col-md-6 col-lg-4">
+            <article class="card h-100 border-0 shadow-sm" data-category="{{ strtolower($newsItem->target_category) }}">
+              <div class="position-relative">
+                @if($isNew)
+                  <span class="badge bg-success position-absolute top-0 start-0 m-2 z-1"><i class="bi bi-star-fill"></i> Nuevo</span>
+                @endif
+                @if($isExpiring)
+                  <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 z-1"><i class="bi bi-clock-fill"></i> Por vencer</span>
+                @endif
+                <div class="ratio ratio-16x9">
+                  @if($newsItem->imagen)
+                    <img src="{{ asset('storage/' . $newsItem->imagen) }}" class="object-fit-cover rounded-top" alt="Imagen de {{ $newsItem->title }}">
+                  @else
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded-top">
+                      <i class="bi bi-newspaper text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                  @endif
+                </div>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <div class="mb-3">
+                  <span class="badge text-uppercase badge-{{ strtolower($newsItem->target_category) }}">{{ $newsItem->target_category }}</span>
+                  <span class="badge bg-secondary ms-1">
+                    <i class="bi bi-calendar3"></i> {{ $newsItem->created_at->format('d/m/Y') }}
+                  </span>
+                </div>
+                
+                <h3 class="h5 card-title fw-bold">{{ $newsItem->title ?? Str::limit($newsItem->description, 60) }}</h3>
+                
+                <p class="card-text text-muted flex-grow-1">
+                  {{ Str::limit($newsItem->description, 150) }}
+                </p>
+                
+                <div class="mt-auto">
+                  <hr class="my-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">
+                      <i class="bi bi-hourglass-split"></i> Vigente hasta: <strong>{{ $newsItem->end_date->format('d/m/Y') }}</strong>
+                    </div>
+                    @if($isExpiring)
+                      <span class="badge bg-warning text-dark">
+                        {{ $daysToExpire }} {{ $daysToExpire === 1 ? 'día' : 'días' }}
+                      </span>
+                    @endif
+                  </div>
+                </div>
+              </div>
+            </article>
           </div>
+        @endforeach
+      </div>
+
+      @if($news->hasPages())
+        <div class="d-flex justify-content-center mt-5">
+          {{ $news->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+      @endif
+    @else
+      <div class="alert alert-info text-center" role="status">
+        <i class="bi bi-info-circle fs-3"></i>
+        <p class="mt-2 mb-0">No encontramos novedades con los filtros seleccionados. Modificá tu búsqueda e intentá nuevamente.</p>
+      </div>
+    @endif
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container">
+    <hr class="section-separator">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <h2 class="h3 fw-bold">¿Por qué suscribirse a las novedades?</h2>
+        <ul class="list-unstyled mt-3 mb-0">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Enterate primero de nuevas promociones y eventos especiales.</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Recibí notificaciones exclusivas según tu categoría de cliente.</li>
+          <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> No te pierdas aperturas de locales y actividades del shopping.</li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm text-center p-4 h-100">
+          <i class="bi bi-bell-fill fs-1 text-primary mb-3"></i>
+          <h3 class="h5">¡Suscribite a nuestras novedades!</h3>
+          <p class="text-muted">Registrate como cliente para recibir notificaciones personalizadas de todas las novedades del shopping.</p>
+          @guest
+            <a href="{{ route('register') }}" class="btn btn-primary">
+              <i class="bi bi-person-plus"></i> Crear cuenta gratuita
+            </a>
+          @else
+            <a href="{{ route('client.dashboard') }}" class="btn btn-primary">
+              <i class="bi bi-grid-fill"></i> Ir a mi panel
+            </a>
+          @endguest
         </div>
       </div>
-      @endforeach
     </div>
-
-    <nav aria-label="Navegación de novedades" class="mt-5">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
-      </ul>
-    </nav>
   </div>
 </section>
 @endsection
 
 @push('scripts')
-@vite('resources/js/frontoffice/main.js')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const targetCategorySelect = document.getElementById('target_category');
+    if (targetCategorySelect) {
+      targetCategorySelect.addEventListener('change', () => document.getElementById('news-filter-form').submit());
+    }
+  });
+</script>
 @endpush

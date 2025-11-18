@@ -51,8 +51,8 @@ class PromotionUsageService
             $usage = PromotionUsage::create([
                 'client_id' => $client->id,
                 'promotion_id' => $promotion->id,
-                'fecha_uso' => Carbon::today(),
-                'estado' => 'enviada',
+                'usage_date' => Carbon::today(),
+                'status' => 'enviada',
                 'codigo_qr' => PromotionUsage::generateUniqueQrCode()
             ]);
 
@@ -99,14 +99,14 @@ class PromotionUsageService
      */
     public function acceptUsageRequest(PromotionUsage $usage): bool
     {
-        if ($usage->estado !== 'enviada') {
+        if ($usage->status !== 'enviada') {
             return false;
         }
 
         try {
             DB::beginTransaction();
 
-            $usage->estado = 'aceptada';
+            $usage->status = 'aceptada';
             $usage->save();
 
             // Send acceptance email to client
@@ -132,14 +132,14 @@ class PromotionUsageService
      */
     public function rejectUsageRequest(PromotionUsage $usage, ?string $reason = null): bool
     {
-        if ($usage->estado !== 'enviada') {
+        if ($usage->status !== 'enviada') {
             return false;
         }
 
         try {
             DB::beginTransaction();
 
-            $usage->estado = 'rechazada';
+            $usage->status = 'rechazada';
             $usage->save();
 
             // Send rejection email to client with reason
@@ -177,7 +177,7 @@ class PromotionUsageService
      * Get usage history for a specific client.
      *
      * @param User $client
-     * @param array $filters ['estado' => string, 'date_from' => string, 'date_to' => string]
+     * @param array $filters ['status' => string, 'date_from' => string, 'date_to' => string]
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function getClientUsageHistory(User $client, array $filters = [])
@@ -187,19 +187,19 @@ class PromotionUsageService
             ->where('client_id', $client->id);
 
         // Filter by status
-        if (!empty($filters['estado'])) {
-            $query->where('estado', $filters['estado']);
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
         // Filter by date range
         if (!empty($filters['date_from'])) {
-            $query->where('fecha_uso', '>=', $filters['date_from']);
+            $query->where('usage_date', '>=', $filters['date_from']);
         }
         if (!empty($filters['date_to'])) {
-            $query->where('fecha_uso', '<=', $filters['date_to']);
+            $query->where('usage_date', '<=', $filters['date_to']);
         }
 
-        return $query->orderBy('fecha_uso', 'desc');
+        return $query->orderBy('usage_date', 'desc');
     }
 
     /**
@@ -214,9 +214,9 @@ class PromotionUsageService
 
         $stats = [
             'total_requests' => $usages->count(),
-            'pending' => $usages->where('estado', 'enviada')->count(),
-            'accepted' => $usages->where('estado', 'aceptada')->count(),
-            'rejected' => $usages->where('estado', 'rechazada')->count(),
+            'pending' => $usages->where('status', 'enviada')->count(),
+            'accepted' => $usages->where('status', 'aceptada')->count(),
+            'rejected' => $usages->where('status', 'rechazada')->count(),
             'acceptance_rate' => 0,
             'unique_clients' => $usages->pluck('client_id')->unique()->count(),
         ];
@@ -246,9 +246,9 @@ class PromotionUsageService
 
         $stats = [
             'total_requests' => $usages->count(),
-            'pending' => $usages->where('estado', 'enviada')->count(),
-            'accepted' => $usages->where('estado', 'aceptada')->count(),
-            'rejected' => $usages->where('estado', 'rechazada')->count(),
+            'pending' => $usages->where('status', 'enviada')->count(),
+            'accepted' => $usages->where('status', 'aceptada')->count(),
+            'rejected' => $usages->where('status', 'rechazada')->count(),
             'unique_clients' => $usages->pluck('client_id')->unique()->count(),
         ];
 
@@ -267,8 +267,8 @@ class PromotionUsageService
     {
         return PromotionUsage::query()
             ->where('client_id', $client->id)
-            ->where('estado', 'aceptada')
-            ->where('fecha_uso', '>=', Carbon::now()->subMonths($months))
+            ->where('status', 'aceptada')
+            ->where('usage_date', '>=', Carbon::now()->subMonths($months))
             ->count();
     }
 
@@ -282,14 +282,14 @@ class PromotionUsageService
     {
         return PromotionUsage::query()
             ->where('client_id', $client->id)
-            ->where('estado', 'enviada')
+            ->where('status', 'enviada')
             ->exists();
     }
 
     /**
      * Get all usage requests with optional filters (for admin reports).
      *
-     * @param array $filters ['store_id' => int, 'estado' => string, 'date_from' => string, 'date_to' => string]
+     * @param array $filters ['store_id' => int, 'status' => string, 'date_from' => string, 'date_to' => string]
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function getFilteredUsageRequests(array $filters = [])
@@ -305,18 +305,18 @@ class PromotionUsageService
         }
 
         // Filter by status
-        if (!empty($filters['estado'])) {
-            $query->where('estado', $filters['estado']);
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
         // Filter by date range
         if (!empty($filters['date_from'])) {
-            $query->where('fecha_uso', '>=', $filters['date_from']);
+            $query->where('usage_date', '>=', $filters['date_from']);
         }
         if (!empty($filters['date_to'])) {
-            $query->where('fecha_uso', '<=', $filters['date_to']);
+            $query->where('usage_date', '<=', $filters['date_to']);
         }
 
-        return $query->orderBy('fecha_uso', 'desc');
+        return $query->orderBy('usage_date', 'desc');
     }
 }

@@ -27,7 +27,7 @@
   @stack('head')
 </head>
 
-<body class="d-flex flex-column min-vh-100 bg-light">
+<body class="d-flex flex-column min-vh-100" style="background-color: #FFFFFF !important;">
   <x-nav.main />
 
   <main id="main-content" class="flex-grow-1">

@@ -61,7 +61,7 @@ class ApproveUserRequest extends FormRequest
                     }
 
                     // Check if user is a store owner
-                    if ($user->tipo_usuario !== 'dueño de local') {
+                    if ($user->user_type !== 'dueño de local') {
                         $fail('Only store owners can be approved.');
                         return;
                     }

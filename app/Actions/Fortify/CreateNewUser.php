@@ -29,22 +29,22 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-            'tipo_usuario' => ['required', 'string', Rule::in(['cliente', 'dueño de local'])],
+            'user_type' => ['required', 'string', Rule::in(['cliente', 'dueño de local'])],
             'store_id' => ['required_if:tipo_usuario,dueño de local', 'nullable', 'exists:stores,id'],
         ])->validate();
 
         // Determine categoria_cliente - only for 'cliente' tipo_usuario
-        $categoria = $input['tipo_usuario'] === 'cliente' ? 'Inicial' : null;
+        $categoria = $input['user_type'] === 'cliente' ? 'Inicial' : null;
 
         // Store owners require admin approval, clients don't
-        $approved_at = $input['tipo_usuario'] === 'cliente' ? now() : null;
+        $approved_at = $input['user_type'] === 'cliente' ? now() : null;
 
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
-            'tipo_usuario' => $input['tipo_usuario'],
-            'categoria_cliente' => $categoria,
+            'user_type' => $input['user_type'],
+            'client_category' => $categoria,
             'approved_at' => $approved_at,
             'store_id' => $input['store_id'] ?? null,
         ]);

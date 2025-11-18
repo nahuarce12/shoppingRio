@@ -30,26 +30,26 @@ class PromotionController extends Controller
         $query = $store->promotions();
 
         // Filter by estado
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Filter by date range
-        if ($request->filled('fecha_desde')) {
-            $query->where('fecha_desde', '>=', $request->fecha_desde);
+        if ($request->filled('start_date')) {
+            $query->where('start_date', '>=', $request->start_date);
         }
 
-        if ($request->filled('fecha_hasta')) {
-            $query->where('fecha_hasta', '<=', $request->fecha_hasta);
+        if ($request->filled('end_date')) {
+            $query->where('end_date', '<=', $request->end_date);
         }
 
         // Search in text
         if ($request->filled('search')) {
-            $query->where('texto', 'like', "%{$request->search}%");
+            $query->where('description', 'like', "%{$request->search}%");
         }
 
         $query->withCount(['usages as accepted_usages_count' => function ($usageQuery) {
-            $usageQuery->where('estado', 'aceptada');
+            $usageQuery->where('status', 'aceptada');
         }])->orderBy('created_at', 'desc');
 
         $promotions = $query->paginate(15);
@@ -57,13 +57,13 @@ class PromotionController extends Controller
         // Statistics
         $stats = [
             'total' => $store->promotions()->count(),
-            'pendiente' => $store->promotions()->where('estado', 'pendiente')->count(),
-            'aprobada' => $store->promotions()->where('estado', 'aprobada')->count(),
-            'denegada' => $store->promotions()->where('estado', 'denegada')->count(),
+            'pendiente' => $store->promotions()->where('status', 'pendiente')->count(),
+            'aprobada' => $store->promotions()->where('status', 'aprobada')->count(),
+            'denegada' => $store->promotions()->where('status', 'denegada')->count(),
             'active' => $store->promotions()
-                ->where('estado', 'aprobada')
-                ->where('fecha_desde', '<=', now())
-                ->where('fecha_hasta', '>=', now())
+                ->where('status', 'aprobada')
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
                 ->count(),
         ];
 
@@ -106,7 +106,7 @@ class PromotionController extends Controller
                 $request->validated(),
                 [
                     'store_id' => $store->id,
-                    'estado' => 'pendiente' // Requires admin approval
+                    'status' => 'pendiente' // Requires admin approval
                 ]
             );
 
@@ -120,7 +120,7 @@ class PromotionController extends Controller
 
             Log::info('Promotion created by store owner', [
                 'promotion_id' => $promotion->id,
-                'promotion_code' => $promotion->codigo,
+                'promotion_code' => $promotion->code,
                 'store_id' => $store->id,
                 'owner_id' => Auth::id()
             ]);
@@ -165,9 +165,9 @@ class PromotionController extends Controller
         // Get usage statistics
         $usageStats = [
             'total' => $usageCollection->count(),
-            'pending' => $usageCollection->where('estado', 'enviada')->count(),
-            'accepted' => $usageCollection->where('estado', 'aceptada')->count(),
-            'rejected' => $usageCollection->where('estado', 'rechazada')->count(),
+            'pending' => $usageCollection->where('status', 'enviada')->count(),
+            'accepted' => $usageCollection->where('status', 'aceptada')->count(),
+            'rejected' => $usageCollection->where('status', 'rechazada')->count(),
         ];
 
         return view('dashboard.store.promotion-show', compact('promotion', 'usageStats', 'store'));
@@ -193,7 +193,7 @@ class PromotionController extends Controller
         }
 
         // Don't allow deletion of promotions with accepted usage requests
-        $acceptedUsages = $promotion->usages()->where('estado', 'aceptada')->count();
+        $acceptedUsages = $promotion->usages()->where('status', 'aceptada')->count();
         
         if ($acceptedUsages > 0) {
             return redirect()
@@ -202,12 +202,12 @@ class PromotionController extends Controller
         }
 
         try {
-            $promotionText = $promotion->texto;
+            $promotionText = $promotion->description;
             $promotion->delete(); // Soft delete
 
             Log::info('Promotion deleted by store owner', [
                 'promotion_id' => $promotion->id,
-                'promotion_code' => $promotion->codigo,
+                'promotion_code' => $promotion->code,
                 'store_id' => $store->id,
                 'owner_id' => Auth::id()
             ]);

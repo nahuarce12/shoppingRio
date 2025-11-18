@@ -34,19 +34,19 @@ class DashboardController extends Controller
         $client->refresh();
 
         // Client category information
-        $categoryInfo = config('shopping.client_categories.' . $client->categoria_cliente, []);
+        $categoryInfo = config('shopping.client_categories.' . $client->client_category, []);
 
         // Usage statistics
         $usageStats = [
             'total' => $client->promotionUsages()->count(),
-            'enviada' => $client->promotionUsages()->where('estado', 'enviada')->count(),
-            'aceptada' => $client->promotionUsages()->where('estado', 'aceptada')->count(),
+            'enviada' => $client->promotionUsages()->where('status', 'enviada')->count(),
+            'aceptada' => $client->promotionUsages()->where('status', 'aceptada')->count(),
         ];
 
         // Recent usage history
         $recentUsages = $client->promotionUsages()
             ->with(['promotion.store'])
-            ->orderBy('fecha_uso', 'desc')
+            ->orderBy('usage_date', 'desc')
             ->limit(5)
             ->get();
 
@@ -57,7 +57,7 @@ class DashboardController extends Controller
         $availablePromotionsCount = \App\Models\Promotion::approved()
             ->active()
             ->validToday()
-            ->forCategory($client->categoria_cliente)
+            ->forCategory($client->client_category)
             ->whereDoesntHave('usages', function ($q) use ($client) {
                 $q->where('client_id', $client->id);
             })

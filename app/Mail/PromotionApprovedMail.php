@@ -29,7 +29,7 @@ class PromotionApprovedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Promotion Approved - ' . $this->promotion->store->nombre,
+            subject: 'Promotion Approved - ' . $this->promotion->store->name,
         );
     }
 
@@ -41,12 +41,12 @@ class PromotionApprovedMail extends Mailable
         return new Content(
             view: 'emails.promotion-approved',
             with: [
-                'storeName' => $this->promotion->store->nombre,
-                'promotionText' => $this->promotion->texto,
-                'promotionCode' => $this->promotion->codigo,
-                'startDate' => $this->promotion->fecha_desde->format('d/m/Y'),
-                'endDate' => $this->promotion->fecha_hasta->format('d/m/Y'),
-                'category' => $this->promotion->categoria_minima,
+                'storeName' => $this->promotion->store->name,
+                'promotionText' => $this->promotion->description,
+                'promotionCode' => $this->promotion->code,
+                'startDate' => $this->promotion->start_date->format('d/m/Y'),
+                'endDate' => $this->promotion->end_date->format('d/m/Y'),
+                'category' => $this->promotion->minimum_category,
                 'dashboardUrl' => url('/store/dashboard'),
             ]
         );

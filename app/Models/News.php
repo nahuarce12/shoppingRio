@@ -17,12 +17,12 @@ class News extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'codigo',
-        'texto',
+        'code',
+        'description',
         'imagen',
-        'fecha_desde',
-        'fecha_hasta',
-        'categoria_destino',
+        'start_date',
+        'end_date',
+        'target_category',
         'created_by',
     ];
 
@@ -32,9 +32,9 @@ class News extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'codigo' => 'integer',
-        'fecha_desde' => 'date',
-        'fecha_hasta' => 'date',
+        'code' => 'integer',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     // ==================== Relationships ====================
@@ -55,8 +55,8 @@ class News extends Model
     public function scopeActive($query)
     {
         $today = Carbon::today();
-        return $query->whereDate('fecha_desde', '<=', $today)
-            ->whereDate('fecha_hasta', '>=', $today);
+        return $query->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today);
     }
 
     /**
@@ -65,7 +65,7 @@ class News extends Model
     public function scopeExpired($query)
     {
         $today = Carbon::today();
-        return $query->whereDate('fecha_hasta', '<', $today);
+        return $query->whereDate('end_date', '<', $today);
     }
 
     /**
@@ -80,7 +80,7 @@ class News extends Model
         return $query->where(function ($q) use ($hierarchy, $clientLevel) {
             foreach ($hierarchy as $category => $level) {
                 if ($level <= $clientLevel) {
-                    $q->orWhere('categoria_destino', $category);
+                    $q->orWhere('target_category', $category);
                 }
             }
         });
@@ -97,10 +97,10 @@ class News extends Model
         parent::boot();
 
         static::creating(function ($news) {
-            if (empty($news->codigo)) {
+            if (empty($news->code)) {
                 // Get the highest codigo and add 1
-                $maxCodigo = static::max('codigo') ?? 0;
-                $news->codigo = $maxCodigo + 1;
+                $maxCodigo = static::max('code') ?? 0;
+                $news->code = $maxCodigo + 1;
             }
         });
     }
@@ -113,7 +113,7 @@ class News extends Model
     public function isActive(): bool
     {
         $today = Carbon::today();
-        return $this->fecha_desde <= $today && $this->fecha_hasta >= $today;
+        return $this->start_date <= $today && $this->end_date >= $today;
     }
 
     /**
@@ -121,7 +121,7 @@ class News extends Model
      */
     public function isExpired(): bool
     {
-        return $this->fecha_hasta < Carbon::today();
+        return $this->end_date < Carbon::today();
     }
 
     /**
@@ -131,7 +131,7 @@ class News extends Model
     {
         $hierarchy = ['Inicial' => 1, 'Medium' => 2, 'Premium' => 3];
         $clientLevel = $hierarchy[$clientCategory] ?? 0;
-        $requiredLevel = $hierarchy[$this->categoria_destino] ?? 0;
+        $requiredLevel = $hierarchy[$this->target_category] ?? 0;
 
         return $clientLevel >= $requiredLevel;
     }
@@ -141,6 +141,6 @@ class News extends Model
      */
     public function getDaysUntilExpiration(): int
     {
-        return Carbon::today()->diffInDays($this->fecha_hasta, false);
+        return Carbon::today()->diffInDays($this->end_date, false);
     }
 }

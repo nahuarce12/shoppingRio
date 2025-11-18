@@ -25,13 +25,13 @@ return new class extends Migration
                 ->onDelete('cascade');
             
             // Date when the promotion usage was requested/accepted
-            $table->date('fecha_uso');
+            $table->date('usage_date');
             
             // Status of the usage request
             // 'enviada' = pending store owner review
             // 'aceptada' = accepted by store owner
             // 'rechazada' = rejected by store owner
-            $table->enum('estado', ['enviada', 'aceptada', 'rechazada'])
+            $table->enum('status', ['enviada', 'aceptada', 'rechazada'])
                 ->default('enviada')
                 ->index();
             
@@ -41,8 +41,8 @@ return new class extends Migration
             $table->unique(['client_id', 'promotion_id']);
             
             // Indexes for performance
-            $table->index('fecha_uso');
-            $table->index(['promotion_id', 'estado']); // For store owner to see pending requests
+            $table->index('usage_date');
+            $table->index(['promotion_id', 'status']); // For store owner to see pending requests
         });
     }
 

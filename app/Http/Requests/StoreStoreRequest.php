@@ -31,22 +31,27 @@ class StoreStoreRequest extends FormRequest
         $rubros = array_keys(config('shopping.store_rubros', []));
 
         return [
-            'nombre' => [
+            'name' => [
                 'required',
                 'string',
                 'max:100',
-                'unique:stores,nombre,' . $storeId
+                'unique:stores,name,' . $storeId
             ],
-            'ubicacion' => [
+            'location' => [
                 'required',
                 'string',
                 'max:50'
             ],
-            'rubro' => [
+            'category' => [
                 'required',
                 'string',
                 'max:20',
                 'in:' . implode(',', $rubros)
+            ],
+            'description' => [
+                'nullable',
+                'string',
+                'max:500'
             ],
             'logo' => [
                 'nullable',
@@ -86,9 +91,9 @@ class StoreStoreRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'nombre' => 'store name',
-            'ubicacion' => 'location',
-            'rubro' => 'business category',
+            'name' => 'store name',
+            'location' => 'location',
+            'category' => 'business category',
             'logo' => 'store logo'
         ];
     }

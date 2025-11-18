@@ -25,8 +25,8 @@ class PromotionUsage extends Model
     protected $fillable = [
         'client_id',
         'promotion_id',
-        'fecha_uso',
-        'estado',
+        'usage_date',
+        'status',
         'codigo_qr',
     ];
 
@@ -36,7 +36,7 @@ class PromotionUsage extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'fecha_uso' => 'date',
+        'usage_date' => 'date',
     ];
 
     // ==================== Relationships ====================
@@ -64,7 +64,7 @@ class PromotionUsage extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('estado', 'enviada');
+        return $query->where('status', 'enviada');
     }
 
     /**
@@ -72,7 +72,7 @@ class PromotionUsage extends Model
      */
     public function scopeAccepted($query)
     {
-        return $query->where('estado', 'aceptada');
+        return $query->where('status', 'aceptada');
     }
 
     /**
@@ -80,7 +80,7 @@ class PromotionUsage extends Model
      */
     public function scopeRejected($query)
     {
-        return $query->where('estado', 'rechazada');
+        return $query->where('status', 'rechazada');
     }
 
     /**
@@ -104,7 +104,7 @@ class PromotionUsage extends Model
      */
     public function scopeBetweenDates($query, $startDate, $endDate)
     {
-        return $query->whereBetween('fecha_uso', [$startDate, $endDate]);
+        return $query->whereBetween('usage_date', [$startDate, $endDate]);
     }
 
     /**
@@ -113,7 +113,7 @@ class PromotionUsage extends Model
     public function scopeLastMonths($query, int $months = 6)
     {
         $startDate = now()->subMonths($months);
-        return $query->where('fecha_uso', '>=', $startDate);
+        return $query->where('usage_date', '>=', $startDate);
     }
 
     // ==================== Accessors & Helpers ====================
@@ -123,7 +123,7 @@ class PromotionUsage extends Model
      */
     public function isPending(): bool
     {
-        return $this->estado === 'enviada';
+        return $this->status === 'enviada';
     }
 
     /**
@@ -131,7 +131,7 @@ class PromotionUsage extends Model
      */
     public function isAccepted(): bool
     {
-        return $this->estado === 'aceptada';
+        return $this->status === 'aceptada';
     }
 
     /**
@@ -139,7 +139,7 @@ class PromotionUsage extends Model
      */
     public function isRejected(): bool
     {
-        return $this->estado === 'rechazada';
+        return $this->status === 'rechazada';
     }
 
     /**
@@ -147,7 +147,7 @@ class PromotionUsage extends Model
      */
     public function accept(): bool
     {
-        $this->estado = 'aceptada';
+        $this->status = 'aceptada';
         return $this->save();
     }
 
@@ -156,7 +156,7 @@ class PromotionUsage extends Model
      */
     public function reject(): bool
     {
-        $this->estado = 'rechazada';
+        $this->status = 'rechazada';
         return $this->save();
     }
 
@@ -177,12 +177,12 @@ class PromotionUsage extends Model
      */
     public function getQrCodeSvg(): string
     {
-        if (!$this->codigo_qr) {
+        if (!$this->code_qr) {
             return '';
         }
 
         $qrcode = new \chillerlan\QRCode\QRCode();
-        return $qrcode->render($this->codigo_qr);
+        return $qrcode->render($this->code_qr);
     }
 
     /**
@@ -190,7 +190,7 @@ class PromotionUsage extends Model
      */
     public function getQrCodeBase64(): string
     {
-        if (!$this->codigo_qr) {
+        if (!$this->code_qr) {
             return '';
         }
 
@@ -202,6 +202,6 @@ class PromotionUsage extends Model
         ]);
 
         $qrcode = new \chillerlan\QRCode\QRCode($options);
-        return $qrcode->render($this->codigo_qr);
+        return $qrcode->render($this->code_qr);
     }
 }

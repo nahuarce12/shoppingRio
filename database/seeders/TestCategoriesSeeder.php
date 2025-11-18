@@ -35,7 +35,7 @@ class TestCategoriesSeeder extends Seeder
         }
 
         // Get or create multiple approved promotions for testing (we need at least 25 for test case 8)
-        $promotions = Promotion::where('estado', 'aprobada')->get();
+        $promotions = Promotion::where('status', 'aprobada')->get();
         if ($promotions->count() < 25) {
             for ($i = $promotions->count(); $i < 25; $i++) {
                 $promotions->push(

@@ -24,23 +24,45 @@
                         {{-- Store Selection (hidden if user has only one store) --}}
                         <input type="hidden" name="store_id" value="{{ $store->id }}">
 
+                        {{-- Promotion Title --}}
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                Título de la Promoción <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control @error('title') is-invalid @enderror" 
+                                id="title" 
+                                name="title" 
+                                value="{{ old('title') }}"
+                                maxlength="100"
+                                placeholder="Ej: 2x1 en todos los productos, 50% OFF en segunda unidad..."
+                                required>
+                            <div class="form-text">
+                                Este es el título principal que verán los clientes
+                            </div>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         {{-- Promotion Description --}}
                         <div class="mb-3">
-                            <label for="texto" class="form-label">
+                            <label for="description" class="form-label">
                                 Descripción de la Promoción <span class="text-danger">*</span>
                             </label>
                             <textarea 
-                                class="form-control @error('texto') is-invalid @enderror" 
-                                id="texto" 
-                                name="texto" 
+                                class="form-control @error('description') is-invalid @enderror" 
+                                id="description" 
+                                name="description" 
                                 rows="3" 
                                 maxlength="200"
-                                placeholder="Ej: 2x1 en productos seleccionados, 50% OFF en segunda unidad..."
-                                required>{{ old('texto') }}</textarea>
+                                placeholder="Ej: Válido para todos los productos de la tienda. No acumulable con otras promociones..."
+                                required>{{ old('description') }}</textarea>
                             <div class="form-text">
-                                <span id="char-count">0</span>/200 caracteres
+                                <span id="char-count">0</span>/200 caracteres - Agrega detalles adicionales sobre la promoción
                             </div>
-                            @error('texto')
+                            @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -48,34 +70,34 @@
                         {{-- Date Range --}}
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="fecha_desde" class="form-label">
+                                <label for="start_date" class="form-label">
                                     Fecha de Inicio <span class="text-danger">*</span>
                                 </label>
                                 <input 
                                     type="date" 
-                                    class="form-control @error('fecha_desde') is-invalid @enderror" 
-                                    id="fecha_desde" 
-                                    name="fecha_desde" 
-                                    value="{{ old('fecha_desde', date('Y-m-d')) }}"
+                                    class="form-control @error('start_date') is-invalid @enderror" 
+                                    id="start_date" 
+                                    name="start_date" 
+                                    value="{{ old('start_date', date('Y-m-d')) }}"
                                     min="{{ date('Y-m-d') }}"
                                     required>
-                                @error('fecha_desde')
+                                @error('start_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label for="fecha_hasta" class="form-label">
+                                <label for="end_date" class="form-label">
                                     Fecha de Finalización <span class="text-danger">*</span>
                                 </label>
                                 <input 
                                     type="date" 
-                                    class="form-control @error('fecha_hasta') is-invalid @enderror" 
-                                    id="fecha_hasta" 
-                                    name="fecha_hasta" 
-                                    value="{{ old('fecha_hasta') }}"
+                                    class="form-control @error('end_date') is-invalid @enderror" 
+                                    id="end_date" 
+                                    name="end_date" 
+                                    value="{{ old('end_date') }}"
                                     min="{{ date('Y-m-d') }}"
                                     required>
-                                @error('fecha_hasta')
+                                @error('end_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -92,14 +114,14 @@
                             <div class="row g-2">
                                 @php
                                     $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-                                    $oldDias = old('dias_semana', [1, 1, 1, 1, 1, 1, 1]);
+                                    $oldDias = old('weekdays', [1, 1, 1, 1, 1, 1, 1]);
                                 @endphp
                                 @foreach($dias as $index => $dia)
                                 <div class="col-6 col-md-3">
                                     <div class="form-check">
                                         <input type="hidden" name="dias_semana[{{ $index }}]" value="0">
                                         <input 
-                                            class="form-check-input day-checkbox @error('dias_semana') is-invalid @enderror" 
+                                            class="form-check-input day-checkbox @error('weekdays') is-invalid @enderror" 
                                             type="checkbox" 
                                             name="dias_semana[{{ $index }}]" 
                                             value="1"
@@ -112,7 +134,7 @@
                                 </div>
                                 @endforeach
                             </div>
-                            @error('dias_semana')
+                            @error('weekdays')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             <div id="days-error" class="invalid-feedback" style="display: none;">
@@ -122,29 +144,29 @@
 
                         {{-- Client Category --}}
                         <div class="mb-3">
-                            <label for="categoria_minima" class="form-label">
+                            <label for="minimum_category" class="form-label">
                                 Categoría Mínima de Cliente <span class="text-danger">*</span>
                             </label>
                             <select 
-                                class="form-select @error('categoria_minima') is-invalid @enderror" 
-                                id="categoria_minima" 
-                                name="categoria_minima"
+                                class="form-select @error('minimum_category') is-invalid @enderror" 
+                                id="minimum_category" 
+                                name="minimum_category"
                                 required>
                                 <option value="">Seleccionar categoría...</option>
-                                <option value="Inicial" {{ old('categoria_minima') == 'Inicial' ? 'selected' : '' }}>
+                                <option value="Inicial" {{ old('minimum_category') == 'Inicial' ? 'selected' : '' }}>
                                     Inicial (Todos los clientes)
                                 </option>
-                                <option value="Medium" {{ old('categoria_minima') == 'Medium' ? 'selected' : '' }}>
+                                <option value="Medium" {{ old('minimum_category') == 'Medium' ? 'selected' : '' }}>
                                     Medium (Clientes Medium y Premium)
                                 </option>
-                                <option value="Premium" {{ old('categoria_minima') == 'Premium' ? 'selected' : '' }}>
+                                <option value="Premium" {{ old('minimum_category') == 'Premium' ? 'selected' : '' }}>
                                     Premium (Solo clientes Premium)
                                 </option>
                             </select>
                             <div class="form-text">
                                 Los clientes podrán acceder a promociones de su categoría o inferiores
                             </div>
-                            @error('categoria_minima')
+                            @error('minimum_category')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -192,7 +214,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Character counter
-    const textoField = document.getElementById('texto');
+    const textoField = document.getElementById('description');
     const charCount = document.getElementById('char-count');
     
     if (textoField && charCount) {
@@ -203,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Date validation
-    const fechaDesde = document.getElementById('fecha_desde');
-    const fechaHasta = document.getElementById('fecha_hasta');
+    const fechaDesde = document.getElementById('start_date');
+    const fechaHasta = document.getElementById('end_date');
     
     if (fechaDesde && fechaHasta) {
         fechaDesde.addEventListener('change', function() {

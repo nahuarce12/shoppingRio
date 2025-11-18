@@ -25,21 +25,21 @@ class StoreController extends Controller
         $query = Store::with('owners');
 
         // Filter by rubro
-        if ($request->filled('rubro')) {
-            $query->where('rubro', $request->rubro);
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
         }
 
         // Search by name or location
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('ubicacion', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
         // Order by store code
-        $query->orderBy('codigo');
+        $query->orderBy('code');
 
         $stores = $query->paginate(15);
 
@@ -55,7 +55,7 @@ class StoreController extends Controller
     public function create()
     {
         // Get approved store owners (only approved users can own stores)
-        $owners = User::where('tipo_usuario', 'dueño de local')
+        $owners = User::where('user_type', 'dueño de local')
             ->whereNotNull('approved_at')
             ->orderBy('name')
             ->get();
@@ -83,15 +83,15 @@ class StoreController extends Controller
 
             Log::info('Store created by admin', [
                 'store_id' => $store->id,
-                'store_code' => $store->codigo,
-                'store_name' => $store->nombre,
+                'store_code' => $store->code,
+                'store_name' => $store->name,
                 'owners_count' => $store->owners()->count(),
                 'admin_id' => auth()->id()
             ]);
 
             return redirect()
                 ->route('admin.dashboard', ['section' => 'locales'])
-                ->with('success', "Local '{$store->nombre}' creado exitosamente con código {$store->codigo}.");
+                ->with('success', "Local '{$store->name}' creado exitosamente con código {$store->code}.");
         } catch (\Exception $e) {
             Log::error('Failed to create store', [
                 'error' => $e->getMessage(),
@@ -117,9 +117,9 @@ class StoreController extends Controller
         // Get promotion statistics
         $promotionStats = [
             'total' => $store->promotions()->count(),
-            'pendiente' => $store->promotions()->where('estado', 'pendiente')->count(),
-            'aprobada' => $store->promotions()->where('estado', 'aprobada')->count(),
-            'denegada' => $store->promotions()->where('estado', 'denegada')->count(),
+            'pendiente' => $store->promotions()->where('status', 'pendiente')->count(),
+            'aprobada' => $store->promotions()->where('status', 'aprobada')->count(),
+            'denegada' => $store->promotions()->where('status', 'denegada')->count(),
         ];
 
         return view('admin.stores.show', compact('store', 'promotionStats'));
@@ -131,7 +131,7 @@ class StoreController extends Controller
     public function edit(Store $store)
     {
         // Get approved store owners
-        $owners = User::where('tipo_usuario', 'dueño de local')
+        $owners = User::where('user_type', 'dueño de local')
             ->whereNotNull('approved_at')
             ->orderBy('name')
             ->get();
@@ -164,14 +164,14 @@ class StoreController extends Controller
 
             Log::info('Store updated by admin', [
                 'store_id' => $store->id,
-                'store_code' => $store->codigo,
+                'store_code' => $store->code,
                 'changes' => array_diff_assoc($data, $oldData),
                 'admin_id' => auth()->id()
             ]);
 
             return redirect()
                 ->route('admin.dashboard', ['section' => 'locales'])
-                ->with('success', "Local '{$store->nombre}' actualizado exitosamente.");
+                ->with('success', "Local '{$store->name}' actualizado exitosamente.");
         } catch (\Exception $e) {
             Log::error('Failed to update store', [
                 'store_id' => $store->id,
@@ -193,13 +193,13 @@ class StoreController extends Controller
     public function destroy(Store $store)
     {
         try {
-            $storeName = $store->nombre;
-            $storeCode = $store->codigo;
+            $storeName = $store->name;
+            $storeCode = $store->code;
 
             // Check if store has active promotions
             $activePromotions = $store->promotions()
-                ->where('estado', 'aprobada')
-                ->where('fecha_hasta', '>=', now())
+                ->where('status', 'aprobada')
+                ->where('end_date', '>=', now())
                 ->count();
 
             if ($activePromotions > 0) {

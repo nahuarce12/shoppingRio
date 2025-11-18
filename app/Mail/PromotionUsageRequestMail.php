@@ -29,7 +29,7 @@ class PromotionUsageRequestMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Promotion Request - ' . $this->usage->promotion->store->nombre,
+            subject: 'New Promotion Request - ' . $this->usage->promotion->store->name,
         );
     }
 
@@ -41,13 +41,13 @@ class PromotionUsageRequestMail extends Mailable
         return new Content(
             view: 'emails.promotion-usage-request',
             with: [
-                'storeName' => $this->usage->promotion->store->nombre,
-                'promotionText' => $this->usage->promotion->texto,
-                'promotionCode' => $this->usage->promotion->codigo,
+                'storeName' => $this->usage->promotion->store->name,
+                'promotionText' => $this->usage->promotion->description,
+                'promotionCode' => $this->usage->promotion->code,
                 'clientName' => $this->usage->client->name,
                 'clientEmail' => $this->usage->client->email,
-                'clientCategory' => $this->usage->client->categoria_cliente,
-                'requestDate' => $this->usage->fecha_uso->format('d/m/Y'),
+                'clientCategory' => $this->usage->client->client_category,
+                'requestDate' => $this->usage->usage_date->format('d/m/Y'),
                 'acceptUrl' => url("/store/usage-requests/{$this->usage->id}/accept"),
                 'rejectUrl' => url("/store/usage-requests/{$this->usage->id}/reject"),
                 'dashboardUrl' => url('/store/dashboard'),

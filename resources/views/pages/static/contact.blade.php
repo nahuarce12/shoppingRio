@@ -8,7 +8,7 @@
 
 <section class="py-5">
   <div class="container text-center">
-    <h1 class="display-4 fw-bold text-primary">Contacto</h1>
+    <h1 class="display-4 fw-bold" style="color: var(--primary-color)">Contacto</h1>
     <p class="lead">Estamos aquí para ayudarte. Escribinos y te responderemos a la brevedad.</p>
   </div>
 </section>
@@ -47,7 +47,7 @@
             <form id="contactForm">
               <div class="mb-3">
                 <label for="contact-name" class="form-label">Nombre Completo *</label>
-                <input type="text" class="form-control" id="contact-name" name="nombre">
+                <input type="text" class="form-control" id="contact-name" name="name">
               </div>
               <div class="mb-3">
                 <label for="contact-email" class="form-label">Email *</label>
@@ -148,10 +148,9 @@
   </div>
 </section>
 
-<hr class="section-separator">
-
 <section class="py-4">
   <div class="container">
+    <hr class="section-separator">
     <h3 class="text-center mb-4"><i class="bi bi-map"></i> Cómo Llegar</h3>
     <div class="ratio ratio-16x9">
       <iframe src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3348.8534892803646!2d-60.653691254171505!3d-32.92846893544947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzLCsDU1JzQyLjkiUyA2MMKwMzknMTMuOCJX!5e0!3m2!1ses-419!2sar!4v1761410684877!5m2!1ses-419!2sar" width="600" height="450" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -164,6 +163,7 @@
 
 <section class="py-5">
   <div class="container">
+    <hr class="section-separator">
     <h3 class="text-center mb-4">Seguinos en Nuestras Redes</h3>
     <div class="row text-center">
       <div class="col-6 col-md-4 mb-3">

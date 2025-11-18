@@ -37,6 +37,11 @@ Route::prefix('promociones')->name('promociones.')->group(function () {
     Route::get('/{promotion}', [PublicController::class, 'promotionShow'])->name('show');
 });
 
+// News (Novedades)
+Route::prefix('novedades')->name('novedades.')->group(function () {
+    Route::get('/', [PublicController::class, 'newsIndex'])->name('index');
+});
+
 // Static Pages
 Route::get('/quienes-somos', [PublicController::class, 'about'])->name('about');
 Route::get('/contacto', [PublicController::class, 'contact'])->name('contact');

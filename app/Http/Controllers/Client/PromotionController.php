@@ -31,9 +31,9 @@ class PromotionController extends Controller
             $filters
         );
 
-        $stores = Store::orderBy('nombre')->get();
+        $stores = Store::orderBy('name')->get();
 
-        $clientCategory = auth()->user()->categoria_cliente;
+        $clientCategory = auth()->user()->client_category;
 
         return view('client.promotions.index', compact('promotions', 'stores', 'clientCategory'));
     }

@@ -29,7 +29,7 @@ class PromotionService
     public function checkEligibility(Promotion $promotion, User $client): array
     {
         // Check if promotion is approved
-        if ($promotion->estado !== 'aprobada') {
+        if ($promotion->status !== 'aprobada') {
             return [
                 'eligible' => false,
                 'reason' => 'La promoción aún no fue aprobada por el administrador.'
@@ -38,7 +38,7 @@ class PromotionService
 
         // Check if promotion is within date range
         $today = Carbon::today();
-        if ($today->lt($promotion->fecha_desde) || $today->gt($promotion->fecha_hasta)) {
+        if ($today->lt($promotion->start_date) || $today->gt($promotion->end_date)) {
             return [
                 'eligible' => false,
                 'reason' => 'La promoción no está vigente en la fecha actual.'
@@ -50,7 +50,7 @@ class PromotionService
         // Convert to project convention: 0 = Monday to 6 = Sunday
         $projectDayIndex = ($dayOfWeek === 0) ? 6 : $dayOfWeek - 1;
         
-        if (!isset($promotion->dias_semana[$projectDayIndex]) || !$promotion->dias_semana[$projectDayIndex]) {
+        if (!isset($promotion->weekdays[$projectDayIndex]) || !$promotion->weekdays[$projectDayIndex]) {
             return [
                 'eligible' => false,
                 'reason' => 'La promoción no aplica para el día de hoy.'
@@ -58,7 +58,7 @@ class PromotionService
         }
 
         // Check if client has access based on category hierarchy
-        if (!$client->canAccessCategory($promotion->categoria_minima)) {
+        if (!$client->canAccessCategory($promotion->minimum_category)) {
             return [
                 'eligible' => false,
                 'reason' => 'Tu categoría de cliente no tiene acceso a esta promoción.'
@@ -95,7 +95,7 @@ class PromotionService
             ->approved()
             ->active()
             ->validToday()
-            ->forCategory($client->categoria_cliente);
+            ->forCategory($client->client_category);
 
         // Apply store filter if provided
         if (!empty($filters['store_id'])) {
@@ -106,9 +106,9 @@ class PromotionService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('texto', 'like', "%{$search}%")
+                $q->where('description', 'like', "%{$search}%")
                   ->orWhereHas('store', function ($sq) use ($search) {
-                      $sq->where('nombre', 'like', "%{$search}%");
+                      $sq->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -118,13 +118,13 @@ class PromotionService
             $q->where('client_id', $client->id);
         });
 
-        return $query->orderBy('fecha_hasta', 'asc')->get();
+        return $query->orderBy('end_date', 'asc')->get();
     }
 
     /**
      * Get all promotions with optional filters (for admin/store owner views).
      *
-     * @param array $filters ['estado' => string, 'store_id' => int, 'date_from' => string, 'date_to' => string]
+     * @param array $filters ['status' => string, 'store_id' => int, 'date_from' => string, 'date_to' => string]
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function getFilteredPromotions(array $filters = [])
@@ -132,8 +132,8 @@ class PromotionService
         $query = Promotion::query()->with('store');
 
         // Filter by status
-        if (!empty($filters['estado'])) {
-            $query->where('estado', $filters['estado']);
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
         // Filter by store
@@ -143,10 +143,10 @@ class PromotionService
 
         // Filter by date range
         if (!empty($filters['date_from'])) {
-            $query->where('fecha_desde', '>=', $filters['date_from']);
+            $query->where('start_date', '>=', $filters['date_from']);
         }
         if (!empty($filters['date_to'])) {
-            $query->where('fecha_hasta', '<=', $filters['date_to']);
+            $query->where('end_date', '<=', $filters['date_to']);
         }
 
         return $query->orderBy('created_at', 'desc');
@@ -161,14 +161,14 @@ class PromotionService
      */
     public function approvePromotion(Promotion $promotion): bool
     {
-        if ($promotion->estado !== 'pendiente') {
+        if ($promotion->status !== 'pendiente') {
             return false;
         }
 
         try {
             DB::beginTransaction();
 
-            $promotion->estado = 'aprobada';
+            $promotion->status = 'aprobada';
             $promotion->save();
 
             // Send approval email to all store owners
@@ -196,14 +196,14 @@ class PromotionService
      */
     public function denyPromotion(Promotion $promotion, ?string $reason = null): bool
     {
-        if ($promotion->estado !== 'pendiente') {
+        if ($promotion->status !== 'pendiente') {
             return false;
         }
 
         try {
             DB::beginTransaction();
 
-            $promotion->estado = 'denegada';
+            $promotion->status = 'denegada';
             $promotion->save();
 
             // Send denial email to all store owners with reason
@@ -234,9 +234,9 @@ class PromotionService
 
         return [
             'total' => $usages->count(),
-            'pending' => $usages->where('estado', 'enviada')->count(),
-            'accepted' => $usages->where('estado', 'aceptada')->count(),
-            'rejected' => $usages->where('estado', 'rechazada')->count(),
+            'pending' => $usages->where('status', 'enviada')->count(),
+            'accepted' => $usages->where('status', 'aceptada')->count(),
+            'rejected' => $usages->where('status', 'rechazada')->count(),
         ];
     }
 
@@ -266,14 +266,14 @@ class PromotionService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('texto', 'like', "%{$search}%")
+                $q->where('description', 'like', "%{$search}%")
                   ->orWhereHas('store', function ($sq) use ($search) {
-                      $sq->where('nombre', 'like', "%{$search}%");
+                      $sq->where('name', 'like', "%{$search}%");
                   });
             });
         }
 
-        return $query->orderBy('fecha_hasta', 'asc');
+        return $query->orderBy('end_date', 'asc');
     }
 
     /**

@@ -9,7 +9,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
-                        <i class="bi bi-pencil-square"></i> Editar Local: {{ $store->nombre }}
+                        <i class="bi bi-pencil-square"></i> Editar Local: {{ $store->name }}
                     </h4>
                 </div>
                 <div class="card-body">
@@ -19,70 +19,90 @@
 
                         {{-- C\u00f3digo (read-only) --}}
                         <div class="mb-3">
-                            <label for="codigo" class="form-label">C\u00f3digo del Local</label>
+                            <label for="code" class="form-label">C\u00f3digo del Local</label>
                             <input 
                                 type="text" 
                                 class="form-control" 
-                                id="codigo" 
-                                value="{{ $store->codigo }}"
+                                id="code" 
+                                value="{{ $store->code }}"
                                 disabled>
                             <div class="form-text">El c\u00f3digo no se puede modificar</div>
                         </div>
 
                         {{-- Nombre del Local --}}
                         <div class="mb-3">
-                            <label for="nombre" class="form-label">
+                            <label for="name" class="form-label">
                                 Nombre del Local <span class="text-danger">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control @error('nombre') is-invalid @enderror" 
-                                id="nombre" 
-                                name="nombre" 
-                                value="{{ old('nombre', $store->nombre) }}"
+                                class="form-control @error('name') is-invalid @enderror" 
+                                id="name" 
+                                name="name" 
+                                value="{{ old('name', $store->name) }}"
                                 maxlength="100"
                                 required>
-                            @error('nombre')
+                            @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         {{-- Rubro --}}
                         <div class="mb-3">
-                            <label for="rubro" class="form-label">
+                            <label for="category" class="form-label">
                                 Rubro <span class="text-danger">*</span>
                             </label>
                             <select 
-                                class="form-select @error('rubro') is-invalid @enderror" 
-                                id="rubro" 
-                                name="rubro"
+                                class="form-select @error('category') is-invalid @enderror" 
+                                id="category" 
+                                name="category"
                                 required>
                                 <option value="">Seleccionar rubro...</option>
                                 @foreach($rubros as $rubro)
-                                    <option value="{{ $rubro }}" {{ old('rubro', $store->rubro) == $rubro ? 'selected' : '' }}>
+                                    <option value="{{ $rubro }}" {{ old('category', $store->category) == $rubro ? 'selected' : '' }}>
                                         {{ ucfirst($rubro) }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('rubro')
+                            @error('category')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         {{-- Ubicación --}}
                         <div class="mb-3">
-                            <label for="ubicacion" class="form-label">
+                            <label for="location" class="form-label">
                                 Ubicaci\u00f3n <span class="text-danger">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control @error('ubicacion') is-invalid @enderror" 
-                                id="ubicacion" 
-                                name="ubicacion" 
-                                value="{{ old('ubicacion', $store->ubicacion) }}"
+                                class="form-control @error('location') is-invalid @enderror" 
+                                id="location" 
+                                name="location" 
+                                value="{{ old('location', $store->location) }}"
                                 maxlength="50"
                                 required>
-                            @error('ubicacion')
+                            @error('location')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Descripción --}}
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                Descripci\u00f3n del Local <span class="text-muted">(Opcional)</span>
+                            </label>
+                            <textarea 
+                                class="form-control @error('description') is-invalid @enderror" 
+                                id="description" 
+                                name="description" 
+                                rows="4"
+                                maxlength="500"
+                                placeholder="Ej: Somos una tienda especializada en electrodomésticos de última generación...">{{ old('description', $store->description) }}</textarea>
+                            <div class="form-text">
+                                Esta descripci\u00f3n aparecer\u00e1 en la secci\u00f3n "Sobre el local" en la p\u00e1gina de detalle
+                            </div>
+                            @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

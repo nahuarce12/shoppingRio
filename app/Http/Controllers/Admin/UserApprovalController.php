@@ -22,7 +22,7 @@ class UserApprovalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('tipo_usuario', 'dueño de local')
+        $query = User::where('user_type', 'dueño de local')
             ->whereNull('approved_at');
 
         // Search by name or email
@@ -41,13 +41,13 @@ class UserApprovalController extends Controller
 
         // Statistics
         $stats = [
-            'pending' => User::where('tipo_usuario', 'dueño de local')
+            'pending' => User::where('user_type', 'dueño de local')
                 ->whereNull('approved_at')
                 ->count(),
-            'approved_today' => User::where('tipo_usuario', 'dueño de local')
+            'approved_today' => User::where('user_type', 'dueño de local')
                 ->whereDate('approved_at', today())
                 ->count(),
-            'total_approved' => User::where('tipo_usuario', 'dueño de local')
+            'total_approved' => User::where('user_type', 'dueño de local')
                 ->whereNotNull('approved_at')
                 ->count(),
         ];
@@ -61,7 +61,7 @@ class UserApprovalController extends Controller
     public function show(User $user)
     {
         // Only show store owners
-        if ($user->tipo_usuario !== 'dueño de local') {
+        if ($user->user_type !== 'dueño de local') {
             return redirect()
                 ->route('admin.users.approval.index')
                 ->with('error', 'Este usuario no es dueño de local.');
@@ -82,7 +82,7 @@ class UserApprovalController extends Controller
      */
     public function approve(ApproveUserRequest $request, User $user)
     {
-        if ($user->tipo_usuario !== 'dueño de local') {
+        if ($user->user_type !== 'dueño de local') {
             return redirect()
                 ->route('admin.users.approval.index')
                 ->with('error', 'Este usuario no es dueño de local.');
@@ -137,7 +137,7 @@ class UserApprovalController extends Controller
      */
     public function reject(ApproveUserRequest $request, User $user)
     {
-        if ($user->tipo_usuario !== 'dueño de local') {
+        if ($user->user_type !== 'dueño de local') {
             return redirect()
                 ->route('admin.users.approval.index')
                 ->with('error', 'Este usuario no es dueño de local.');
@@ -187,7 +187,7 @@ class UserApprovalController extends Controller
      */
     public function all(Request $request)
     {
-        $query = User::where('tipo_usuario', 'dueño de local');
+        $query = User::where('user_type', 'dueño de local');
 
         // Filter by status
         if ($request->filled('status')) {

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         // Add logo column to stores table
         Schema::table('stores', function (Blueprint $table) {
-            $table->string('logo', 255)->nullable()->after('rubro');
+            $table->string('logo', 255)->nullable()->after('category');
         });
 
         // Add imagen column to promotions table
         Schema::table('promotions', function (Blueprint $table) {
-            $table->string('imagen', 255)->nullable()->after('categoria_minima');
+            $table->string('imagen', 255)->nullable()->after('minimum_category');
         });
     }
 

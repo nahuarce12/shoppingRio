@@ -8,14 +8,14 @@
                                         @foreach($allUsages as $usage)
                                         <tr>
                                             <td>{{ $usage->client->name }}</td>
-                                            <td>{{ Str::limit($usage->promotion->texto, 50) }}</td>
-                                            <td>{{ $usage->fecha_uso->format('d/m/Y') }}</td>
+                                            <td>{{ Str::limit($usage->promotion->description, 50) }}</td>
+                                            <td>{{ $usage->usage_date->format('d/m/Y') }}</td>
                                             <td>
-                                                @if($usage->estado === 'aceptada')
+                                                @if($usage->status === 'aceptada')
                                                     <span class="badge bg-success">
                                                         <i class="bi bi-check-circle"></i> Aceptada
                                                     </span>
-                                                @elseif($usage->estado === 'rechazada')
+                                                @elseif($usage->status === 'rechazada')
                                                     <span class="badge bg-danger">
                                                         <i class="bi bi-x-circle"></i> Rechazada
                                                     </span>

@@ -24,8 +24,8 @@ class PromotionUsageFactory extends Factory
         return [
             'client_id' => null, // Will be set by seeder or state method
             'promotion_id' => null, // Will be set by seeder or state method
-            'fecha_uso' => fake()->dateTimeBetween('-6 months', 'now'),
-            'estado' => fake()->randomElement(['aceptada', 'aceptada', 'aceptada', 'enviada', 'rechazada']), // Weighted towards accepted
+            'usage_date' => fake()->dateTimeBetween('-6 months', 'now'),
+            'status' => fake()->randomElement(['aceptada', 'aceptada', 'aceptada', 'enviada', 'rechazada']), // Weighted towards accepted
         ];
     }
 
@@ -55,8 +55,8 @@ class PromotionUsageFactory extends Factory
     public function sent(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'enviada',
-            'fecha_uso' => now(),
+            'status' => 'enviada',
+            'usage_date' => now(),
         ]);
     }
 
@@ -66,7 +66,7 @@ class PromotionUsageFactory extends Factory
     public function accepted(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'aceptada',
+            'status' => 'aceptada',
         ]);
     }
 
@@ -76,7 +76,7 @@ class PromotionUsageFactory extends Factory
     public function rejected(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'rechazada',
+            'status' => 'rechazada',
         ]);
     }
 
@@ -86,7 +86,7 @@ class PromotionUsageFactory extends Factory
     public function recentSixMonths(): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_uso' => fake()->dateTimeBetween('-6 months', 'now'),
+            'usage_date' => fake()->dateTimeBetween('-6 months', 'now'),
         ]);
     }
 
@@ -96,7 +96,7 @@ class PromotionUsageFactory extends Factory
     public function oldUsage(): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_uso' => fake()->dateTimeBetween('-2 years', '-7 months'),
+            'usage_date' => fake()->dateTimeBetween('-2 years', '-7 months'),
         ]);
     }
 
@@ -106,7 +106,7 @@ class PromotionUsageFactory extends Factory
     public function onDate(\DateTime|string $date): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_uso' => $date,
+            'usage_date' => $date,
         ]);
     }
 }

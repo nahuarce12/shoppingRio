@@ -11,9 +11,9 @@ use Illuminate\Support\Str;
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h4 mb-1">
-                <i class="bi bi-tag"></i> Promoción #{{ str_pad($promotion->codigo, 4, '0', STR_PAD_LEFT) }}
+                <i class="bi bi-tag"></i> Promoción #{{ str_pad($promotion->code, 4, '0', STR_PAD_LEFT) }}
             </h1>
-            <p class="text-muted mb-0">{{ $store->nombre }} — Vigencia {{ $promotion->fecha_desde->format('d/m/Y') }} a {{ $promotion->fecha_hasta->format('d/m/Y') }}</p>
+            <p class="text-muted mb-0">{{ $store->name }} — Vigencia {{ $promotion->start_date->format('d/m/Y') }} a {{ $promotion->end_date->format('d/m/Y') }}</p>
         </div>
         <div class="btn-group">
             <a href="{{ route('store.promotions.index') }}" class="btn btn-outline-secondary">
@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
         <div class="col-md-3">
             <div class="card h-100 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="h2 mb-1">{{ ucfirst($promotion->estado) }}</h3>
+                    <h3 class="h2 mb-1">{{ ucfirst($promotion->status) }}</h3>
                     <p class="text-muted mb-0">Estado actual</p>
                 </div>
             </div>
@@ -73,21 +73,21 @@ use Illuminate\Support\Str;
             <h2 class="h5 mb-0">Detalle de la promoción</h2>
         </div>
         <div class="card-body">
-            <p class="lead">{{ $promotion->texto }}</p>
+            <p class="lead">{{ $promotion->description }}</p>
             <div class="row g-3">
                 <div class="col-md-4">
                     <small class="text-muted text-uppercase">Categoría mínima</small>
-                    <div><span class="badge badge-{{ strtolower($promotion->categoria_minima) }}">{{ $promotion->categoria_minima }}</span></div>
+                    <div><span class="badge badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span></div>
                 </div>
                 <div class="col-md-4">
                     <small class="text-muted text-uppercase">Vigencia</small>
-                    <div>{{ $promotion->fecha_desde->format('d/m/Y') }} — {{ $promotion->fecha_hasta->format('d/m/Y') }}</div>
+                    <div>{{ $promotion->start_date->format('d/m/Y') }} — {{ $promotion->end_date->format('d/m/Y') }}</div>
                 </div>
                 <div class="col-md-4">
                     <small class="text-muted text-uppercase">Días válidos</small>
                     @php
                         $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-                        $diasValidos = collect($promotion->dias_semana ?? [])->filter()->map(function ($value, $index) use ($dias) {
+                        $diasValidos = collect($promotion->weekdays ?? [])->filter()->map(function ($value, $index) use ($dias) {
                             return $dias[$index] ?? 'Día';
                         });
                     @endphp
@@ -124,17 +124,17 @@ use Illuminate\Support\Str;
                                     <small class="text-muted">{{ $usage->client->email }}</small>
                                 </td>
                                 <td>
-                                    @if($usage->estado === 'aceptada')
+                                    @if($usage->status === 'aceptada')
                                         <span class="badge bg-success">Aceptada</span>
-                                    @elseif($usage->estado === 'rechazada')
+                                    @elseif($usage->status === 'rechazada')
                                         <span class="badge bg-danger">Rechazada</span>
-                                    @elseif($usage->estado === 'enviada')
+                                    @elseif($usage->status === 'enviada')
                                         <span class="badge bg-warning text-dark">Pendiente</span>
                                     @else
-                                        <span class="badge bg-secondary">{{ ucfirst($usage->estado) }}</span>
+                                        <span class="badge bg-secondary">{{ ucfirst($usage->status) }}</span>
                                     @endif
                                 </td>
-                                <td>{{ optional($usage->fecha_uso)->format('d/m/Y') ?? '-' }}</td>
+                                <td>{{ optional($usage->usage_date)->format('d/m/Y') ?? '-' }}</td>
                             </tr>
                         @empty
                             <tr>

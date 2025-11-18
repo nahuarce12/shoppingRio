@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('promotion_usage', function (Blueprint $table) {
-            $table->string('codigo_qr', 32)->unique()->nullable()->after('estado');
+            $table->string('codigo_qr', 32)->unique()->nullable()->after('status');
         });
     }
 

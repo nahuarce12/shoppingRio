@@ -30,7 +30,7 @@ class PromotionDeniedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Promotion Denied - ' . $this->promotion->store->nombre,
+            subject: 'Promotion Denied - ' . $this->promotion->store->name,
         );
     }
 
@@ -42,9 +42,9 @@ class PromotionDeniedMail extends Mailable
         return new Content(
             view: 'emails.promotion-denied',
             with: [
-                'storeName' => $this->promotion->store->nombre,
-                'promotionText' => $this->promotion->texto,
-                'promotionCode' => $this->promotion->codigo,
+                'storeName' => $this->promotion->store->name,
+                'promotionText' => $this->promotion->description,
+                'promotionCode' => $this->promotion->code,
                 'reason' => $this->reason ?? 'The promotion did not meet our policy requirements.',
                 'guidelinesUrl' => url('/promotion-guidelines'),
                 'contactEmail' => config('shopping.admin_contact.email'),

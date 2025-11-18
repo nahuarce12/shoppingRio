@@ -24,18 +24,18 @@
                         </div>
                     @else
                         <div class="promotion-details mb-3">
-                            <h6 class="fw-bold">{{ $promotion->texto }}</h6>
+                            <h6 class="fw-bold">{{ $promotion->description }}</h6>
                             <p class="mb-2">
                                 <i class="bi bi-shop"></i> 
-                                <strong>Local:</strong> {{ $promotion->store->nombre }}
+                                <strong>Local:</strong> {{ $promotion->store->name }}
                             </p>
                             <p class="mb-2">
                                 <i class="bi bi-calendar-event"></i> 
-                                <strong>Válido:</strong> {{ $promotion->fecha_desde->format('d/m/Y') }} - {{ $promotion->fecha_hasta->format('d/m/Y') }}
+                                <strong>Válido:</strong> {{ $promotion->start_date->format('d/m/Y') }} - {{ $promotion->end_date->format('d/m/Y') }}
                             </p>
                             <p class="mb-0">
-                                <span class="badge badge-{{ strtolower($promotion->categoria_minima) }} badge-category">
-                                    {{ $promotion->categoria_minima }}
+                                <span class="badge badge-{{ strtolower($promotion->minimum_category) }} badge-category">
+                                    {{ $promotion->minimum_category }}
                                 </span>
                             </p>
                         </div>

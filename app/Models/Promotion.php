@@ -19,13 +19,13 @@ class Promotion extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'codigo',
-        'texto',
-        'fecha_desde',
-        'fecha_hasta',
-        'dias_semana',
-        'categoria_minima',
-        'estado',
+        'code',
+        'description',
+        'start_date',
+        'end_date',
+        'weekdays',
+        'minimum_category',
+        'status',
         'store_id',
         'imagen',
     ];
@@ -36,10 +36,10 @@ class Promotion extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'codigo' => 'integer',
-        'fecha_desde' => 'date',
-        'fecha_hasta' => 'date',
-        'dias_semana' => 'array', // JSON array of 7 booleans
+        'code' => 'integer',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'weekdays' => 'array', // JSON array of 7 booleans
     ];
 
     // ==================== Relationships ====================
@@ -67,7 +67,7 @@ class Promotion extends Model
      */
     public function scopeApproved($query)
     {
-        return $query->where('estado', 'aprobada');
+        return $query->where('status', 'aprobada');
     }
 
     /**
@@ -75,7 +75,7 @@ class Promotion extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('estado', 'pendiente');
+        return $query->where('status', 'pendiente');
     }
 
     /**
@@ -83,7 +83,7 @@ class Promotion extends Model
      */
     public function scopeDenied($query)
     {
-        return $query->where('estado', 'denegada');
+        return $query->where('status', 'denegada');
     }
 
     /**
@@ -92,9 +92,9 @@ class Promotion extends Model
     public function scopeActive($query)
     {
         $today = Carbon::today();
-        return $query->where('estado', 'aprobada')
-            ->whereDate('fecha_desde', '<=', $today)
-            ->whereDate('fecha_hasta', '>=', $today);
+        return $query->where('status', 'aprobada')
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today);
     }
 
     /**
@@ -124,7 +124,7 @@ class Promotion extends Model
         return $query->where(function ($q) use ($hierarchy, $clientLevel) {
             foreach ($hierarchy as $category => $level) {
                 if ($level <= $clientLevel) {
-                    $q->orWhere('categoria_minima', $category);
+                    $q->orWhere('minimum_category', $category);
                 }
             }
         });
@@ -149,10 +149,10 @@ class Promotion extends Model
         parent::boot();
 
         static::creating(function ($promotion) {
-            if (empty($promotion->codigo)) {
+            if (empty($promotion->code)) {
                 // Get the highest codigo and add 1
-                $maxCodigo = static::withTrashed()->max('codigo') ?? 0;
-                $promotion->codigo = $maxCodigo + 1;
+                $maxCodigo = static::withTrashed()->max('code') ?? 0;
+                $promotion->code = $maxCodigo + 1;
             }
         });
     }
@@ -165,9 +165,9 @@ class Promotion extends Model
     public function isActive(): bool
     {
         $today = Carbon::today();
-        return $this->estado === 'aprobada' &&
-            $this->fecha_desde <= $today &&
-            $this->fecha_hasta >= $today;
+        return $this->status === 'aprobada' &&
+            $this->start_date <= $today &&
+            $this->end_date >= $today;
     }
 
     /**
@@ -176,10 +176,10 @@ class Promotion extends Model
      */
     public function isValidForDay(int $dayOfWeek): bool
     {
-        if (!is_array($this->dias_semana) || count($this->dias_semana) !== 7) {
+        if (!is_array($this->weekdays) || count($this->weekdays) !== 7) {
             return false;
         }
-        return $this->dias_semana[$dayOfWeek] === true;
+        return $this->weekdays[$dayOfWeek] === true;
     }
 
     /**
@@ -206,7 +206,7 @@ class Promotion extends Model
     {
         $hierarchy = ['Inicial' => 1, 'Medium' => 2, 'Premium' => 3];
         $clientLevel = $hierarchy[$clientCategory] ?? 0;
-        $requiredLevel = $hierarchy[$this->categoria_minima] ?? 0;
+        $requiredLevel = $hierarchy[$this->minimum_category] ?? 0;
 
         return $clientLevel >= $requiredLevel;
     }
@@ -231,7 +231,7 @@ class Promotion extends Model
         }
 
         return $this->isValidToday() &&
-            $this->isAccessibleByCategory($client->categoria_cliente) &&
+            $this->isAccessibleByCategory($client->client_category) &&
             !$this->hasBeenUsedBy($client->id);
     }
 
@@ -241,7 +241,7 @@ class Promotion extends Model
     public function getAcceptedUsageCount(): int
     {
         return $this->usages()
-            ->where('estado', 'aceptada')
+            ->where('status', 'aceptada')
             ->count();
     }
 }
