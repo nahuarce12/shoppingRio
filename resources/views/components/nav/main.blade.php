@@ -18,6 +18,11 @@ $navLinks = [
 'fallback' => url('/promociones')
 ],
 [
+  'label' => 'Novedades',
+  'route' => 'novedades.index',
+  'fallback' => url('/novedades')
+],
+[
 'label' => 'Quiénes Somos',
 'route' => 'about',
 'fallback' => url('/quienes-somos')

@@ -203,4 +203,33 @@ class PublicController extends Controller
 
         return view('pages.static.about', compact('benefits'));
     }
+
+    /**
+     * Display all news with filters.
+     */
+    public function newsIndex(Request $request)
+    {
+        $query = \App\Models\News::query()
+            ->where('end_date', '>=', now())
+            ->orderBy('created_at', 'desc');
+
+        // Filter by target category
+        if ($request->filled('target_category')) {
+            $query->where('target_category', $request->target_category);
+        }
+
+        // Search by text
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $news = $query->paginate(12);
+        $categories = ['Inicial', 'Medium', 'Premium'];
+
+        return view('pages.novedades.index', compact('news', 'categories'));
+    }
 }

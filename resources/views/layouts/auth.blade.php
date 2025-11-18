@@ -16,7 +16,7 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-light">
+<body style="background-color: #FFFFFF !important;">
   <div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
     <div class="row w-100">
       <div class="col-md-6 offset-md-3 col-lg-4 offset-lg-4">

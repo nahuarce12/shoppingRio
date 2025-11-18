@@ -164,7 +164,7 @@ $promotionsUrl = Route::has('pages.promociones') ? route('pages.promociones') : 
   </div>
 </section>
 
-<section class="py-5 bg-primary text-white">
+<section class="py-5 bg-primaryColor text-white">
   <div class="container text-center">
     <h2 class="h3 mb-3">¿Aún no exploraste nuestras promociones?</h2>
     <p class="lead mb-4">Podés ver todas las promociones sin necesidad de iniciar sesión.</p>

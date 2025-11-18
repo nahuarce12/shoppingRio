@@ -19,16 +19,16 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
         <div class="card shadow" id="step1">
           <div class="card-body p-5">
             <div class="text-center mb-4">
-              <i class="bi bi-person-plus-fill fs-1 text-primary"></i>
+              <i class="bi bi-person-plus-fill fs-1" style = "color: #e74c3c"></i>
               <h1 class="mt-3 h3">Crear Cuenta</h1>
               <p class="text-muted">Seleccioná el tipo de cuenta que querés crear</p>
             </div>
 
             <div class="row">
               <div class="col-md-6 mb-3">
-                <div class="card h-100 border-primary" role="button" onclick="showClientForm()">
+                <div class="card h-100" style="border-color: #e74c3c" role="button" onclick="showClientForm()">
                   <div class="card-body text-center p-4">
-                    <i class="bi bi-person-circle fs-1 text-primary"></i>
+                    <i class="bi bi-person-circle fs-1" style="color: #e74c3c"></i>
                     <h2 class="mt-3 h4">Cliente</h2>
                     <p class="text-muted">Accedé a promociones exclusivas</p>
                     <ul class="list-unstyled text-start mt-3">
@@ -461,17 +461,17 @@ $loginUrl = Route::has('auth.login') ? route('auth.login') : (Route::has('login'
         <h2 class="h4 text-center mb-4">Beneficios de Registrarte</h2>
       </div>
       <div class="col-md-4 text-center mb-3">
-        <i class="bi bi-tag-fill fs-1 text-primary"></i>
+        <i class="bi bi-tag-fill fs-1" style="color: #e74c3c"></i>
         <h3 class="h5 mt-2">Promociones Exclusivas</h3>
         <p>Accedé a descuentos que no están disponibles para usuarios no registrados.</p>
       </div>
       <div class="col-md-4 text-center mb-3">
-        <i class="bi bi-arrow-up-circle-fill fs-1 text-primary"></i>
+        <i class="bi bi-arrow-up-circle-fill fs-1" style="color: #e74c3c"></i>
         <h3 class="h5 mt-2">Categorías Progresivas</h3>
         <p>Subí de categoría y desbloqueá promociones cada vez mejores.</p>
       </div>
       <div class="col-md-4 text-center mb-3">
-        <i class="bi bi-bell-fill fs-1 text-primary"></i>
+        <i class="bi bi-bell-fill fs-1" style="color: #e74c3c"></i>
         <h3 class="h5 mt-2">Notificaciones</h3>
         <p>Recibí alertas sobre nuevas promociones en tus locales favoritos.</p>
       </div>

@@ -12,7 +12,7 @@
 
 <section class="py-4">
   <div class="container text-center">
-    <h1 class="display-5 fw-bold text-primary">Promociones</h1>
+    <h1 class="display-5 fw-bold" style="color: var(--primary-color)">Promociones</h1>
     <p class="lead">Explorá los descuentos activos y elegí los beneficios que mejor se adapten a vos.</p>
   </div>
 </section>
@@ -21,16 +21,16 @@
   <div class="container">
     <form method="GET" action="{{ route('promociones.index') }}" id="promotions-filter-form" class="card shadow-sm p-3 border-0">
       <div class="row g-3 align-items-end">
-        <div class="col-12 col-lg-5">
+        <div class="col-12 col-lg-4">
           <label for="search" class="form-label">Buscar promoción</label>
           <div class="input-group input-group-lg">
             <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" value="{{ request('search') }}" placeholder="Ingresá texto descriptivo, beneficios o palabras clave">
+            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" value="{{ request('search') }}" style="font-size: 1.1rem;" placeholder="Ingresá texto descriptivo, beneficios o palabras clave">
           </div>
         </div>
         <div class="col-12 col-lg-3">
           <label for="minimum_category" class="form-label">Categoría mínima</label>
-          <select class="form-select form-select-lg" id="minimum_category" name="minimum_category">
+          <select class="form-select form-select-lg" id="minimum_category" style="font-size: 1.1rem;" name="minimum_category">
             <option value="">Todas las categorías</option>
             @foreach($categories as $category)
               <option value="{{ $category }}" @selected(request('minimum_category') === $category)>{{ $category }}</option>
@@ -39,14 +39,14 @@
         </div>
         <div class="col-12 col-lg-3">
           <label for="store_id" class="form-label">Local</label>
-          <select class="form-select form-select-lg" id="store_id" name="store_id">
+          <select class="form-select form-select-lg" style="font-size: 1.1rem;" id="store_id" name="store_id">
             <option value="">Todos los locales</option>
             @foreach($stores as $store)
               <option value="{{ $store->id }}" @selected((string) request('store_id') === (string) $store->id)>{{ $store->name }}</option>
             @endforeach
           </select>
         </div>
-        <div class="col-12 col-lg-1 d-flex gap-2">
+        <div class="col-12 col-lg-2 d-flex gap-2">
           <button type="submit" class="btn btn-primary w-100" title="Aplicar filtros"><i class="bi bi-filter"></i></button>
           <a href="{{ route('promociones.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros"><i class="bi bi-x-circle"></i></a>
         </div>
@@ -103,6 +103,7 @@
 
 <section class="py-5 bg-white">
   <div class="container">
+    <hr class="section-separator">
     <div class="row g-4 align-items-center">
       <div class="col-lg-6">
         <h2 class="h3 fw-bold">Cómo aprovechar tus beneficios</h2>

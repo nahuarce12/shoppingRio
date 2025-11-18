@@ -114,10 +114,10 @@
   </div>
 </section>
 
-<hr class="section-separator">
 
 <section class="py-section">
   <div class="container">
+      <hr class="section-separator">
     <div class="text-center mb-5">
       <h2 class="section-title">Locales Destacados</h2>
     </div>
@@ -155,10 +155,10 @@
   </div>
 </section>
 
-<hr class="section-separator">
 
 <section class="py-section">
   <div class="container">
+      <hr class="section-separator">
     <div class="row g-4">
       <div class="col-md-4">
         <div class="feature-box">
@@ -185,7 +185,7 @@
   </div>
 </section>
 
-<section class="py-5 bg-primary text-white">
+<section class="py-5 bg-primaryColor text-white">
   <div class="container text-center">
     <h2 class="mb-4">¿Listo para comenzar a ahorrar?</h2>
     <p class="lead mb-4">Registrate ahora y empezá a disfrutar de promociones exclusivas.</p>

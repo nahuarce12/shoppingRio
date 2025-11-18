@@ -8,7 +8,7 @@
 
 <section class="py-4">
   <div class="container text-center">
-    <h1 class="display-5 fw-bold text-primary">Locales</h1>
+    <h1 class="display-5 fw-bold" style="color: var(--primary-color)">Locales</h1>
     <p class="lead">Buscá por nombre, rubro o ubicación y planificá tu visita al shopping.</p>
   </div>
 </section>
@@ -21,12 +21,12 @@
           <label for="search" class="form-label">Buscar local</label>
           <div class="input-group input-group-lg">
             <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-            <input type="search" class="form-control border-start-0 ps-0" id="search" name="search" value="{{ request('search') }}" placeholder="Ingresá el nombre o la ubicación del local">
+            <input type="search" class="form-control border-start-0 ps-0" style="font-size: 1.1rem;" id="search" name="search" value="{{ request('search') }}" placeholder="Ingresá el nombre o la ubicación del local">
           </div>
         </div>
         <div class="col-12 col-lg-4">
           <label for="category" class="form-label">Rubro</label>
-          <select class="form-select form-select-lg" id="category" name="category">
+          <select style="font-size: 1.1rem;" class="form-select form-select-lg" id="category" name="category">
             <option value="">Todos los rubros</option>
             @foreach($rubros as $rubro)
               <option value="{{ $rubro }}" @selected(request('category') === $rubro)>{{ $rubro }}</option>
@@ -34,7 +34,7 @@
           </select>
         </div>
         <div class="col-12 col-lg-2 d-flex gap-2">
-          <button type="submit" class="btn btn-primary w-100" title="Aplicar filtros"><i class="bi bi-filter"></i></button>
+          <button type="submit" class="btn btn-primary w-100"  title="Aplicar filtros"><i class="bi bi-filter"></i></button>
           <a href="{{ route('locales.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros"><i class="bi bi-x-circle"></i></a>
         </div>
       </div>
@@ -79,8 +79,10 @@
   </div>
 </section>
 
+
 <section class="py-5 bg-white">
   <div class="container">
+    <hr class="section-separator">
     <div class="row g-4 align-items-center">
       <div class="col-lg-6">
         <h2 class="h3 fw-bold">Consejos para aprovechar tu visita</h2>

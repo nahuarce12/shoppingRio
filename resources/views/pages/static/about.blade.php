@@ -14,7 +14,7 @@ $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::ha
 
 <section class="py-5">
   <div class="container text-center">
-    <h1 class="display-4 fw-bold text-primary">Shopping Rosario</h1>
+    <h1 class="display-4 fw-bold" style="color: var(--primary-color)">Shopping Rosario</h1>
     <p class="lead">El centro comercial más moderno de la ciudad</p>
   </div>
 </section>
@@ -35,10 +35,10 @@ $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::ha
   </div>
 </section>
 
-<hr class="section-separator">
 
 <section class="py-5">
   <div class="container">
+      <hr class="section-separator">
     <div class="text-center mb-5">
       <h2 class="section-title">Nuestros Valores</h2>
       <p class="section-subtitle">Los principios que nos guían cada día</p>
@@ -69,10 +69,10 @@ $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::ha
   </div>
 </section>
 
-<hr class="section-separator">
 
 <section class="about-section py-4">
   <div class="container">
+      <hr class="section-separator">
     <div class="text-center mb-5">
       <h2 class="section-title">Sistema de Promociones Digital</h2>
       <p class="section-subtitle">Innovación al servicio de tu ahorro</p>
@@ -95,7 +95,7 @@ $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::ha
   </div>
 </section>
 
-<section class="py-5 bg-primary text-white">
+<section class="py-5 bg-primaryColor text-white">
   <div class="container">
     <div class="row text-center">
       <div class="col-md-3 mb-4">
@@ -187,10 +187,10 @@ $registerUrl = Route::has('auth.register') ? route('auth.register') : (Route::ha
   </div>
 </section>
 
-<hr class="section-separator">
 
 <section class="py-5">
   <div class="container text-center">
+      <hr class="section-separator">
     <h2 class="mb-4">¿Te gustaría formar parte de nuestra comunidad?</h2>
     <p class="lead mb-4">Registrate y empezá a disfrutar de beneficios exclusivos</p>
     <a href="{{ $registerUrl }}" class="btn btn-primary btn-lg">

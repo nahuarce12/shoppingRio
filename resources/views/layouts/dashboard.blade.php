@@ -26,7 +26,7 @@
   @stack('head')
 </head>
 
-<body class="bg-light">
+<body style="background-color: #FFFFFF !important;">
   @hasSection('dashboard_nav')
   @yield('dashboard_nav')
   @else
