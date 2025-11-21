@@ -1,0 +1,15 @@
+vendor/
+node_modules/
+npm-debug.log
+.env
+.env.*.php
+.git
+.gitignore
+storage/*.key
+storage/ssl
+docker-compose*.yml
+tests/
+phpunit.xml
+.DS_Store
+.idea
+.vscode
