@@ -27,7 +27,7 @@ return new class extends Migration
                 $table->string('title', 100)->nullable()->after('code');
             });
         }
-        
+
         // Handle Spanish to English column renames only if Spanish columns exist
         if (Schema::hasColumn('promotions', 'categoria_minima')) {
             DB::statement("ALTER TABLE promotions CHANGE categoria_minima minimum_category ENUM('Inicial', 'Medium', 'Premium') NOT NULL DEFAULT 'Inicial'");
@@ -42,7 +42,7 @@ return new class extends Migration
                 $table->string('title', 100)->nullable()->after('code');
             });
         }
-        
+
         // Handle Spanish to English column renames only if Spanish columns exist
         if (Schema::hasColumn('news', 'categoria_destino')) {
             DB::statement("ALTER TABLE news CHANGE categoria_destino target_category ENUM('Inicial', 'Medium', 'Premium') NOT NULL DEFAULT 'Inicial'");
@@ -105,40 +105,5 @@ return new class extends Migration
                 $table->dropColumn('description');
             });
         }
-    }
-};
-            $table->renameColumn('end_date', 'end_date');
-            $table->renameColumn('start_date', 'start_date');
-            $table->renameColumn('description', 'description');
-            $table->renameColumn('code', 'code');
-        });
-
-        // PROMOTIONS TABLE
-        Schema::table('promotions', function (Blueprint $table) {
-            $table->dropColumn('title');
-        });
-        
-        DB::statement("ALTER TABLE promotions CHANGE status estado ENUM('pendiente', 'aprobada', 'denegada') NOT NULL DEFAULT 'pendiente'");
-        DB::statement("ALTER TABLE promotions CHANGE minimum_category categoria_minima ENUM('Inicial', 'Medium', 'Premium') NOT NULL DEFAULT 'Inicial'");
-        
-        Schema::table('promotions', function (Blueprint $table) {
-            $table->renameColumn('weekdays', 'weekdays');
-            $table->renameColumn('end_date', 'end_date');
-            $table->renameColumn('start_date', 'start_date');
-            $table->renameColumn('description', 'description');
-            $table->renameColumn('code', 'code');
-        });
-
-        // STORES TABLE
-        Schema::table('stores', function (Blueprint $table) {
-            $table->dropColumn('description');
-        });
-        
-        Schema::table('stores', function (Blueprint $table) {
-            $table->renameColumn('category', 'category');
-            $table->renameColumn('location', 'location');
-            $table->renameColumn('name', 'name');
-            $table->renameColumn('code', 'code');
-        });
     }
 };
