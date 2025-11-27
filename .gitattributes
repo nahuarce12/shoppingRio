@@ -6,6 +6,10 @@
 *.md diff=markdown
 *.php diff=php
 
+# Force Unix line endings for shell scripts
+*.sh text eol=lf
+docker/*.conf text eol=lf
+
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore

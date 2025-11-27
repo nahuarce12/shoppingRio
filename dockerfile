@@ -78,7 +78,8 @@ RUN if [ -f composer.json ]; then \
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+  && dos2unix /usr/local/bin/entrypoint.sh 2>/dev/null || sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 
 # Create system user and set permissions for Laravel
 RUN addgroup -g 1000 ${WWWUSER} || true \

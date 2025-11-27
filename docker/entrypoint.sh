@@ -1,4 +1,3 @@
- url=https://github.com/nahuarce12/shoppingRio/blob/main/docker/entrypoint.sh
 #!/usr/bin/env sh
 set -e
 
@@ -7,7 +6,7 @@ cd /var/www/html || exit 1
 
 # Generar APP_KEY si no está definida (recomendado setearla en Render en vez de generarla)
 if [ -z "${APP_KEY:-}" ]; then
-  echo "APP_KEY not set — generando key temporal..."
+  echo "APP_KEY not set  generando key temporal..."
   if [ -f artisan ]; then
     php artisan key:generate --force || true
     echo "APP_KEY generado (es mejor definir APP_KEY en Render Dashboard)."
