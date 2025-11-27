@@ -62,12 +62,14 @@ RUN composer --version && php -v && php -m || true \
   echo "No hay composer.json, omitiendo composer install"; \
   fi
 
-# Optional: copy node files and build frontend assets if project uses them
+# Copy node manifest files (to leverage cache)
 COPY package.json package-lock.json* ./
-RUN if [ -f package.json ]; then npm ci --silent && (npm run build || npm run prod || true); fi
 
-# Now copy the rest of the application (artisan and app files become available)
+# Copy the rest of the application (including vite.config.js, resources/, etc.)
 COPY . .
+
+# Build frontend assets after app files are present so Vite can find vite.config.js
+RUN if [ -f package.json ]; then npm ci --silent && (npm run build || npm run prod || true); fi
 
 # After the full app is present, regenerate optimized autoload (this does not run composer scripts that call artisan)
 RUN if [ -f composer.json ]; then \
