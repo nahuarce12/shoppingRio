@@ -126,8 +126,8 @@ class Store extends Model
             return $this->logo;
         }
 
-        // Convert storage path to public URL
-        return asset('storage/' . $this->logo);
+        // Generate absolute URL to storage file
+        return url('storage/' . $this->logo);
     }
 
     /**

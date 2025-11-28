@@ -121,8 +121,8 @@ class News extends Model
             return $this->imagen;
         }
 
-        // Convert storage path to public URL
-        return asset('storage/' . $this->imagen);
+        // Generate absolute URL to storage file
+        return url('storage/' . $this->imagen);
     }
 
     /**

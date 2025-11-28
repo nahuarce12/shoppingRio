@@ -22,7 +22,12 @@ fi
 # Crear el enlace de storage/public si hace falta
 if [ -f artisan ]; then
   if [ ! -L public/storage ]; then
-    php artisan storage:link || true
+    echo "Creating storage symlink..."
+    php artisan storage:link --force || true
+    # Si artisan falla, crear symlink manualmente
+    if [ ! -L public/storage ]; then
+      ln -s ../storage/app/public public/storage 2>/dev/null || true
+    fi
   fi
 fi
 
