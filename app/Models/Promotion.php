@@ -160,6 +160,24 @@ class Promotion extends Model
     // ==================== Accessors & Helpers ====================
 
     /**
+     * Get the promotion image URL (converts storage path to public URL).
+     */
+    public function getImagenUrlAttribute(): ?string
+    {
+        if (!$this->imagen) {
+            return null;
+        }
+
+        // If it's already a URL, return as-is
+        if (str_starts_with($this->imagen, 'http')) {
+            return $this->imagen;
+        }
+
+        // Convert storage path to public URL
+        return asset('storage/' . $this->imagen);
+    }
+
+    /**
      * Check if promotion is currently active (within date range and approved).
      */
     public function isActive(): bool

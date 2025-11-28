@@ -113,6 +113,24 @@ class Store extends Model
     // ==================== Accessors & Helpers ====================
 
     /**
+     * Get the logo URL (converts storage path to public URL).
+     */
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+
+        // If it's already a URL, return as-is
+        if (str_starts_with($this->logo, 'http')) {
+            return $this->logo;
+        }
+
+        // Convert storage path to public URL
+        return asset('storage/' . $this->logo);
+    }
+
+    /**
      * Get the count of active promotions for this store.
      */
     public function getActivePromotionsCountAttribute(): int

@@ -108,6 +108,24 @@ class News extends Model
     // ==================== Accessors & Helpers ====================
 
     /**
+     * Get the news image URL (converts storage path to public URL).
+     */
+    public function getImagenUrlAttribute(): ?string
+    {
+        if (!$this->imagen) {
+            return null;
+        }
+
+        // If it's already a URL, return as-is
+        if (str_starts_with($this->imagen, 'http')) {
+            return $this->imagen;
+        }
+
+        // Convert storage path to public URL
+        return asset('storage/' . $this->imagen);
+    }
+
+    /**
      * Check if news is currently active (not expired).
      */
     public function isActive(): bool
