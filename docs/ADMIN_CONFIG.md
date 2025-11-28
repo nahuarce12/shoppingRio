@@ -21,14 +21,16 @@ $admin = User::factory()->admin()->create([
 ```
 
 4. Ejecuta el seeder:
+
 ```bash
 php artisan migrate:fresh --seed
 ```
 
 **Ventajas:**
-- ✅ Limpia y simple
-- ✅ Se aplica a todos los deploys nuevos
-- ✅ Ideal para ambiente de desarrollo
+
+-   ✅ Limpia y simple
+-   ✅ Se aplica a todos los deploys nuevos
+-   ✅ Ideal para ambiente de desarrollo
 
 ### Opción 2: Usar Comando Artisan (Recomendado para Producción)
 
@@ -55,11 +57,13 @@ php artisan admin:update-email
 ```
 
 **Validaciones:**
-- ✅ Valida que el email tenga formato correcto
-- ✅ Verifica que el email no esté en uso por otro usuario
-- ✅ Muestra confirmación con email anterior y nuevo
+
+-   ✅ Valida que el email tenga formato correcto
+-   ✅ Verifica que el email no esté en uso por otro usuario
+-   ✅ Muestra confirmación con email anterior y nuevo
 
 **Salida esperada:**
+
 ```
 ✅ Administrator email successfully updated!
    Old email: admin@shoppingrio.com
@@ -76,9 +80,9 @@ El email del administrador se usa para recibir:
 
 ### Configuración Actual (Post-Deploy)
 
-- **Email del Admin:** `nahuellarce@gmail.com`
-- **Email From:** `noreply@nahuellarce.me` (Dominio verificado en Resend)
-- **Proveedor de Email:** Resend
+-   **Email del Admin:** `nahuellarce@gmail.com`
+-   **Email From:** `noreply@nahuellarce.me` (Dominio verificado en Resend)
+-   **Proveedor de Email:** Resend
 
 ### Verificar Email del Admin Actual
 
@@ -98,6 +102,7 @@ php artisan tinker
 Si necesitas cambiar el email del admin en Render:
 
 ### Opción A: Mediante Render CLI
+
 ```bash
 # Conectarse al contenedor en Render
 render exec -s shoppingrio bash
@@ -107,14 +112,17 @@ php artisan admin:update-email shppngrio@gmail.com
 ```
 
 ### Opción B: Mediante Panel Render
+
 1. Ve a tu servicio en [https://dashboard.render.com](https://dashboard.render.com)
 2. Accede a "Shell" en la sección "Environment" → "Logs"
 3. Ejecuta el comando:
+
 ```bash
 cd /app && php artisan admin:update-email nuevo-email@example.com
 ```
 
 ### Opción C: Redeploy con Nuevo Seeder
+
 1. Actualiza el email en `database/seeders/DatabaseSeeder.php`
 2. Asegúrate que `RUN_SEEDERS=true` esté configurado en las variables de entorno
 3. Haz push a la rama feature/deployFixes
@@ -127,11 +135,13 @@ cd /app && php artisan admin:update-email nuevo-email@example.com
 ### Problema: El email del admin no recibe notificaciones
 
 **Causas posibles:**
+
 1. Email mal configurado en el servidor
 2. API key de Resend inválida o vencida
 3. Dominio no verificado en Resend
 
 **Soluciones:**
+
 1. Verifica el email actual: `php artisan tinker` → `App\Models\User::where('user_type', 'administrador')->first()->email`
 2. Revisa los logs: `storage/logs/laravel.log`
 3. Verifica que `MAIL_FROM_ADDRESS` y `RESEND_API_KEY` estén configurados correctamente
@@ -163,6 +173,6 @@ Si ejecutas `php artisan admin:update-email` y ves "Command not found":
 
 ## Referencias
 
-- [Email Setup Guide](./EMAIL_SETUP.md) - Configuración de Resend y DNS
-- [Deployment Guide](./DEPLOY.md) - Guía general de deployment
-- Laravel Artisan Docs: https://laravel.com/docs/11.x/artisan
+-   [Email Setup Guide](./EMAIL_SETUP.md) - Configuración de Resend y DNS
+-   [Deployment Guide](./DEPLOY.md) - Guía general de deployment
+-   Laravel Artisan Docs: https://laravel.com/docs/11.x/artisan

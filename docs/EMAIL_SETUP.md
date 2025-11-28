@@ -16,10 +16,10 @@ Guía completa para configurar el sistema de envío de emails usando **Resend** 
 
 ## Requisitos
 
-- Dominio propio (ej: `nahuellarce.me`)
-- Acceso a DNS del dominio (Namecheap, GoDaddy, etc.)
-- Cuenta en [Resend.com](https://resend.com)
-- Render con app desplegada
+-   Dominio propio (ej: `nahuellarce.me`)
+-   Acceso a DNS del dominio (Namecheap, GoDaddy, etc.)
+-   Cuenta en [Resend.com](https://resend.com)
+-   Render con app desplegada
 
 ---
 
@@ -43,6 +43,7 @@ Guía completa para configurar el sistema de envío de emails usando **Resend** 
 4. Resend mostrará 3 registros DNS
 
 **Registros típicos:**
+
 ```
 Tipo: CNAME
 Nombre: default._domainkey.nahuellarce.me
@@ -63,10 +64,11 @@ Valor: v=spf1 include:resend.com ~all
 2. Busca tu dominio y click en **Manage**
 3. Ve a **Advanced DNS**
 4. Agrega los 3 registros que Resend te dio:
-   - 2 registros CNAME
-   - 1 registro TXT
+    - 2 registros CNAME
+    - 1 registro TXT
 
 **Ejemplo en Namecheap:**
+
 ```
 Host: default._domainkey
 Type: CNAME
@@ -107,17 +109,17 @@ MAIL_FROM_NAME=ShoppingRio
 
 **Descripción:**
 
-| Variable | Valor | Notas |
-|----------|-------|-------|
-| `MAIL_MAILER` | `resend` | Proveedor de emails |
-| `RESEND_API_KEY` | `re_xxxxx...` | Tu API key de Resend (secreto) |
+| Variable            | Valor                    | Notas                                   |
+| ------------------- | ------------------------ | --------------------------------------- |
+| `MAIL_MAILER`       | `resend`                 | Proveedor de emails                     |
+| `RESEND_API_KEY`    | `re_xxxxx...`            | Tu API key de Resend (secreto)          |
 | `MAIL_FROM_ADDRESS` | `noreply@nahuellarce.me` | Email virtual (no requiere cuenta real) |
-| `MAIL_FROM_NAME` | `ShoppingRio` | Nombre que aparece en los emails |
+| `MAIL_FROM_NAME`    | `ShoppingRio`            | Nombre que aparece en los emails        |
 
 ### Email Virtual vs Real
 
-- **`noreply@nahuellarce.me`**: Email virtual, usuarios NO pueden responder, ideal para notificaciones automáticas
-- **`support@nahuellarce.me`**: Si lo quieres real, crea la cuenta en tu proveedor de hosting y usuarios pueden responder
+-   **`noreply@nahuellarce.me`**: Email virtual, usuarios NO pueden responder, ideal para notificaciones automáticas
+-   **`support@nahuellarce.me`**: Si lo quieres real, crea la cuenta en tu proveedor de hosting y usuarios pueden responder
 
 ---
 
@@ -198,6 +200,7 @@ Subject: ¡Felicitaciones! Tu categoría ha cambiado - ShoppingRio
 **Causa:** Los registros DNS no se han propagado
 
 **Solución:**
+
 1. Verifica que los registros estén correctos en Namecheap
 2. Usa herramientas como [dnschecker.org](https://dnschecker.org) para verificar propagación
 3. Espera 24-48 horas máximo
@@ -208,6 +211,7 @@ Subject: ¡Felicitaciones! Tu categoría ha cambiado - ShoppingRio
 **Causa:** Estás en modo "testing" de Resend, no en producción verificada
 
 **Solución:**
+
 1. Verifica que el dominio esté en estado **Verified** en Resend
 2. Usa un email verificado o espera a que Resend confirme el dominio
 
@@ -216,12 +220,14 @@ Subject: ¡Felicitaciones! Tu categoría ha cambiado - ShoppingRio
 **Causa:** Firewall de Render bloquea conexiones SMTP
 
 **Solución:**
-- ✅ Resend ya está configurado para evitar esto (usa API, no SMTP)
-- Verifica que `MAIL_MAILER=resend` esté configurado
+
+-   ✅ Resend ya está configurado para evitar esto (usa API, no SMTP)
+-   Verifica que `MAIL_MAILER=resend` esté configurado
 
 ### Emails no llegan
 
 **Checklist:**
+
 1. ✅ `RESEND_API_KEY` está configurada correctamente
 2. ✅ Dominio está **Verified** en Resend
 3. ✅ `MAIL_FROM_ADDRESS` usa tu dominio verificado
@@ -272,18 +278,19 @@ php artisan mail:send test@example.com
 
 ## Referencias Útiles
 
-- [Documentación Resend](https://resend.com/docs)
-- [Resend + Laravel](https://resend.com/docs/integrations/laravel)
-- [DNS Checker](https://dnschecker.org)
-- [SPF/DKIM/DMARC Explicado](https://mxtoolbox.com/)
+-   [Documentación Resend](https://resend.com/docs)
+-   [Resend + Laravel](https://resend.com/docs/integrations/laravel)
+-   [DNS Checker](https://dnschecker.org)
+-   [SPF/DKIM/DMARC Explicado](https://mxtoolbox.com/)
 
 ---
 
 ## Contacto & Soporte
 
 Para problemas específicos:
-- Revisa logs en Render Dashboard
-- Consulta estado del dominio en Resend Dashboard
-- Verifica propagación DNS con dnschecker.org
+
+-   Revisa logs en Render Dashboard
+-   Consulta estado del dominio en Resend Dashboard
+-   Verifica propagación DNS con dnschecker.org
 
 **Última actualización:** 28 de Noviembre, 2025
