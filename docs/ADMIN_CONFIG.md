@@ -103,7 +103,7 @@ Si necesitas cambiar el email del admin en Render:
 render exec -s shoppingrio bash
 
 # Dentro del contenedor
-php artisan admin:update-email nuevo-email@example.com
+php artisan admin:update-email shppngrio@gmail.com
 ```
 
 ### Opción B: Mediante Panel Render
