@@ -36,10 +36,21 @@ if [ -f artisan ]; then
   php artisan migrate --force --no-interaction 2>&1 || echo "Migrations warning (continuando)..."
 fi
 
-# Ejecutar seeders si RUN_SEEDERS=true (solo la primera vez)
-if [ "${RUN_SEEDERS:-false}" = "true" ] && [ -f artisan ]; then
-  echo "Running seeders..."
-  php artisan db:seed --force || echo "Seeders fallaron (continuando)..."
+# Ejecutar seeders si admin no existe O si RUN_SEEDERS=true
+if [ -f artisan ]; then
+  # Verificar si ya existe un administrador en BD
+  if php artisan check:admin-exists > /dev/null 2>&1; then
+    echo "Admin already exists, skipping seeders"
+  else
+    echo "No admin found, running seeders..."
+    php artisan db:seed --force || echo "Seeders fallaron (continuando)..."
+  fi
+  
+  # También correr si forzamos con RUN_SEEDERS=true
+  if [ "${RUN_SEEDERS:-false}" = "true" ]; then
+    echo "RUN_SEEDERS=true, forcing seeders..."
+    php artisan db:seed --force || echo "Seeders fallaron (continuando)..."
+  fi
 fi
 
 # Ejecutar el comando principal (supervisord)
