@@ -57,7 +57,7 @@ RUN composer --version && php -v && php -m || true \
   && if [ -f composer.json ]; then \
   echo "Ejecutando composer install --no-scripts (COMPOSER_MEMORY_LIMIT=-1)"; \
   COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader --no-ansi || \
-  (echo "Composer fallÃ³, ejecutando composer diagnose..." && composer diagnose && COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --no-progress --no-scripts) ; \
+  (echo "Composer fallÃƒÂ³, ejecutando composer diagnose..." && composer diagnose && COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --no-progress --no-scripts) ; \
   else \
   echo "No hay composer.json, omitiendo composer install"; \
   fi
@@ -69,7 +69,15 @@ COPY package.json package-lock.json* ./
 COPY . .
 
 # Build frontend assets after app files are present so Vite can find vite.config.js
-RUN if [ -f package.json ]; then npm ci --silent && (npm run build || npm run prod || true); fi
+RUN if [ -f package.json ]; then \
+  echo "Installing npm dependencies..." && \
+  npm ci && \
+  echo "Building frontend assets..." && \
+  npm run build && \
+  echo "Vite build completed. Checking public/build:" && \
+  ls -la public/build/ || echo "public/build not found!" && \
+  ls -la public/build/assets/ 2>/dev/null || echo "No assets folder"; \
+  fi
 
 # After the full app is present, regenerate optimized autoload (this does not run composer scripts that call artisan)
 RUN if [ -f composer.json ]; then \
