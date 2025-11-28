@@ -57,7 +57,7 @@ RUN composer --version && php -v && php -m || true \
   && if [ -f composer.json ]; then \
   echo "Ejecutando composer install --no-scripts (COMPOSER_MEMORY_LIMIT=-1)"; \
   COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist --no-interaction --no-progress --no-scripts --optimize-autoloader --no-ansi || \
-  (echo "Composer falló, ejecutando composer diagnose..." && composer diagnose && COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --no-progress --no-scripts) ; \
+  (echo "Composer fallÃ³, ejecutando composer diagnose..." && composer diagnose && COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --no-progress --no-scripts) ; \
   else \
   echo "No hay composer.json, omitiendo composer install"; \
   fi
@@ -77,11 +77,11 @@ RUN if [ -f composer.json ]; then \
   fi
 
 # Copy nginx/supervisor configs and entrypoint (adjust paths if you store these elsewhere)
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh \
-  && dos2unix /usr/local/bin/entrypoint.sh 2>/dev/null || sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
+  && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 
 # Create system user and set permissions for Laravel
 RUN addgroup -g 1000 ${WWWUSER} || true \
