@@ -83,15 +83,17 @@ class UserApprovalController extends Controller
     public function approve(ApproveUserRequest $request, User $user)
     {
         if ($user->user_type !== 'dueño de local') {
-            return redirect()
-                ->route('admin.users.approval.index')
-                ->with('error', 'Este usuario no es dueño de local.');
+            $message = 'Este usuario no es dueño de local.';
+            return $request->expectsJson()
+                ? response()->json(['error' => $message], 422)
+                : redirect()->route('admin.users.approval.index')->with('error', $message);
         }
 
         if ($user->approved_at !== null) {
-            return redirect()
-                ->route('admin.users.approval.index')
-                ->with('error', 'Este usuario ya fue aprobado anteriormente.');
+            $message = 'Este usuario ya fue aprobado anteriormente.';
+            return $request->expectsJson()
+                ? response()->json(['error' => $message], 422)
+                : redirect()->route('admin.users.approval.index')->with('error', $message);
         }
 
         try {
@@ -109,26 +111,51 @@ class UserApprovalController extends Controller
             // Send approval email (in separate try-catch to not fail the whole operation)
             try {
                 Mail::to($user->email)->send(new StoreOwnerApproved($user));
+                Log::info('Approval email sent successfully', ['user_id' => $user->id]);
             } catch (\Exception $mailException) {
                 Log::warning('Failed to send approval email', [
                     'user_id' => $user->id,
-                    'error' => $mailException->getMessage()
+                    'error' => $mailException->getMessage(),
+                    'trace' => $mailException->getTraceAsString()
+                ]);
+                // Don't fail the approval even if email fails
+            }
+
+            $successMessage = "Usuario '{$user->name}' aprobado exitosamente.";
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $successMessage,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'approved_at' => $user->approved_at
+                    ]
                 ]);
             }
 
             return redirect()
                 ->route('admin.users.approval.index')
-                ->with('success', "Usuario '{$user->name}' aprobado exitosamente. Se envió notificación por email.");
+                ->with('success', $successMessage);
         } catch (\Exception $e) {
             Log::error('Failed to approve store owner', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'admin_id' => auth()->id()
             ]);
 
+            $errorMessage = 'Error al aprobar el usuario. Por favor intente nuevamente.';
+            
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $errorMessage], 500);
+            }
+
             return redirect()
                 ->back()
-                ->with('error', 'Error al aprobar el usuario. Por favor intente nuevamente.');
+                ->with('error', $errorMessage);
         }
     }
 

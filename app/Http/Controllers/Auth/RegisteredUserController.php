@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\StoreOwnerRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\Store;
 use App\Models\User;
@@ -62,6 +63,11 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        // If it's a store owner, notify the admin
+        if ($isStoreOwner) {
+            event(new StoreOwnerRegistered($user));
+        }
 
         // Only auto-login clients, store owners must wait for approval
         if ($user->user_type === 'cliente') {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Store;
 
+use App\Events\PromotionCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromotionRequest;
 use App\Models\Promotion;
@@ -117,6 +118,9 @@ class PromotionController extends Controller
             }
 
             $promotion = Promotion::create($data);
+
+            // Dispatch event to notify admin
+            event(new PromotionCreated($promotion));
 
             Log::info('Promotion created by store owner', [
                 'promotion_id' => $promotion->id,
