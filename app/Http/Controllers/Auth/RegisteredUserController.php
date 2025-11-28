@@ -62,7 +62,10 @@ class RegisteredUserController extends Controller
             'store_id' => $isStoreOwner ? $validated['store_id'] : null,
         ]);
 
-        event(new Registered($user));
+        // Only send email verification for clients
+        if ($user->user_type === 'cliente') {
+            event(new Registered($user));
+        }
 
         // If it's a store owner, notify the admin
         if ($isStoreOwner) {
