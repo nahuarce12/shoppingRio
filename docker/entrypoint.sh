@@ -4,7 +4,7 @@ set -e
 # Ir al directorio de la app
 cd /var/www/html || exit 1
 
-# Generar APP_KEY si no estÃ¡ definida (recomendado setearla en Render en vez de generarla)
+# Generar APP_KEY si no estÃƒÂ¡ definida (recomendado setearla en Render en vez de generarla)
 if [ -z "${APP_KEY:-}" ]; then
   echo "APP_KEY not set  generando key temporal..."
   if [ -f artisan ]; then
@@ -16,7 +16,7 @@ fi
 # Ejecutar package discovery (ahora artisan existe). No fallar el contenedor si algo sale mal.
 if [ -f artisan ]; then
   echo "Ejecutando php artisan package:discover --ansi"
-  php artisan package:discover --ansi || echo "package:discover fallÃ³ (continuando)..."
+  php artisan package:discover --ansi || echo "package:discover fallÃƒÂ³ (continuando)..."
 fi
 
 # Crear el enlace de storage/public si hace falta
@@ -26,7 +26,7 @@ if [ -f artisan ]; then
   fi
 fi
 
-# Corregir permisos (por si Render monta volÃºmenes)
+# Corregir permisos (por si Render monta volÃƒÂºmenes)
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
@@ -34,6 +34,12 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 if [ "${RUN_MIGRATIONS:-false}" = "true" ] && [ -f artisan ]; then
   echo "Running migrations..."
   php artisan migrate --force || echo "Migrations fallaron (continuando)..."
+fi
+
+# Ejecutar seeders si RUN_SEEDERS=true (solo la primera vez)
+if [ "${RUN_SEEDERS:-false}" = "true" ] && [ -f artisan ]; then
+  echo "Running seeders..."
+  php artisan db:seed --force || echo "Seeders fallaron (continuando)..."
 fi
 
 # Ejecutar el comando principal (supervisord)
