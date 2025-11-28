@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Email Address
+    |--------------------------------------------------------------------------
+    |
+    | The email address where admin notifications will be sent.
+    | This is used for store owner registration and promotion approval requests.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL', 'shppngrio@gmail.com'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Category Upgrade Thresholds
     |--------------------------------------------------------------------------
     |

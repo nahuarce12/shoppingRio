@@ -27,22 +27,27 @@ class NotifyAdminOfPromotionCreation implements ShouldQueue
      */
     public function handle(PromotionCreated $event): void
     {
-        // Find the admin user
-        $admin = User::where('user_type', 'administrador')->first();
+        // Get admin email from config (priority) or database
+        $adminEmail = config('shopping.admin_email');
+        
+        if (!$adminEmail) {
+            $admin = User::where('user_type', 'administrador')->first();
+            $adminEmail = $admin?->email;
+        }
 
-        if (!$admin) {
-            Log::error('Admin user not found for promotion creation notification');
+        if (!$adminEmail) {
+            Log::error('Admin email not configured for promotion creation notification');
             return;
         }
 
         try {
             // Send notification to admin
-            Mail::to($admin->email)->send(
+            Mail::to($adminEmail)->send(
                 new PromotionCreatedNotification($event->promotion)
             );
 
             Log::info('Promotion creation notification sent to admin', [
-                'admin_email' => $admin->email,
+                'admin_email' => $adminEmail,
                 'promotion_id' => $event->promotion->id,
                 'store_id' => $event->promotion->store_id,
             ]);
