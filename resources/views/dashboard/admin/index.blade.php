@@ -1422,7 +1422,7 @@ use Illuminate\Support\Str;
       // Get all promotion usages and filter by date
       const allUsages = @json(\App\Models\PromotionUsage::with(['promotion.store'])->get());
       const filteredUsages = allUsages.filter(usage => {
-        const usageDate = new Date(usage.fecha_uso);
+        const usageDate = new Date(usage.usage_date);
         return usageDate >= cutoffDate && usage.promotion;
       });
       
@@ -1439,9 +1439,9 @@ use Illuminate\Support\Str;
           };
         }
         promotionMap[usage.promotion_id].total++;
-        if (usage.estado === 'aceptada') promotionMap[usage.promotion_id].accepted++;
-        if (usage.estado === 'rechazada') promotionMap[usage.promotion_id].rejected++;
-        if (usage.estado === 'enviada') promotionMap[usage.promotion_id].pending++;
+        if (usage.status === 'aceptada') promotionMap[usage.promotion_id].accepted++;
+        if (usage.status === 'rechazada') promotionMap[usage.promotion_id].rejected++;
+        if (usage.status === 'enviada') promotionMap[usage.promotion_id].pending++;
       });
       
       // Convert to array and sort
@@ -1470,13 +1470,14 @@ use Illuminate\Support\Str;
         stats.forEach(stat => {
           const rate = stat.total > 0 ? Math.round((stat.accepted / stat.total) * 100) : 0;
           const rateClass = rate >= 70 ? 'text-success' : (rate >= 40 ? 'text-warning' : 'text-danger');
-          const texto = stat.promotion.texto.length > 40 ? stat.promotion.texto.substring(0, 40) + '...' : stat.promotion.texto;
+          const promoTitle = stat.promotion.title || stat.promotion.description || 'Sin título';
+          const displayTitle = promoTitle.length > 40 ? promoTitle.substring(0, 40) + '...' : promoTitle;
           
           html += `
             <tr>
-              <td><code>${stat.promotion.codigo}</code></td>
-              <td>${texto}</td>
-              <td><small>${stat.promotion.store.nombre}</small></td>
+              <td><code>${stat.promotion.code}</code></td>
+              <td>${displayTitle}</td>
+              <td><small>${stat.promotion.store.name}</small></td>
               <td class="text-center"><strong>${stat.total}</strong></td>
               <td class="text-center"><span class="badge bg-success">${stat.accepted}</span></td>
               <td class="text-center"><span class="badge bg-danger">${stat.rejected}</span></td>
@@ -1517,7 +1518,7 @@ use Illuminate\Support\Str;
         store.promotions.forEach(promo => {
           if (promo.usages) {
             promo.usages.forEach(usage => {
-              const usageDate = new Date(usage.fecha_uso);
+              const usageDate = new Date(usage.usage_date);
               if (usageDate >= cutoffDate) {
                 usages.push(usage);
               }
@@ -1529,9 +1530,9 @@ use Illuminate\Support\Str;
           store: store,
           promotions_count: store.promotions.length,
           total_usages: usages.length,
-          accepted: usages.filter(u => u.estado === 'aceptada').length,
-          rejected: usages.filter(u => u.estado === 'rechazada').length,
-          pending: usages.filter(u => u.estado === 'enviada').length
+          accepted: usages.filter(u => u.status === 'aceptada').length,
+          rejected: usages.filter(u => u.status === 'rechazada').length,
+          pending: usages.filter(u => u.status === 'enviada').length
         };
       }).filter(s => s.total_usages > 0).sort((a, b) => b.total_usages - a.total_usages);
       
@@ -1558,9 +1559,9 @@ use Illuminate\Support\Str;
         storeStats.forEach(stat => {
           html += `
             <tr>
-              <td><code>${stat.store.codigo}</code></td>
-              <td><strong>${stat.store.nombre}</strong></td>
-              <td><span class="badge bg-secondary">${stat.store.rubro}</span></td>
+              <td><code>${stat.store.code}</code></td>
+              <td><strong>${stat.store.name}</strong></td>
+              <td><span class="badge bg-secondary">${stat.store.category}</span></td>
               <td class="text-center">${stat.promotions_count}</td>
               <td class="text-center"><strong>${stat.total_usages}</strong></td>
               <td class="text-center"><span class="badge bg-success">${stat.accepted}</span></td>
@@ -1594,7 +1595,7 @@ use Illuminate\Support\Str;
       
       // Filter usages by date
       const filteredUsages = allUsages.filter(usage => {
-        const usageDate = new Date(usage.fecha_uso);
+        const usageDate = new Date(usage.usage_date);
         return usageDate >= cutoffDate && usage.client;
       });
       
@@ -1606,21 +1607,21 @@ use Illuminate\Support\Str;
       };
       
       filteredUsages.forEach(usage => {
-        const cat = usage.client.categoria_cliente;
+        const cat = usage.client.client_category;
         if (categoryStats[cat]) {
           categoryStats[cat].total++;
-          if (usage.estado === 'aceptada') categoryStats[cat].accepted++;
-          if (usage.estado === 'rechazada') categoryStats[cat].rejected++;
-          if (usage.estado === 'enviada') categoryStats[cat].pending++;
+          if (usage.status === 'aceptada') categoryStats[cat].accepted++;
+          if (usage.status === 'rechazada') categoryStats[cat].rejected++;
+          if (usage.status === 'enviada') categoryStats[cat].pending++;
           categoryStats[cat].unique_clients.add(usage.client_id);
         }
       });
       
       // Count total clients per category
       const categoryTotals = {
-        'Inicial': allClients.filter(c => c.categoria_cliente === 'Inicial').length,
-        'Medium': allClients.filter(c => c.categoria_cliente === 'Medium').length,
-        'Premium': allClients.filter(c => c.categoria_cliente === 'Premium').length
+        'Inicial': allClients.filter(c => c.client_category === 'Inicial').length,
+        'Medium': allClients.filter(c => c.client_category === 'Medium').length,
+        'Premium': allClients.filter(c => c.client_category === 'Premium').length
       };
       
       // Calculate percentages for progress bar

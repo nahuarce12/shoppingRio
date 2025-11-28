@@ -20,6 +20,7 @@ class Promotion extends Model
      */
     protected $fillable = [
         'code',
+        'title',
         'description',
         'start_date',
         'end_date',

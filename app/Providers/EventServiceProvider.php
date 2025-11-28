@@ -25,6 +25,14 @@ class EventServiceProvider extends ServiceProvider
     ];
 
     /**
+     * Disable automatic event discovery to prevent duplicate listeners.
+     */
+    public function shouldDiscoverEvents(): bool
+    {
+        return false;
+    }
+
+    /**
      * Register any events for your application.
      */
     public function boot(): void

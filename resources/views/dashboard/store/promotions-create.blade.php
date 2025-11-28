@@ -119,11 +119,11 @@
                                 @foreach($dias as $index => $dia)
                                 <div class="col-6 col-md-3">
                                     <div class="form-check">
-                                        <input type="hidden" name="dias_semana[{{ $index }}]" value="0">
+                                        <input type="hidden" name="weekdays[{{ $index }}]" value="0">
                                         <input 
                                             class="form-check-input day-checkbox @error('weekdays') is-invalid @enderror" 
                                             type="checkbox" 
-                                            name="dias_semana[{{ $index }}]" 
+                                            name="weekdays[{{ $index }}]" 
                                             value="1"
                                             id="dia_{{ $index }}"
                                             {{ ($oldDias[$index] ?? 0) ? 'checked' : '' }}>

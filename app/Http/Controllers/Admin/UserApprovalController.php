@@ -63,14 +63,14 @@ class UserApprovalController extends Controller
         // Only show store owners
         if ($user->user_type !== 'dueño de local') {
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('error', 'Este usuario no es dueño de local.');
         }
 
         // Only show pending users
         if ($user->approved_at !== null) {
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('info', 'Este usuario ya fue procesado.');
         }
 
@@ -86,14 +86,14 @@ class UserApprovalController extends Controller
             $message = 'Este usuario no es dueño de local.';
             return $request->expectsJson()
                 ? response()->json(['error' => $message], 422)
-                : redirect()->route('admin.users.approval.index')->with('error', $message);
+                : redirect()->route('admin.users.pending')->with('error', $message);
         }
 
         if ($user->approved_at !== null) {
             $message = 'Este usuario ya fue aprobado anteriormente.';
             return $request->expectsJson()
                 ? response()->json(['error' => $message], 422)
-                : redirect()->route('admin.users.approval.index')->with('error', $message);
+                : redirect()->route('admin.users.pending')->with('error', $message);
         }
 
         try {
@@ -166,13 +166,13 @@ class UserApprovalController extends Controller
     {
         if ($user->user_type !== 'dueño de local') {
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('error', 'Este usuario no es dueño de local.');
         }
 
         if ($user->approved_at !== null) {
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('error', 'Este usuario ya fue procesado.');
         }
 
@@ -194,7 +194,7 @@ class UserApprovalController extends Controller
             $user->delete();
 
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('success', "Registro de '{$userName}' rechazado. Se envió notificación con el motivo.");
         } catch (\Exception $e) {
             Log::error('Failed to reject store owner', [
