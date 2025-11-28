@@ -137,7 +137,7 @@ class UserApprovalController extends Controller
             }
 
             return redirect()
-                ->route('admin.users.approval.index')
+                ->route('admin.users.pending')
                 ->with('success', $successMessage);
         } catch (\Exception $e) {
             Log::error('Failed to approve store owner', [

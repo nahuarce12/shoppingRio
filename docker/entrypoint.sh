@@ -30,10 +30,10 @@ fi
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
-# Ejecutar migraciones si RUN_MIGRATIONS=true
-if [ "${RUN_MIGRATIONS:-false}" = "true" ] && [ -f artisan ]; then
+# Ejecutar migraciones SIEMPRE para asegurar schema actualizado
+if [ -f artisan ]; then
   echo "Running migrations..."
-  php artisan migrate --force || echo "Migrations fallaron (continuando)..."
+  php artisan migrate --force --no-interaction 2>&1 || echo "Migrations warning (continuando)..."
 fi
 
 # Ejecutar seeders si RUN_SEEDERS=true (solo la primera vez)
