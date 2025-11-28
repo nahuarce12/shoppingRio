@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies (Render, Railway, etc. use reverse proxies)
+        $middleware->trustProxies(at: '*');
+        
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'store.owner' => \App\Http\Middleware\StoreOwnerMiddleware::class,
