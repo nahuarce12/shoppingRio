@@ -5,14 +5,11 @@ namespace App\Listeners;
 use App\Events\PromotionCreated;
 use App\Mail\PromotionCreatedNotification;
 use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class NotifyAdminOfPromotionCreation implements ShouldQueue
+class NotifyAdminOfPromotionCreation
 {
-    use InteractsWithQueue;
 
     /**
      * Create the event listener.
