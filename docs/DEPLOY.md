@@ -19,9 +19,10 @@ Documentación completa sobre cómo deployear el proyecto ShoppingRio en Render 
 Se realizaron los siguientes cambios al proyecto para que funcione correctamente en Render:
 
 ### 1. **Dockerfile - Optimización del Build**
-- ✅ Reordenamiento: npm build se ejecuta DESPUÉS de copiar `vite.config.js` y `resources/`
-- ✅ Diagnóstico mejorado con logs verbosos durante el build de Vite
-- ✅ Asegurada la generación de `public/build/` con assets compilados
+
+-   ✅ Reordenamiento: npm build se ejecuta DESPUÉS de copiar `vite.config.js` y `resources/`
+-   ✅ Diagnóstico mejorado con logs verbosos durante el build de Vite
+-   ✅ Asegurada la generación de `public/build/` con assets compilados
 
 **Archivo:** `dockerfile`
 
@@ -38,9 +39,11 @@ RUN if [ -f package.json ]; then \
 ```
 
 ### 2. **package.json - Scripts Faltantes**
-- ✅ Agregado script `prod` como alias de `build` (usado por Dockerfile como fallback)
+
+-   ✅ Agregado script `prod` como alias de `build` (usado por Dockerfile como fallback)
 
 **Cambio:**
+
 ```json
 "scripts": {
   "dev": "vite",
@@ -50,18 +53,21 @@ RUN if [ -f package.json ]; then \
 ```
 
 ### 3. **docker/supervisord.conf - Corrección de Logging**
-- ✅ `nodaemon=true` (requerido en Docker)
-- ✅ `user=root` (evita warning de privilegios)
-- ✅ `logfile=/dev/null` con `logfile_maxbytes=0` (evita error "Invalid seek")
-- ✅ Configurado logging sin limits en stdout/stderr
+
+-   ✅ `nodaemon=true` (requerido en Docker)
+-   ✅ `user=root` (evita warning de privilegios)
+-   ✅ `logfile=/dev/null` con `logfile_maxbytes=0` (evita error "Invalid seek")
+-   ✅ Configurado logging sin limits en stdout/stderr
 
 ### 4. **docker/nginx.conf - Configuración Completa**
-- ✅ Reemplazado con configuración nginx.conf **completa** (no solo server block)
-- ✅ Location especial para `/build/` assets de Vite
-- ✅ GZIP habilitado para compresión de assets
-- ✅ Copiado a `/etc/nginx/nginx.conf` en lugar de `conf.d/`
+
+-   ✅ Reemplazado con configuración nginx.conf **completa** (no solo server block)
+-   ✅ Location especial para `/build/` assets de Vite
+-   ✅ GZIP habilitado para compresión de assets
+-   ✅ Copiado a `/etc/nginx/nginx.conf` en lugar de `conf.d/`
 
 **Location para assets Vite:**
+
 ```nginx
 location /build/ {
     alias /var/www/html/public/build/;
@@ -72,10 +78,12 @@ location /build/ {
 ```
 
 ### 5. **docker/entrypoint.sh - Finales de Línea & Seeders**
-- ✅ Convertido a LF (Unix line endings)
-- ✅ Agregado soporte para ejecutar seeders con `RUN_SEEDERS=true`
+
+-   ✅ Convertido a LF (Unix line endings)
+-   ✅ Agregado soporte para ejecutar seeders con `RUN_SEEDERS=true`
 
 **Nuevo:**
+
 ```bash
 # Ejecutar seeders si RUN_SEEDERS=true
 if [ "${RUN_SEEDERS:-false}" = "true" ] && [ -f artisan ]; then
@@ -85,19 +93,23 @@ fi
 ```
 
 ### 6. **database/migrations/2025_11_12_231234_rename_database_attributes_to_english.php - Idempotencia**
-- ✅ Reescrito para ser "seguro" en bases de datos frescas
-- ✅ Verifica existencia de columnas antes de renombrar/crear
-- ✅ Compatible con sistemas que ya tienen columnas en inglés
+
+-   ✅ Reescrito para ser "seguro" en bases de datos frescas
+-   ✅ Verifica existencia de columnas antes de renombrar/crear
+-   ✅ Compatible con sistemas que ya tienen columnas en inglés
 
 ### 7. **bootstrap/app.php - Trust Proxies**
-- ✅ Agregado `$middleware->trustProxies(at: '*')` para confiar en reverse proxies
-- ✅ Necesario para que Render (que usa reverse proxy) maneje URLs correctamente
+
+-   ✅ Agregado `$middleware->trustProxies(at: '*')` para confiar en reverse proxies
+-   ✅ Necesario para que Render (que usa reverse proxy) maneje URLs correctamente
 
 ### 8. **app/Providers/AppServiceProvider.php - HTTPS Forzado**
-- ✅ Agregado `URL::forceScheme('https')` en producción
-- ✅ Previene errores de "mixed content" (assets HTTP en página HTTPS)
+
+-   ✅ Agregado `URL::forceScheme('https')` en producción
+-   ✅ Previene errores de "mixed content" (assets HTTP en página HTTPS)
 
 **Código:**
+
 ```php
 if (config('app.env') === 'production' || request()->header('X-Forwarded-Proto') === 'https') {
     URL::forceScheme('https');
@@ -105,17 +117,18 @@ if (config('app.env') === 'production' || request()->header('X-Forwarded-Proto')
 ```
 
 ### 9. **.gitattributes - Line Endings**
-- ✅ Forzado LF para `*.sh` y archivos `docker/*.conf`
-- ✅ Previene problemas de CRLF → LF en Windows
+
+-   ✅ Forzado LF para `*.sh` y archivos `docker/*.conf`
+-   ✅ Previene problemas de CRLF → LF en Windows
 
 ---
 
 ## Requisitos Previos
 
-- Cuenta en [Render.com](https://render.com)
-- Cuenta en [Railway.app](https://railway.app)
-- Proyecto en GitHub (este repositorio)
-- Variables de entorno correctas
+-   Cuenta en [Render.com](https://render.com)
+-   Cuenta en [Railway.app](https://railway.app)
+-   Proyecto en GitHub (este repositorio)
+-   Variables de entorno correctas
 
 ---
 
@@ -131,12 +144,12 @@ if (config('app.env') === 'production' || request()->header('X-Forwarded-Proto')
 
 1. En el servicio MySQL, ve a **Variables**
 2. Copia los siguientes valores:
-   - `MYSQLHOST` (ej: `ballast.proxy.rlwy.net`)
-   - `MYSQLPORT` (usualmente `3306`)
-   - `MYSQLDATABASE` (será `railway`)
-   - `MYSQLUSER` (usualmente `root`)
-   - `MYSQLPASSWORD` (contraseña generada)
-   - `MYSQL_PUBLIC_URL` (para conexiones externas)
+    - `MYSQLHOST` (ej: `ballast.proxy.rlwy.net`)
+    - `MYSQLPORT` (usualmente `3306`)
+    - `MYSQLDATABASE` (será `railway`)
+    - `MYSQLUSER` (usualmente `root`)
+    - `MYSQLPASSWORD` (contraseña generada)
+    - `MYSQL_PUBLIC_URL` (para conexiones externas)
 
 **⚠️ Nota:** Railway por defecto no cambia el nombre de la base de datos de `railway`. Úsalo tal cual.
 
@@ -161,11 +174,11 @@ mysql -h ballast.proxy.rlwy.net -u root -p -D railway
 
 ### Paso 2: Configurar Servicio
 
-- **Name:** `shoppingrio` (o tu preferencia)
-- **Branch:** `feature/deployFixes` (o la rama que uses)
-- **Runtime:** `Docker`
-- **Build Command:** (dejar en blanco - Render detecta el Dockerfile)
-- **Start Command:** (dejar en blanco - Dockerfile define ENTRYPOINT)
+-   **Name:** `shoppingrio` (o tu preferencia)
+-   **Branch:** `feature/deployFixes` (o la rama que uses)
+-   **Runtime:** `Docker`
+-   **Build Command:** (dejar en blanco - Render detecta el Dockerfile)
+-   **Start Command:** (dejar en blanco - Dockerfile define ENTRYPOINT)
 
 ### Paso 3: Configurar Variables de Entorno
 
@@ -199,9 +212,10 @@ PORT=80
 ```
 
 **Nota:** Reemplaza:
-- `ballast.proxy.rlwy.net` con tu MYSQLHOST de Railway
-- `<TU_CONTRASEÑA_DE_RAILWAY>` con tu contraseña
-- `<TU_APP_KEY>` con una key generada (ver más abajo)
+
+-   `ballast.proxy.rlwy.net` con tu MYSQLHOST de Railway
+-   `<TU_CONTRASEÑA_DE_RAILWAY>` con tu contraseña
+-   `<TU_APP_KEY>` con una key generada (ver más abajo)
 
 ### Paso 4: Generar APP_KEY
 
@@ -225,39 +239,39 @@ Copia el resultado (incluye `base64:`) y pégalo en la variable `APP_KEY` en Ren
 
 ### Tabla Completa de Variables
 
-| Variable | Valor | Descripción |
-|----------|-------|------------|
-| `APP_ENV` | `production` | Ambiente de ejecución |
-| `APP_DEBUG` | `false` | Debug deshabilitado en producción |
-| `APP_NAME` | `ShoppingRio` | Nombre de la aplicación |
-| `APP_URL` | `https://shoppingrio.onrender.com` | URL base (con HTTPS) |
-| `APP_KEY` | `base64:...` | Clave de encriptación (generada) |
-| `LOG_CHANNEL` | `stderr` | Logs a stderr para Docker |
-| `DB_CONNECTION` | `mysql` | Tipo de BD |
-| `DB_HOST` | Railway HOST | Host de Railway |
-| `DB_PORT` | `3306` | Puerto MySQL |
-| `DB_DATABASE` | `railway` | Nombre de BD (Railway) |
-| `DB_USERNAME` | `root` | Usuario MySQL |
-| `DB_PASSWORD` | Railway PASSWORD | Contraseña de Railway |
-| `RUN_MIGRATIONS` | `true` | Ejecutar migraciones al iniciar |
-| `RUN_SEEDERS` | `true` | Ejecutar seeders al iniciar (solo 1ª vez) |
-| `PORT` | `80` | Puerto HTTP |
+| Variable         | Valor                              | Descripción                               |
+| ---------------- | ---------------------------------- | ----------------------------------------- |
+| `APP_ENV`        | `production`                       | Ambiente de ejecución                     |
+| `APP_DEBUG`      | `false`                            | Debug deshabilitado en producción         |
+| `APP_NAME`       | `ShoppingRio`                      | Nombre de la aplicación                   |
+| `APP_URL`        | `https://shoppingrio.onrender.com` | URL base (con HTTPS)                      |
+| `APP_KEY`        | `base64:...`                       | Clave de encriptación (generada)          |
+| `LOG_CHANNEL`    | `stderr`                           | Logs a stderr para Docker                 |
+| `DB_CONNECTION`  | `mysql`                            | Tipo de BD                                |
+| `DB_HOST`        | Railway HOST                       | Host de Railway                           |
+| `DB_PORT`        | `3306`                             | Puerto MySQL                              |
+| `DB_DATABASE`    | `railway`                          | Nombre de BD (Railway)                    |
+| `DB_USERNAME`    | `root`                             | Usuario MySQL                             |
+| `DB_PASSWORD`    | Railway PASSWORD                   | Contraseña de Railway                     |
+| `RUN_MIGRATIONS` | `true`                             | Ejecutar migraciones al iniciar           |
+| `RUN_SEEDERS`    | `true`                             | Ejecutar seeders al iniciar (solo 1ª vez) |
+| `PORT`           | `80`                               | Puerto HTTP                               |
 
 ### Importante: RUN_SEEDERS
 
 ⚠️ **Usar `RUN_SEEDERS=true` solo en el primer deploy**
 
-- En el primer deploy: `RUN_SEEDERS=true` → Crea datos de prueba
-- Después del primer deploy exitoso: Cambia a `RUN_SEEDERS=false`
-- Si lo dejas en `true`, cada redeploy borrará y recreará datos
+-   En el primer deploy: `RUN_SEEDERS=true` → Crea datos de prueba
+-   Después del primer deploy exitoso: Cambia a `RUN_SEEDERS=false`
+-   Si lo dejas en `true`, cada redeploy borrará y recreará datos
 
 **Credenciales de prueba creadas por seeders:**
 
-| Usuario | Email | Contraseña |
-|---------|-------|------------|
+| Usuario       | Email                   | Contraseña  |
+| ------------- | ----------------------- | ----------- |
 | Administrador | `admin@shoppingrio.com` | `Admin123!` |
-| Dueño Local 1 | generado | `password` |
-| Cliente 1 | generado | `password` |
+| Dueño Local 1 | generado                | `password`  |
+| Cliente 1     | generado                | `password`  |
 
 ---
 
@@ -270,6 +284,7 @@ Copia el resultado (incluye `base64:`) y pégalo en la variable `APP_KEY` en Ren
 **Solución:** ✅ Ya incluida en vite.config.js con `laravel-vite-plugin`
 
 Verifica que exista:
+
 ```bash
 npm install laravel-vite-plugin
 ```
@@ -281,6 +296,7 @@ npm install laravel-vite-plugin
 **Solución:** ✅ Ya corregido con `.gitattributes` y conversión a LF
 
 Verifica:
+
 ```bash
 file docker/entrypoint.sh
 # Debe mostrar: POSIX shell script text executable, ASCII text
@@ -296,7 +312,8 @@ file docker/entrypoint.sh
 
 **Causa:** Variables de entorno DB no configuradas correctamente.
 
-**Solución:** 
+**Solución:**
+
 1. Verifica que `DB_HOST` sea el endpoint público de Railway
 2. Usa `MYSQL_PUBLIC_URL` de Railway
 3. Confirma que las credenciales sean exactas
@@ -307,15 +324,17 @@ file docker/entrypoint.sh
 **Causa:** Página HTTPS pero assets URL HTTP.
 
 **Solución:** ✅ Ya corregido con:
-- `URL::forceScheme('https')` en AppServiceProvider
-- `$middleware->trustProxies(at: '*')` en bootstrap/app.php
-- `APP_URL=https://...` en variables de entorno
+
+-   `URL::forceScheme('https')` en AppServiceProvider
+-   `$middleware->trustProxies(at: '*')` en bootstrap/app.php
+-   `APP_URL=https://...` en variables de entorno
 
 ### No hay datos en la página
 
 **Causa:** Seeders no ejecutados o `RUN_SEEDERS=false`.
 
 **Solución:**
+
 1. Agrega `RUN_SEEDERS=true` en Render
 2. Haz redeploy
 3. Después que complete, cambia a `RUN_SEEDERS=false`
@@ -403,35 +422,36 @@ git push origin feature/deployFixes
 
 ## Archivos Clave Modificados
 
-| Archivo | Cambio | Líneas |
-|---------|--------|--------|
-| `dockerfile` | Reordenado npm build, logs verbosos | 65-75 |
-| `package.json` | Agregado script `prod` | 6-9 |
-| `docker/supervisord.conf` | nodaemon=true, user=root, sin logfile | 1-22 |
-| `docker/nginx.conf` | Config completa con location /build/ | 1-72 |
-| `docker/entrypoint.sh` | Agregado RUN_SEEDERS, LF | 35-40 |
-| `database/migrations/2025_11_12_...` | Idempotencia con Schema::hasColumn() | 1-114 |
-| `bootstrap/app.php` | trustProxies(at: '*') | 15 |
-| `app/Providers/AppServiceProvider.php` | URL::forceScheme('https') | 20-22 |
-| `.gitattributes` | LF para *.sh y docker/*.conf | 10-11 |
+| Archivo                                | Cambio                                | Líneas |
+| -------------------------------------- | ------------------------------------- | ------ |
+| `dockerfile`                           | Reordenado npm build, logs verbosos   | 65-75  |
+| `package.json`                         | Agregado script `prod`                | 6-9    |
+| `docker/supervisord.conf`              | nodaemon=true, user=root, sin logfile | 1-22   |
+| `docker/nginx.conf`                    | Config completa con location /build/  | 1-72   |
+| `docker/entrypoint.sh`                 | Agregado RUN_SEEDERS, LF              | 35-40  |
+| `database/migrations/2025_11_12_...`   | Idempotencia con Schema::hasColumn()  | 1-114  |
+| `bootstrap/app.php`                    | trustProxies(at: '\*')                | 15     |
+| `app/Providers/AppServiceProvider.php` | URL::forceScheme('https')             | 20-22  |
+| `.gitattributes`                       | LF para _.sh y docker/_.conf          | 10-11  |
 
 ---
 
 ## Referencias Útiles
 
-- [Render Documentation](https://render.com/docs)
-- [Railway Documentation](https://docs.railway.app)
-- [Laravel Deployment](https://laravel.com/docs/deployment)
-- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices)
-- [Vite Guide](https://vitejs.dev/guide)
+-   [Render Documentation](https://render.com/docs)
+-   [Railway Documentation](https://docs.railway.app)
+-   [Laravel Deployment](https://laravel.com/docs/deployment)
+-   [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices)
+-   [Vite Guide](https://vitejs.dev/guide)
 
 ---
 
 ## Contacto & Soporte
 
 Para problemas específicos del proyecto, revisa:
-- Logs en Render Dashboard → Logs
-- GitHub Issues en el repositorio
-- Documentación del proyecto en `/docs`
+
+-   Logs en Render Dashboard → Logs
+-   GitHub Issues en el repositorio
+-   Documentación del proyecto en `/docs`
 
 **Última actualización:** 27 de Noviembre, 2025
