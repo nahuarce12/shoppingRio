@@ -81,7 +81,11 @@
           </span>
           @endif
           <a href="{{ route('promociones.show', $promotion->id) }}">
+            @if($promotion->imagen)
+            <img src="{{ $promotion->imagen_url }}" class="card-img-top" alt="Promoción {{ $promotion->store->name }}">
+            @else
             <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="Promoción {{ $promotion->store->name }}">
+            @endif
           </a>
           <div class="card-body">
             <div class="mb-2">
@@ -126,7 +130,11 @@
       <div class="col-6 col-md-4 col-lg-3 col-xl-2">
         <div class="card local-card" data-category="{{ strtolower($store->category) }}">
           <a href="{{ route('locales.show', $store->id) }}">
+            @if($store->logo)
+            <img src="{{ $store->logo_url }}" class="card-img-top" alt="{{ $store->name }}">
+            @else
             <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="card-img-top" alt="{{ $store->name }}">
+            @endif
           </a>
           <div class="card-body text-center">
             <h5 class="card-title">{{ $store->name }}</h5>

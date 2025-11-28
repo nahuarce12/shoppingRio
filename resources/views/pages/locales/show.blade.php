@@ -23,7 +23,11 @@ $localesIndexRoute = route('locales.index');
     <div class="row">
       <div class="col-lg-6 mb-4">
         <div class="ratio ratio-4x3 bg-light rounded">
+          @if($store->logo)
+          <img src="{{ $store->logo_url }}" class="object-fit-cover rounded" alt="Logo de {{ $store->name }}">
+          @else
           <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen de {{ $store->name }}">
+          @endif
         </div>
       </div>
       <div class="col-lg-6 mb-4">

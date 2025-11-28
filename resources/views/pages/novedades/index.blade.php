@@ -67,7 +67,7 @@
                 @endif
                 <div class="ratio ratio-16x9">
                   @if($newsItem->imagen)
-                    <img src="{{ asset('storage/' . $newsItem->imagen) }}" class="object-fit-cover rounded-top" alt="Imagen de {{ $newsItem->title }}">
+                    <img src="{{ $newsItem->imagen_url }}" class="object-fit-cover rounded-top" alt="Imagen de {{ $newsItem->title }}">
                   @else
                     <div class="d-flex align-items-center justify-content-center bg-light rounded-top">
                       <i class="bi bi-newspaper text-muted" style="font-size: 4rem;"></i>

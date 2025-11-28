@@ -117,7 +117,7 @@
                                 <div class="mb-2">
                                     <label class="form-label">Logo actual:</label>
                                     <div>
-                                        <img src="{{ asset('storage/' . $store->logo) }}" alt="Logo actual" class="img-thumbnail" style="max-width: 200px;">
+                                        <img src="{{ $store->logo_url }}" alt="Logo actual" class="img-thumbnail" style="max-width: 200px;">
                                     </div>
                                 </div>
                             @endif

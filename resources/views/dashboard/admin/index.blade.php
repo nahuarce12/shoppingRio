@@ -140,7 +140,7 @@ use Illuminate\Support\Str;
                           data-store-category="{{ $store->category }}"
                           data-store-location="{{ $store->location }}"
                           data-store-description="{{ $store->description ?? '' }}"
-                          data-store-logo="{{ $store->logo ? asset('storage/' . $store->logo) : '' }}">
+                          data-store-logo="{{ $store->logo_url ?? '' }}">
                           <i class="bi bi-pencil"></i>
                         </button>
                         @if(!$store->trashed())
@@ -323,7 +323,7 @@ use Illuminate\Support\Str;
                           data-news-start-date="{{ $news->start_date?->format('Y-m-d') }}"
                           data-news-end-date="{{ $news->end_date?->format('Y-m-d') }}"
                           data-news-target-category="{{ $news->target_category }}"
-                          data-news-imagen="{{ $news->imagen ? asset('storage/' . $news->imagen) : '' }}">
+                          data-news-imagen="{{ $news->imagen_url ?? '' }}">
                           <i class="bi bi-pencil"></i>
                         </button>
                         <form action="{{ route('admin.news.destroy', $news->id) }}" method="POST" onsubmit="return confirm('¿Eliminar esta novedad?');">

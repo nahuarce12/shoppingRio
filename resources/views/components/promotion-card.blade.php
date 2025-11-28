@@ -8,8 +8,8 @@
     @endif
   </div>
 
-  @if($promotion->image)
-  <img src="{{ asset('storage/' . $promotion->image) }}" class="card-img-top" alt="{{ $promotion->title }}" style="height: 200px; object-fit: cover;">
+  @if($promotion->imagen)
+  <img src="{{ $promotion->imagen_url }}" class="card-img-top" alt="{{ $promotion->title }}" style="height: 200px; object-fit: cover;">
   @endif
 
   <div class="card-body d-flex flex-column">

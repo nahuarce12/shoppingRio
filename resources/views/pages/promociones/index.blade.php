@@ -69,8 +69,12 @@
                 @if($daysToExpire >= 0 && $daysToExpire <= 5)
                   <span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="bi bi-exclamation-triangle-fill"></i> Por vencer</span>
                 @endif
-                <a href="{{ route('promociones.show', $promotion) }}" class="ratio ratio-4x3 bg-light d-block">
-                  <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $promotion->description }}">
+                <a href="{{ route('promociones.show', $promotion) }}\" class=\"ratio ratio-4x3 bg-light d-block\">
+                  @if($promotion->imagen)
+                  <img src=\"{{ $promotion->imagen_url }}\" class=\"object-fit-cover rounded-top\" alt=\"Imagen de {{ $promotion->description }}\">
+                  @else
+                  <img src=\"https://cdn.bootstrapstudio.io/placeholders/1400x800.png\" class=\"object-fit-cover rounded-top\" alt=\"Imagen referencial de {{ $promotion->description }}\">
+                  @endif
                 </a>
               </div>
               <div class="card-body">

@@ -50,7 +50,11 @@
           <div class="col-sm-6 col-lg-4 col-xl-3">
             <article class="card h-100 border-0 shadow-sm local-card" data-rubro="{{ strtolower($store->category) }}">
               <a href="{{ route('locales.show', $store) }}" class="ratio ratio-4x3 bg-light d-block">
+                @if($store->logo)
+                <img src="{{ $store->logo_url }}" class="object-fit-cover rounded-top" alt="Logo de {{ $store->name }}">
+                @else
                 <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded-top" alt="Imagen referencial de {{ $store->name }}">
+                @endif
               </a>
               <div class="card-body">
                 <h3 class="h5 card-title mb-1">{{ $store->name }}</h3>

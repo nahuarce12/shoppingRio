@@ -39,7 +39,11 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
     <div class="row">
       <div class="col-lg-6 mb-4">
         <div class="ratio ratio-4x3 bg-light rounded">
+          @if($promotion->imagen)
+          <img src="{{ $promotion->imagen_url }}" class="object-fit-cover rounded" alt="Imagen de {{ $promotion->description }}">
+          @else
           <img src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png" class="object-fit-cover rounded" alt="Imagen referencial de {{ $promotion->description }}">
+          @endif
         </div>
       </div>
       <div class="col-lg-6 mb-4">
