@@ -28,7 +28,7 @@ $ownerPromotions = $ownerReport['promotions'] ?? [
   'denied' => $promotionStats['denegada'] ?? 0,
 ];
 $topPromotion = $recentPromotions->sortByDesc('accepted_usages_count')->first();
-if ($errors->hasAny(['description', 'start_date', 'end_date', 'minimum_category', 'weekdays'])) {
+if ($errors->hasAny(['title', 'description', 'start_date', 'end_date', 'minimum_category', 'weekdays'])) {
   $section = 'crear-promocion';
 }
 @endphp
@@ -195,8 +195,16 @@ if ($errors->hasAny(['description', 'start_date', 'end_date', 'minimum_category'
                 <input type="hidden" name="store_id" value="{{ $store->id }}">
                 <div class="row">
                   <div class="col-md-12 mb-3">
+                    <label class="form-label">Título de la Promoción *</label>
+                    <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" maxlength="100" placeholder="Ej: 2x1 en productos seleccionados, 50% OFF segunda unidad" value="{{ old('title') }}" required>
+                    <div class="form-text">Título corto y atractivo que verán los clientes.</div>
+                    @error('title')
+                      <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                  </div>
+                  <div class="col-md-12 mb-3">
                     <label class="form-label">Descripción de la Promoción *</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="3" maxlength="200" placeholder="Ej: 50% OFF en segunda unidad" required>{{ old('description') }}</textarea>
+                    <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="3" maxlength="200" placeholder="Incluí detalles, condiciones y restricciones de la promoción" required>{{ old('description') }}</textarea>
                     <div class="form-text"><span id="dashboard-char-count">{{ strlen(old('description', '')) }}</span>/200 caracteres. Incluí condiciones y restricciones.</div>
                     @error('description')
                       <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -233,8 +241,8 @@ if ($errors->hasAny(['description', 'start_date', 'end_date', 'minimum_category'
                     <div class="d-flex flex-wrap gap-2">
                       @foreach (['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as $index => $dia)
                       <div class="form-check form-check-inline">
-                        <input type="hidden" name="dias_semana[{{ $index }}]" value="0">
-                        <input class="form-check-input day-checkbox @error('weekdays') is-invalid @enderror" type="checkbox" id="dashboard-dia-{{ $index }}" name="dias_semana[{{ $index }}]" value="1" {{ (!empty($defaultDays[$index]) && (int) $defaultDays[$index] === 1) ? 'checked' : '' }}>
+                        <input type="hidden" name="weekdays[{{ $index }}]" value="0">
+                        <input class="form-check-input day-checkbox @error('weekdays') is-invalid @enderror" type="checkbox" id="dashboard-dia-{{ $index }}" name="weekdays[{{ $index }}]" value="1" {{ (!empty($defaultDays[$index]) && (int) $defaultDays[$index] === 1) ? 'checked' : '' }}>
                         <label class="form-check-label" for="dashboard-dia-{{ $index }}">{{ $dia }}</label>
                       </div>
                       @endforeach

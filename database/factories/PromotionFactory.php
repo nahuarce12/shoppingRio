@@ -20,22 +20,40 @@ class PromotionFactory extends Factory
      */
     public function definition(): array
     {
-        $promoTexts = [
+        $promoTitles = [
             '20% de descuento en toda la tienda',
             '2x1 en productos seleccionados',
             '50% de descuento en segunda unidad',
-            '3 cuotas sin interés con tarjetas de crédito',
+            '3 cuotas sin interés',
             '15% de descuento pagando en efectivo',
-            '30% off en toda la colección de invierno',
-            '25% de descuento en compras superiores a $10000',
-            'Llevá 3 y pagá 2 en artículos seleccionados',
-            '40% de descuento en liquidación final',
-            '10% de descuento adicional para clientes premium',
-            'Envío gratis en compras superiores a $5000',
+            '30% off en colección de invierno',
+            '25% en compras superiores a $10000',
+            'Llevá 3 y pagá 2',
+            '40% de descuento en liquidación',
+            '10% adicional para clientes premium',
+            'Envío gratis en compras +$5000',
             '35% off en productos de temporada',
             'Descuento especial del 20% los martes',
-            '2x1 en el segundo producto de igual o menor valor',
-            '25% de descuento presentando esta promoción',
+            '2x1 en segundo producto',
+            '25% presentando esta promoción',
+        ];
+
+        $promoDescriptions = [
+            'Descuento válido para todos los productos de la tienda. No acumulable con otras promociones. Presentar código de descuento en caja.',
+            'Aplica solo a productos seleccionados marcados con etiqueta verde. Válido hasta agotar stock disponible en sucursal.',
+            'Llevando dos unidades del mismo producto, la segunda tiene 50% de descuento. No aplica a productos en liquidación.',
+            'Financiación sin interés con todas las tarjetas de crédito bancarias. Sujeto a aprobación crediticia del banco emisor.',
+            'Descuento exclusivo abonando en efectivo o transferencia bancaria. No combinable con otras promociones vigentes.',
+            'Válido solo para artículos de la colección otoño-invierno 2025. Hasta agotar stock. Sin cambios ni devoluciones.',
+            'Promoción válida en compras desde $10.000. No incluye productos electrónicos ni accesorios de marca importada.',
+            'Llevando 3 artículos seleccionados, el de menor valor es bonificado. No acumulable con descuento de cliente premium.',
+            'Últimas unidades con hasta 40% de descuento. Sin cambios ni devoluciones. Productos sujetos a disponibilidad.',
+            'Beneficio exclusivo para clientes categoría Premium del shopping. Presentar credencial o app del programa de fidelidad.',
+            'Envío sin cargo a domicilio para compras superiores a $5.000 dentro de zona de cobertura. Consultar zonas disponibles.',
+            'Descuento en productos de temporada seleccionados. Válido mientras dure el stock. No acumulable con otras ofertas.',
+            'Todos los martes obtené un 20% de descuento adicional presentando DNI. No válido en productos ya rebajados.',
+            'En la compra de dos productos, el de igual o menor valor tiene promoción 2x1. Aplica a línea completa de accesorios.',
+            'Mostrá el código de esta promoción en caja para obtener tu descuento. Válido una sola vez por cliente.',
         ];
 
         // Generate date range - mix of active, upcoming, and expiring promotions
@@ -65,8 +83,12 @@ class PromotionFactory extends Factory
             $diasSemana[] = in_array($i, $selectedDays) ? 1 : 0;
         }
 
+        // Pick matching title and description
+        $index = fake()->numberBetween(0, count($promoTitles) - 1);
+
         return [
-            'description' => fake()->randomElement($promoTexts),
+            'title' => $promoTitles[$index],
+            'description' => $promoDescriptions[$index],
             'start_date' => $fechaDesde,
             'end_date' => $fechaHasta,
             'minimum_category' => fake()->randomElement(['Inicial', 'Medium', 'Premium']),
