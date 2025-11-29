@@ -52,7 +52,8 @@ class UserApprovalController extends Controller
                 ->count(),
         ];
 
-        return view('admin.users.approval.index', compact('pendingUsers', 'stats'));
+        // Redirect to admin dashboard with validar-duenos section
+        return redirect()->route('admin.dashboard', ['section' => 'validar-duenos']);
     }
 
     /**

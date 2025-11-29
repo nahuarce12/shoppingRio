@@ -358,18 +358,11 @@ if ($errors->hasAny(['description', 'start_date', 'end_date', 'minimum_category'
               <div class="row mb-4">
                 <div class="col-md-6">
                   <label class="form-label">Período</label>
-                  <select class="form-select">
-                    <option selected>Últimos 3 meses</option>
-                    <option disabled>Más filtros disponibles próximamente</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Promoción</label>
-                  <select class="form-select">
-                    <option value="">Todas</option>
-                    @foreach($recentPromotions as $promo)
-                      <option value="{{ $promo->id }}">{{ Str::limit($promo->description, 40) }}</option>
-                    @endforeach
+                  <select class="form-select" id="reportPeriodFilter">
+                    <option value="1">Último mes</option>
+                    <option value="3" selected>Últimos 3 meses</option>
+                    <option value="6">Últimos 6 meses</option>
+                    <option value="12">Último año</option>
                   </select>
                 </div>
               </div>

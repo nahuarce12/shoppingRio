@@ -193,6 +193,16 @@ return [
         'dias_semana' => 'días de la semana',
         'texto_novedad' => 'texto de la novedad',
         'categoria_cliente' => 'categoría del cliente',
+        // English field names
+        'title' => 'título',
+        'description' => 'descripción',
+        'start_date' => 'fecha de inicio',
+        'end_date' => 'fecha de finalización',
+        'weekdays' => 'días de la semana',
+        'minimum_category' => 'categoría mínima',
+        'store_id' => 'local',
+        'user_type' => 'tipo de usuario',
+        'client_category' => 'categoría del cliente',
     ],
 
 ];

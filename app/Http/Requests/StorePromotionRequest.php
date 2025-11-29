@@ -46,7 +46,7 @@ class StorePromotionRequest extends FormRequest
             'end_date' => [
                 'required',
                 'date',
-                'after_or_equal:fecha_desde',
+                'after_or_equal:start_date',
                 function ($attribute, $value, $fail) {
                     if (!$this->start_date) {
                         return;
@@ -57,7 +57,7 @@ class StorePromotionRequest extends FormRequest
                     $maxDuration = config('shopping.promotion.max_duration_days', 365);
                     
                     if ($fechaHasta->diffInDays($fechaDesde) > $maxDuration) {
-                        $fail("The promotion duration cannot exceed {$maxDuration} days.");
+                        $fail("La duración de la promoción no puede exceder {$maxDuration} días.");
                     }
                 }
             ],
@@ -83,13 +83,9 @@ class StorePromotionRequest extends FormRequest
                     }
                     
                     if (!$hasAtLeastOneDay) {
-                        $fail('At least one day of the week must be selected.');
+                        $fail('Debes seleccionar al menos un día de la semana.');
                     }
                 }
-            ],
-            'dias_semana.*' => [
-                'required',
-                'boolean'
             ],
             'minimum_category' => [
                 'required',
@@ -141,25 +137,26 @@ class StorePromotionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'texto.required' => 'The promotion description is required.',
-            'texto.max' => 'The promotion description must not exceed 200 characters.',
-            'fecha_desde.required' => 'The start date is required.',
-            'fecha_desde.date' => 'The start date must be a valid date.',
-            'fecha_desde.after_or_equal' => 'The start date must be today or a future date.',
-            'fecha_hasta.required' => 'The end date is required.',
-            'fecha_hasta.date' => 'The end date must be a valid date.',
-            'fecha_hasta.after_or_equal' => 'The end date must be equal to or after the start date.',
-            'dias_semana.required' => 'Days of the week are required.',
-            'dias_semana.array' => 'Days of the week must be an array.',
-            'dias_semana.size' => 'You must specify exactly 7 days (Monday to Sunday).',
-            'dias_semana.*.boolean' => 'Each day must be true or false.',
-            'categoria_minima.required' => 'The minimum client category is required.',
-            'categoria_minima.in' => 'The minimum category must be Inicial, Medium, or Premium.',
-            'imagen.image' => 'The image must be an image file.',
-            'imagen.mimes' => 'The image must be a JPEG, PNG, or GIF file.',
-            'imagen.max' => 'The image file size must not exceed 2MB.',
-            'store_id.required' => 'A store must be selected.',
-            'store_id.exists' => 'The selected store does not exist.',
+            'title.required' => 'El título de la promoción es obligatorio.',
+            'title.max' => 'El título no debe exceder 100 caracteres.',
+            'description.required' => 'La descripción de la promoción es obligatoria.',
+            'description.max' => 'La descripción no debe exceder 200 caracteres.',
+            'start_date.required' => 'La fecha de inicio es obligatoria.',
+            'start_date.date' => 'La fecha de inicio debe ser una fecha válida.',
+            'start_date.after_or_equal' => 'La fecha de inicio debe ser hoy o una fecha futura.',
+            'end_date.required' => 'La fecha de finalización es obligatoria.',
+            'end_date.date' => 'La fecha de finalización debe ser una fecha válida.',
+            'end_date.after_or_equal' => 'La fecha de finalización debe ser igual o posterior a la fecha de inicio.',
+            'weekdays.required' => 'Los días de la semana son obligatorios.',
+            'weekdays.array' => 'Los días de la semana deben ser un array.',
+            'weekdays.size' => 'Debes especificar exactamente 7 días (de Lunes a Domingo).',
+            'minimum_category.required' => 'La categoría mínima de cliente es obligatoria.',
+            'minimum_category.in' => 'La categoría mínima debe ser Inicial, Medium o Premium.',
+            'imagen.image' => 'El archivo debe ser una imagen.',
+            'imagen.mimes' => 'La imagen debe ser un archivo JPEG, PNG o GIF.',
+            'imagen.max' => 'El tamaño de la imagen no debe exceder 2MB.',
+            'store_id.required' => 'Debe seleccionar un local.',
+            'store_id.exists' => 'El local seleccionado no existe.',
         ];
     }
 
@@ -171,13 +168,14 @@ class StorePromotionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'description' => 'promotion description',
-            'start_date' => 'start date',
-            'end_date' => 'end date',
-            'weekdays' => 'days of the week',
-            'minimum_category' => 'minimum category',
-            'imagen' => 'promotion image',
-            'store_id' => 'store'
+            'title' => 'título de la promoción',
+            'description' => 'descripción de la promoción',
+            'start_date' => 'fecha de inicio',
+            'end_date' => 'fecha de finalización',
+            'weekdays' => 'días de la semana',
+            'minimum_category' => 'categoría mínima',
+            'imagen' => 'imagen de la promoción',
+            'store_id' => 'local'
         ];
     }
 
