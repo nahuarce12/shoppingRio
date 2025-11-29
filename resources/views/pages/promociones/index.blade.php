@@ -79,7 +79,7 @@
               </div>
               <div class="card-body">
                 <span class="badge text-uppercase mb-2 badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span>
-                <h3 class="h5 card-title">{{ Str::limit($promotion->description, 80) }}</h3>
+                <h3 class="h5 card-title">{{ Str::limit($promotion->title ?? $promotion->description, 80) }}</h3>
                 <p class="mb-1 text-muted"><i class="bi bi-shop"></i> {{ $promotion->store->name }}</p>
                 <p class="small mb-0"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $promotion->end_date->format('d/m/Y') }}</p>
               </div>

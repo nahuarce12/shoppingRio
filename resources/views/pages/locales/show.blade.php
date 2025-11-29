@@ -105,7 +105,7 @@ $localesIndexRoute = route('locales.index');
             </div>
             <div class="card-body">
               <span class="badge text-uppercase mb-2 badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span>
-              <h5 class="card-title">{{ Str::limit($promotion->description, 80) }}</h5>
+              <h5 class="card-title">{{ Str::limit($promotion->title ?? $promotion->description, 80) }}</h5>
               <p class="small mb-2"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $promotion->end_date->format('d/m/Y') }}</p>
               <div class="promo-days">
                 @foreach($dayLabels as $index => $label)

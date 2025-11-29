@@ -25,13 +25,13 @@ $canRequest = ($clientEligibility['eligible'] ?? false) && !$hasRequested;
 $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
 @endphp
 
-@section('title', $promotion->description . ' - Shopping Rosario')
-@section('meta_description', 'Detalles de la promoción "' . $promotion->description . '" disponible en ' . $promotion->store->name . '.')
+@section('title', ($promotion->title ?? $promotion->description) . ' - Shopping Rosario')
+@section('meta_description', 'Detalles de la promoción "' . ($promotion->title ?? $promotion->description) . '" disponible en ' . $promotion->store->name . '.')
 
 @section('content')
 <x-layout.breadcrumbs :items="[
         ['label' => 'Promociones', 'url' => $promotionsIndexRoute],
-        ['label' => Str::limit($promotion->description, 70)]
+        ['label' => Str::limit($promotion->title ?? $promotion->description, 70)]
     ]" />
 
 <section class="py-4">
@@ -49,11 +49,17 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
       <div class="col-lg-6 mb-4">
         <div class="detail-info p-4 bg-white rounded shadow-sm h-100">
           <div class="d-flex justify-content-between align-items-start mb-3">
-            <h2 class="mb-0">{{ $promotion->description }}</h2>
+            <h2 class="mb-0">{{ $promotion->title ?? $promotion->description }}</h2>
             <span class="badge text-uppercase badge-{{ strtolower($promotion->minimum_category) }}">{{ $promotion->minimum_category }}</span>
           </div>
 
           <p class="text-muted mb-3">Código promoción: {{ sprintf('%04d', $promotion->code) }}</p>
+
+          @if($promotion->description)
+          <div class="alert alert-light border mb-3">
+            <i class="bi bi-info-circle"></i> {{ $promotion->description }}
+          </div>
+          @endif
 
           <div class="info-item mb-2">
             <i class="bi bi-shop-window"></i>
@@ -187,7 +193,7 @@ $clientRestrictionMessage = $clientEligibility['reason'] ?? null;
               </div>
               <div class="card-body">
                 <span class="badge text-uppercase mb-2 badge-{{ strtolower($similar->minimum_category) }}">{{ $similar->minimum_category }}</span>
-                <h5 class="card-title">{{ Str::limit($similar->description, 80) }}</h5>
+                <h5 class="card-title">{{ Str::limit($similar->title ?? $similar->description, 80) }}</h5>
                 <p class="small mb-0"><i class="bi bi-calendar-event"></i> Vigente hasta {{ $similar->end_date->format('d/m/Y') }}</p>
               </div>
               <div class="card-footer bg-white border-0 text-end">
